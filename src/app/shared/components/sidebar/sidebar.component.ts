@@ -1,0 +1,52 @@
+import { Component, inject } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { Router, RouterModule } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
+import { ThemeService } from '../../../core/services/ThemeService';
+
+interface MenuItem {
+  icon: string;
+  label: string;
+  route: string;
+}
+
+@Component({
+  selector: 'app-sidebar',
+  standalone: true,
+  imports: [CommonModule, RouterModule],
+  templateUrl: './sidebar.component.html',
+  styleUrls: ['./sidebar.component.scss']
+})
+export class SidebarComponent {
+  private authService = inject(AuthService);
+  private router = inject(Router);
+
+  menuItems: MenuItem[] = [
+  { icon: 'dashboard', label: 'Tableau de bord', route: '/admin/dashboard' },
+  { icon: 'schedule', label: 'Emplois du temps', route: '/admin/schedule' },
+  { icon: 'event_note', label: 'Réservations', route: '/admin/reservations' },
+  { icon: 'school', label: 'Enseignants & cours', route: '/admin/teachers' },
+  { icon: 'inventory_2', label: 'Ressources', route: '/admin/resources' },
+  { icon: 'bar_chart', label: 'Statistiques', route: '/admin/statistics' },
+  { icon: 'settings', label: 'Paramètres', route: '/admin/settings' }
+];
+
+
+  currentUser = this.authService.currentUser;
+
+  logout(): void {
+    this.authService.logout();
+  }
+
+  currentTheme: 'light' | 'dark' = 'light';
+
+  constructor(private themeService: ThemeService) {
+    this.themeService.theme$.subscribe(theme => {
+      this.currentTheme = theme;
+    });
+  }
+
+  toggleTheme() {
+    this.themeService.toggleTheme();
+  }
+}

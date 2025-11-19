@@ -1,0 +1,20 @@
+.search-wrapper {
+    position: relative;
+    width: 260px;
+    margin-bottom: 25px;
+}
+
+.search-wrapper input {
+    width: 100%;
+    padding: 10px 40px 10px 15px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.search-wrapper i {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #666;
+}
