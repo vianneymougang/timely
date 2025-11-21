@@ -1,17 +1,17 @@
 spring:
   application:
     name: auth-service
-  
+
   config:
-    import: optional:configserver:config-server:8091
-  
+    import: optional:configserver:http://localhost:8888
+
   # Database Configuration
   datasource:
     url: jdbc:postgresql://localhost:5001/auth-service-db
     username: admin
     password: password
     driver-class-name: org.postgresql.Driver
-  
+
   # JPA Configuration
   jpa:
     hibernate:
@@ -21,7 +21,7 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
-  
+
   # Flyway Configuration
   flyway:
     enabled: true
@@ -31,12 +31,12 @@ spring:
 # JWT Configuration
 jwt:
   secret: ${JWT_SECRET:mySecretKeyForJWTTokenGenerationThisShouldBeAtLeast256BitsLongForHS256Algorithm}
-  access-token-expiration: 3600000  # 1 hour in milliseconds
-  refresh-token-expiration: 604800000  # 7 days in milliseconds
+  access-token-expiration: 3600000 # 1 hour in milliseconds
+  refresh-token-expiration: 604800000 # 7 days in milliseconds
 
 # Server Configuration
 server:
-  port: ${PORT:8092}
+  port: ${PORT:8091}
 
 # Actuator Configuration
 management:
@@ -47,4 +47,3 @@ management:
   endpoint:
     health:
       show-details: when-authorized
-
