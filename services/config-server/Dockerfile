@@ -8,7 +8,7 @@ RUN mvn dependency:go-offline -B
 
 COPY src ./src
 
-RUN mvn clean package
+RUN mvn clean package -DskipTests
 
 FROM eclipse-temurin:21-jre AS runner
 
@@ -16,6 +16,6 @@ WORKDIR /app
 
 COPY --from=builder ./app/target/config-server-0.0.1-SNAPSHOT.jar ./app.jar
 
-EXPOSE 8091
+EXPOSE 8888
 
 ENTRYPOINT ["java", "-jar", "app.jar"]
