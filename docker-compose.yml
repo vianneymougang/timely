@@ -10,6 +10,11 @@ services:
       - postgres:/var/lib/postgresql/data
     ports:
       - "5001:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - timely-microservices
     restart: unless-stopped
@@ -72,6 +77,11 @@ services:
       - "8888:8888"
     networks:
       - timely-microservices
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
 
   discovery-server:
@@ -80,9 +90,17 @@ services:
     ports:
       - "8761:8761"
     depends_on:
-      - config-server
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - timely-microservices
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
     restart: unless-stopped
 
   api-gateway:
@@ -91,14 +109,23 @@ services:
     ports:
       - "8090:8090"
     depends_on:
-      - discovery-server
-      - config-server
+      discovery-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8090/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - timely-microservices
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
       - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+      - EUREKA_INSTANCE_HOSTNAME=api-gateway
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
     restart: unless-stopped
 
   auth-service:
@@ -107,10 +134,19 @@ services:
     ports:
       - "8091:8091"
     depends_on:
-      - auth-service-db
-      - discovery-server
-      - config-server
-      - api-gateway
+      auth-service-db:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8091/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
     networks:
       - timely-microservices
     environment:
@@ -118,6 +154,8 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://auth-service-db:5432/auth-service-db
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
       - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+      - EUREKA_INSTANCE_HOSTNAME=auth-service
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
     restart: unless-stopped
 
 networks:
