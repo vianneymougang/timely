@@ -41,7 +41,7 @@ Avant de commencer, assurez-vous d'avoir installé les éléments suivants sur v
 ### 1. Cloner le Dépôt
 
 ```bash
-git clone <url-du-dépôt>
+git clone https://gitlab.com/victory-projet/timely.git
 cd Timely
 ```
 
