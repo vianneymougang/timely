@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://api.timely-isjcam.com/api'
+  apiUrl: 'https://api.timely-isjcam.com'
 };

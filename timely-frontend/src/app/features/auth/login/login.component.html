@@ -36,8 +36,10 @@
             type="email"
             [(ngModel)]="email"
             name="email"
-            placeholder="votre.email@gmail.com"
-            class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none"
+            placeholder="votre.email@isjcam.org"
+            [disabled]="isLoading()"
+            (keyup.enter)="onSubmit()"
+            class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none disabled:bg-slate-100 disabled:cursor-not-allowed"
           />
         </div>
       </div>
@@ -55,7 +57,9 @@
             [(ngModel)]="password"
             name="password"
             placeholder="••••••••"
-            class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none"
+            [disabled]="isLoading()"
+            (keyup.enter)="onSubmit()"
+            class="w-full pl-10 pr-4 py-3 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent outline-none disabled:bg-slate-100 disabled:cursor-not-allowed"
           />
         </div>
         <button type="button" class="text-xs text-teal-600 hover:underline mt-2">

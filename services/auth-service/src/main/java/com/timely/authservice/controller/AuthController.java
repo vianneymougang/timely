@@ -4,6 +4,10 @@ import com.timely.authservice.dto.AuthResponse;
 import com.timely.authservice.dto.LoginRequest;
 import com.timely.authservice.dto.RefreshTokenRequest;
 import com.timely.authservice.dto.RegisterTeacherRequest;
+import com.timely.authservice.dto.TeacherResponseDTO;
+import com.timely.authservice.model.Role;
+import com.timely.authservice.model.Teacher;
+import com.timely.authservice.model.User;
 import com.timely.authservice.repository.UserRepository;
 import com.timely.authservice.service.AuthService;
 import com.timely.authservice.util.JwtUtil;
@@ -14,8 +18,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -96,6 +102,36 @@ public class AuthController {
         Map<String, Object> response = new HashMap<>();
         response.put("valid", false);
         return ResponseEntity.status(401).body(response);
+    }
+
+    /**
+     * Get all teachers endpoint (Admin-only)
+     */
+    @GetMapping("/teachers")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<List<TeacherResponseDTO>> getAllTeachers() {
+        List<User> users = userRepository.findByRole(Role.ROLE_TEACHER);
+        List<TeacherResponseDTO> teachers = users.stream()
+                .filter(user -> user instanceof Teacher)
+                .map(user -> TeacherResponseDTO.fromTeacher((Teacher) user))
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(teachers);
+    }
+
+    /**
+     * Get teacher by ID endpoint (Admin-only)
+     */
+    @GetMapping("/teachers/{teacherId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<TeacherResponseDTO> getTeacherById(@PathVariable UUID teacherId) {
+        User user = userRepository.findById(teacherId)
+                .orElseThrow(() -> new RuntimeException("Teacher not found"));
+        
+        if (!(user instanceof Teacher)) {
+            throw new RuntimeException("User is not a teacher");
+        }
+        
+        return ResponseEntity.ok(TeacherResponseDTO.fromTeacher((Teacher) user));
     }
 
     /**

@@ -1,17 +1,15 @@
 import { Injectable, inject, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
-import { Observable, of, throwError, delay } from 'rxjs';
-import { tap, map } from 'rxjs/operators';
-import { User } from '../models/user.model';
-import { MOCK_USERS } from '../data/mock-data';
-import { environment } from '../../../environments/environment';
+import { Observable, throwError } from 'rxjs';
+import { tap, catchError, map } from 'rxjs/operators';
+import { User, AuthResponse, LoginRequest, RegisterTeacherRequest } from '../models/user.model';
+import { ApiService } from './api.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthService {
-  private http = inject(HttpClient);
+  private apiService = inject(ApiService);
   private router = inject(Router);
 
   currentUser = signal<User | null>(null);
@@ -25,44 +23,123 @@ export class AuthService {
    * Connexion
    */
   login(email: string, password: string): Observable<{ user: User; token: string }> {
-    // Mode développement - Authentification mock
-    return of(null).pipe(
-      delay(500), // Simuler délai réseau
-      map(() => {
-        const mockUser = MOCK_USERS.find(
-          u => u.email === email && u.password === password
-        );
+    const loginRequest: LoginRequest = { email, password };
 
-        if (!mockUser) {
-          throw new Error('Email ou mot de passe incorrect');
-        }
-
+    return this.apiService.post<AuthResponse>('/api/auth/login', loginRequest).pipe(
+      map((authResponse) => {
+        // Convertir AuthResponse en User
+        const user: User = this.mapAuthResponseToUser(authResponse);
         const response = {
-          user: mockUser.user,
-          token: 'mock-jwt-token-' + Date.now()
+          user,
+          token: authResponse.accessToken
         };
 
-        this.handleSuccessfulLogin(response);
+        this.handleSuccessfulLogin(response, authResponse.refreshToken);
         return response;
+      }),
+      catchError((error) => {
+        // Préserver l'erreur HTTP complète pour une meilleure gestion dans le composant
+        return throwError(() => error);
       })
     );
   }
 
   /**
+   * Convertir AuthResponse en User
+   */
+  private mapAuthResponseToUser(authResponse: AuthResponse): User {
+    // Le backend retourne 'name' qui contient le nom complet
+    // On peut le splitter ou utiliser directement
+    const nameParts = authResponse.name?.split(' ') || [];
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+
+    return {
+      id: authResponse.userId,
+      email: authResponse.email,
+      firstName,
+      lastName,
+      role: this.normalizeRole(authResponse.role),
+      status: authResponse.status,
+      name: authResponse.name
+    };
+  }
+
+  /**
+   * Normaliser le rôle (ROLE_ADMIN -> admin, ROLE_TEACHER -> teacher)
+   */
+  private normalizeRole(role: string): 'admin' | 'teacher' {
+    if (role === 'ROLE_ADMIN' || role === 'admin') {
+      return 'admin';
+    }
+    return 'teacher';
+  }
+
+  /**
    * Gérer une connexion réussie
    */
-  private handleSuccessfulLogin(response: { user: User; token: string }): void {
+  private handleSuccessfulLogin(response: { user: User; token: string }, refreshToken: string): void {
     localStorage.setItem('token', response.token);
+    localStorage.setItem('refreshToken', refreshToken);
     localStorage.setItem('user', JSON.stringify(response.user));
     this.currentUser.set(response.user);
     this.isAuthenticated.set(true);
 
     // Redirection selon le rôle
-    if (response.user.role === 'admin') {
+    if (response.user.role === 'admin' || response.user.role === 'ROLE_ADMIN') {
       this.router.navigate(['/admin/dashboard']);
     } else {
       this.router.navigate(['/teacher/dashboard']);
     }
+  }
+
+  /**
+   * Enregistrer un nouvel enseignant (Admin uniquement)
+   */
+  registerTeacher(request: RegisterTeacherRequest): Observable<{ user: User; token: string }> {
+    return this.apiService.post<AuthResponse>('/api/auth/register/teacher', request).pipe(
+      map((authResponse) => {
+        // Convertir AuthResponse en User
+        const user: User = this.mapAuthResponseToUser(authResponse);
+        const response = {
+          user,
+          token: authResponse.accessToken
+        };
+
+        // Note: On ne connecte pas automatiquement l'admin après l'enregistrement
+        // L'admin reste connecté avec son propre compte
+        return response;
+      }),
+      catchError((error) => {
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Rafraîchir le token d'accès
+   */
+  refreshToken(): Observable<AuthResponse> {
+    const refreshToken = localStorage.getItem('refreshToken');
+    if (!refreshToken) {
+      return throwError(() => new Error('Aucun refresh token disponible'));
+    }
+
+    return this.apiService.post<AuthResponse>('/api/auth/refresh', { refreshToken }).pipe(
+      tap((authResponse) => {
+        const user = this.mapAuthResponseToUser(authResponse);
+        localStorage.setItem('token', authResponse.accessToken);
+        localStorage.setItem('refreshToken', authResponse.refreshToken);
+        localStorage.setItem('user', JSON.stringify(user));
+        this.currentUser.set(user);
+        this.isAuthenticated.set(true);
+      }),
+      catchError((error) => {
+        // Si le refresh token est invalide, déconnecter l'utilisateur
+        this.logout();
+        return throwError(() => new Error('Session expirée. Veuillez vous reconnecter.'));
+      })
+    );
   }
 
   /**
@@ -87,7 +164,19 @@ export class AuthService {
    * Déconnexion
    */
   logout(): void {
+    const refreshToken = localStorage.getItem('refreshToken');
+    
+    // Appeler l'API de déconnexion si un refresh token existe
+    if (refreshToken) {
+      this.apiService.post('/api/auth/logout', { refreshToken }).subscribe({
+        error: () => {
+          // Ignorer les erreurs lors de la déconnexion
+        }
+      });
+    }
+
     localStorage.removeItem('token');
+    localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
     this.currentUser.set(null);
     this.isAuthenticated.set(false);
@@ -96,6 +185,10 @@ export class AuthService {
 
   getToken(): string | null {
     return localStorage.getItem('token');
+  }
+
+  getRefreshToken(): string | null {
+    return localStorage.getItem('refreshToken');
   }
 
   checkAuth(): boolean {
@@ -107,10 +200,12 @@ export class AuthService {
   }
 
   isAdmin(): boolean {
-    return this.currentUser()?.role === 'admin';
+    const role = this.currentUser()?.role;
+    return role === 'admin' || role === 'ROLE_ADMIN';
   }
 
   isTeacher(): boolean {
-    return this.currentUser()?.role === 'teacher';
+    const role = this.currentUser()?.role;
+    return role === 'teacher' || role === 'ROLE_TEACHER';
   }
 }

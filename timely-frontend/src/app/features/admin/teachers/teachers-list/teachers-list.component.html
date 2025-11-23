@@ -40,7 +40,12 @@
     <!-- Search Bar -->
     <div class="search-wrapper">
       <i class="fa fa-search"></i>
-      <input type="text" placeholder="Rechercher..." />
+      <input
+        type="text"
+        placeholder="Rechercher un enseignant..."
+        [value]="searchQuery()"
+        (input)="searchQuery.set($any($event.target).value)"
+      />
   </div>
 
     <!-- Two Column Layout -->
@@ -214,44 +219,124 @@
 
     <form #teacherForm="ngForm" class="space-y-4">
 
-      <div>
-        <label class="text-sm font-medium">Prénom</label>
-        <input
-          type="text"
-          class="mt-1 w-full border rounded-lg p-2"
-          name="firstName"
-          ngModel
-          required
-        />
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="text-sm font-medium text-slate-700">Prénom <span class="text-red-500">*</span></label>
+          <input
+            type="text"
+            class="mt-1 w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            name="firstName"
+            ngModel
+            required
+            placeholder="Prénom"
+          />
+        </div>
+
+        <div>
+          <label class="text-sm font-medium text-slate-700">Nom <span class="text-red-500">*</span></label>
+          <input
+            type="text"
+            class="mt-1 w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            name="lastName"
+            ngModel
+            required
+            placeholder="Nom"
+          />
+        </div>
       </div>
 
       <div>
-        <label class="text-sm font-medium">Nom</label>
-        <input
-          type="text"
-          class="mt-1 w-full border rounded-lg p-2"
-          name="lastName"
-          ngModel
-          required
-        />
-      </div>
-
-      <div>
-        <label class="text-sm font-medium">Email</label>
+        <label class="text-sm font-medium text-slate-700">Email <span class="text-red-500">*</span></label>
         <input
           type="email"
-          class="mt-1 w-full border rounded-lg p-2"
+          class="mt-1 w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
           name="email"
           ngModel
           required
+          placeholder="email@example.com"
         />
       </div>
 
-      <div class="flex justify-end gap-3 pt-4">
+      <div>
+        <label class="text-sm font-medium text-slate-700">Mot de passe <span class="text-red-500">*</span></label>
+        <input
+          type="password"
+          class="mt-1 w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          name="password"
+          ngModel
+          required
+          minlength="8"
+          placeholder="Minimum 8 caractères"
+        />
+        <p class="text-xs text-slate-500 mt-1">Le mot de passe doit contenir au moins 8 caractères</p>
+      </div>
+
+      <div>
+        <label class="text-sm font-medium text-slate-700">Numéro de téléphone</label>
+        <input
+          type="tel"
+          class="mt-1 w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          name="telephoneNumber"
+          ngModel
+          placeholder="Ex: 123456789"
+        />
+      </div>
+
+      <div>
+        <label class="text-sm font-medium text-slate-700">Matricule <span class="text-red-500">*</span></label>
+        <input
+          type="text"
+          class="mt-1 w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          name="matricule"
+          ngModel
+          required
+          placeholder="Matricule unique"
+        />
+      </div>
+
+      <div class="grid grid-cols-2 gap-4">
+        <div>
+          <label class="text-sm font-medium text-slate-700">Grade <span class="text-red-500">*</span></label>
+          <input
+            type="text"
+            class="mt-1 w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            name="grade"
+            ngModel
+            required
+            placeholder="Ex: Professeur"
+          />
+        </div>
+
+        <div>
+          <label class="text-sm font-medium text-slate-700">Rang <span class="text-red-500">*</span></label>
+          <input
+            type="text"
+            class="mt-1 w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+            name="rank"
+            ngModel
+            required
+            placeholder="Ex: Maître de conférences"
+          />
+        </div>
+      </div>
+
+      <div>
+        <label class="text-sm font-medium text-slate-700">Taux horaire <span class="text-red-500">*</span></label>
+        <input
+          type="text"
+          class="mt-1 w-full border border-slate-300 rounded-lg p-2 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+          name="hourlyRate"
+          ngModel
+          required
+          placeholder="Ex: 60"
+        />
+      </div>
+
+      <div class="flex justify-end gap-3 pt-4 border-t">
         <button
           type="button"
           (click)="closeModals()"
-          class="px-4 py-2 bg-slate-200 rounded-lg hover:bg-slate-300"
+          class="px-4 py-2 bg-slate-200 text-slate-700 rounded-lg hover:bg-slate-300 transition-colors"
         >
           Annuler
         </button>
@@ -259,9 +344,15 @@
         <button
           type="submit"
           (click)="submitAddTeacher(teacherForm)"
-          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+          [disabled]="!teacherForm.valid || isSubmittingTeacher()"
+          class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:bg-slate-400 disabled:cursor-not-allowed transition-colors flex items-center gap-2"
         >
-          Ajouter
+          @if (isSubmittingTeacher()) {
+            <span class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+            Création...
+          } @else {
+            Ajouter l'enseignant
+          }
         </button>
       </div>
 

@@ -48,6 +48,12 @@
 			<artifactId>spring-cloud-starter-netflix-eureka-client</artifactId>
 		</dependency>
 
+		<!-- WebClient for request forwarding -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webflux</artifactId>
+		</dependency>
+
 		<!-- JWT Support -->
 		<dependency>
 			<groupId>io.jsonwebtoken</groupId>
