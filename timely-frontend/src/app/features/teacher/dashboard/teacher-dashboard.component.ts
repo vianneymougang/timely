@@ -30,7 +30,7 @@ interface WeekOverview {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './teacher-dashboard.component.html',
-  styleUrls: ['./teacher-dashboard.component.scss']
+  styleUrls: ['./teacher-dashboard.component.scss'],
 })
 export class TeacherDashboardComponent implements OnInit {
   private authService = inject(AuthService);
@@ -43,7 +43,7 @@ export class TeacherDashboardComponent implements OnInit {
     todayCourses: 2,
     totalCourses: 6,
     weekHours: '10h',
-    notifications: 3
+    notifications: 3,
   });
 
   todayCourses = signal<CourseCard[]>([
@@ -55,7 +55,7 @@ export class TeacherDashboardComponent implements OnInit {
       salle: 'S003',
       students: 35,
       timeStart: '08:00',
-      timeEnd: '10:00'
+      timeEnd: '10:00',
     },
     {
       title: 'Dev Mobile',
@@ -65,23 +65,23 @@ export class TeacherDashboardComponent implements OnInit {
       salle: 'S003',
       students: 35,
       timeStart: '13:00',
-      timeEnd: '17:00'
-    }
+      timeEnd: '17:00',
+    },
   ]);
 
   notifications = signal<Notification[]>([
     {
       title: 'Rappel: Cours de Programmation Java demain à 08:00',
-      time: '9:00'
+      time: '9:00',
     },
     {
       title: 'Emploi du temps mis à jour avec succès',
-      time: '9:00'
+      time: '9:00',
     },
     {
       title: 'Emploi du temps mis à jour avec succès',
-      time: '9:00'
-    }
+      time: '9:00',
+    },
   ]);
 
   weekOverview = signal<WeekOverview[]>([
@@ -90,7 +90,7 @@ export class TeacherDashboardComponent implements OnInit {
     { day: 'mer', courses: '1 cours', hours: '2h' },
     { day: 'ven', courses: 'aucun', hours: '0h' },
     { day: 'jeu', courses: '1 cours', hours: '4h' },
-    { day: 'sam', courses: 'aucun', hours: '0h' }
+    { day: 'sam', courses: 'aucun', hours: '0h' },
   ]);
 
   ngOnInit(): void {
@@ -103,5 +103,13 @@ export class TeacherDashboardComponent implements OnInit {
 
   logout(): void {
     this.authService.logout();
+  }
+
+  getUserInitials(name: string): string {
+    const words = name.trim().split(' ');
+    if (words.length >= 2) {
+      return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
+    }
+    return name.substring(0, 2).toUpperCase();
   }
 }

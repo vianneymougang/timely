@@ -1,45 +1,5 @@
 import { User } from '../models/user.model';
 
-export const MOCK_USERS = [
-  // ADMINISTRATEURS
-  {
-    email: 'admin@isjcam.org',
-    password: 'admin123',
-    user: {
-      id: '1',
-      email: 'admin@isjcam.org',
-      firstName: 'Admin',
-      lastName: 'ISJCAM',
-      role: 'admin' as const
-    }
-  },
-
-  // ENSEIGNANTS
-  {
-    email: 'arthur.pessah@isjcam.org',
-    password: 'teacher123',
-    user: {
-      id: '3',
-      email: 'arthur.pessah@isjcam.org',
-      firstName: 'Arthur',
-      lastName: 'Pessah',
-      role: 'teacher' as const
-    }
-  },
-  {
-    email: 'marie.kouam@isjcam.org',
-    password: 'teacher123',
-    user: {
-      id: '4',
-      email: 'marie.kouam@isjcam.org',
-      firstName: 'Marie',
-      lastName: 'Kouam',
-      role: 'teacher' as const
-    }
-  }
-];
-
-
 export const MOCK_TEACHERS = [
   {
     id: '1',
@@ -51,7 +11,7 @@ export const MOCK_TEACHERS = [
     assignedCourses: 3,
     hourlyLoad: {
       used: 4,
-      total: 24
+      total: 24,
     },
     availability: {
       monday: '8h-18h',
@@ -59,7 +19,7 @@ export const MOCK_TEACHERS = [
       wednesday: '8h-18h',
       thursday: '9h-17h',
       friday: '8h-18h',
-      saturday: '-'
+      saturday: '-',
     },
     schedule: {
       monday: '-',
@@ -67,9 +27,9 @@ export const MOCK_TEACHERS = [
       wednesday: '-',
       thursday: '12h-14h',
       friday: '-',
-      saturday: '-'
+      saturday: '-',
     },
-    status: 'available' as const
+    status: 'available' as const,
   },
   {
     id: '2',
@@ -81,7 +41,7 @@ export const MOCK_TEACHERS = [
     assignedCourses: 5,
     hourlyLoad: {
       used: 12,
-      total: 24
+      total: 24,
     },
     availability: {
       monday: '8h-17h',
@@ -89,7 +49,7 @@ export const MOCK_TEACHERS = [
       wednesday: '8h-17h',
       thursday: '8h-17h',
       friday: '8h-17h',
-      saturday: '9h-12h'
+      saturday: '9h-12h',
     },
     schedule: {
       monday: '10h-12h',
@@ -97,9 +57,9 @@ export const MOCK_TEACHERS = [
       wednesday: '8h-10h',
       thursday: '10h-12h',
       friday: '14h-16h',
-      saturday: '9h-11h'
+      saturday: '9h-11h',
     },
-    status: 'available' as const
+    status: 'available' as const,
   },
   {
     id: '3',
@@ -111,7 +71,7 @@ export const MOCK_TEACHERS = [
     assignedCourses: 4,
     hourlyLoad: {
       used: 16,
-      total: 24
+      total: 24,
     },
     availability: {
       monday: '9h-18h',
@@ -119,7 +79,7 @@ export const MOCK_TEACHERS = [
       wednesday: '9h-18h',
       thursday: '9h-18h',
       friday: '9h-16h',
-      saturday: '-'
+      saturday: '-',
     },
     schedule: {
       monday: '9h-11h',
@@ -127,9 +87,9 @@ export const MOCK_TEACHERS = [
       wednesday: '9h-11h',
       thursday: '14h-16h',
       friday: '9h-11h',
-      saturday: '-'
+      saturday: '-',
     },
-    status: 'busy' as const
+    status: 'busy' as const,
   },
   {
     id: '4',
@@ -141,7 +101,7 @@ export const MOCK_TEACHERS = [
     assignedCourses: 6,
     hourlyLoad: {
       used: 18,
-      total: 24
+      total: 24,
     },
     availability: {
       monday: '8h-18h',
@@ -149,7 +109,7 @@ export const MOCK_TEACHERS = [
       wednesday: '8h-18h',
       thursday: '8h-18h',
       friday: '8h-18h',
-      saturday: '8h-12h'
+      saturday: '8h-12h',
     },
     schedule: {
       monday: '10h-12h',
@@ -157,9 +117,9 @@ export const MOCK_TEACHERS = [
       wednesday: '14h-16h',
       thursday: '10h-12h',
       friday: '14h-16h',
-      saturday: '8h-10h'
+      saturday: '8h-10h',
     },
-    status: 'busy' as const
+    status: 'busy' as const,
   },
   {
     id: '5',
@@ -171,7 +131,7 @@ export const MOCK_TEACHERS = [
     assignedCourses: 2,
     hourlyLoad: {
       used: 6,
-      total: 24
+      total: 24,
     },
     availability: {
       monday: '14h-18h',
@@ -179,7 +139,7 @@ export const MOCK_TEACHERS = [
       wednesday: '14h-18h',
       thursday: '14h-18h',
       friday: '14h-18h',
-      saturday: '-'
+      saturday: '-',
     },
     schedule: {
       monday: '14h-16h',
@@ -187,17 +147,45 @@ export const MOCK_TEACHERS = [
       wednesday: '14h-16h',
       thursday: '-',
       friday: '14h-16h',
-      saturday: '-'
+      saturday: '-',
     },
-    status: 'available' as const
-  }
+    status: 'available' as const,
+  },
 ];
 
 export const MOCK_ROOMS = [
-  { id: '1', name: 'Salle 101', capacity: 30, type: 'classroom' as const, equipment: ['Projecteur', 'Tableau'], status: 'available' as const },
-  { id: '2', name: 'Salle 102', capacity: 25, type: 'classroom' as const, equipment: ['Projecteur'], status: 'occupied' as const },
-  { id: '3', name: 'Lab Info 1', capacity: 20, type: 'lab' as const, equipment: ['Ordinateurs', 'Projecteur'], status: 'available' as const },
-  { id: '4', name: 'Amphi A', capacity: 100, type: 'amphitheater' as const, equipment: ['Projecteur', 'Sono'], status: 'available' as const },
+  {
+    id: '1',
+    name: 'Salle 101',
+    capacity: 30,
+    type: 'classroom' as const,
+    equipment: ['Projecteur', 'Tableau'],
+    status: 'available' as const,
+  },
+  {
+    id: '2',
+    name: 'Salle 102',
+    capacity: 25,
+    type: 'classroom' as const,
+    equipment: ['Projecteur'],
+    status: 'occupied' as const,
+  },
+  {
+    id: '3',
+    name: 'Lab Info 1',
+    capacity: 20,
+    type: 'lab' as const,
+    equipment: ['Ordinateurs', 'Projecteur'],
+    status: 'available' as const,
+  },
+  {
+    id: '4',
+    name: 'Amphi A',
+    capacity: 100,
+    type: 'amphitheater' as const,
+    equipment: ['Projecteur', 'Sono'],
+    status: 'available' as const,
+  },
 ];
 
 export const MOCK_DASHBOARD_STATS = {
@@ -205,9 +193,9 @@ export const MOCK_DASHBOARD_STATS = {
     total: 33,
     available: 20,
     occupied: 11,
-    maintenance: 2
+    maintenance: 2,
   },
   alerts: 2,
   teachers: 30,
-  activeReservations: 15
+  activeReservations: 15,
 };
