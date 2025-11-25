@@ -2,7 +2,6 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { SidebarComponent } from '../../../../shared/components/sidebar/sidebar.component';
 import { TeacherService } from '../../../../core/services/teacher.service';
 import { Teacher } from '../../../../core/models/teacher.model';
 import { AuthService } from '../../../../core/services/auth.service';
@@ -10,7 +9,7 @@ import { AuthService } from '../../../../core/services/auth.service';
 @Component({
   selector: 'app-teachers-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './teachers-list.component.html',
   styleUrls: ['./teachers-list.component.scss']
 })

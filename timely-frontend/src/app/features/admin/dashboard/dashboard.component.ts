@@ -1,6 +1,5 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { SidebarComponent } from '../../../shared/components/sidebar/sidebar.component';
 import { StatCardComponent } from '../../../shared/components/stat-card/stat-card.component';
 import { AlertCardComponent } from '../../../shared/components/alert-card/alert-card.component';
 
@@ -13,7 +12,7 @@ interface DashboardStats {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, SidebarComponent, StatCardComponent, AlertCardComponent],
+  imports: [CommonModule, StatCardComponent, AlertCardComponent],
   templateUrl: './dashboard.component.html',
   styleUrls: ['./dashboard.component.scss']
 })
