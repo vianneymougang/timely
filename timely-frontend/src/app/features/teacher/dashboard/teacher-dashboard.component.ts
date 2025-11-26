@@ -1,17 +1,17 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
-import { TeacherService } from '../../../core/services/teacher.service';
+import { Router, RouterModule } from '@angular/router';
 
-interface CourseCard {
+interface CourseToday {
   title: string;
   badge: string;
   badgeColor: string;
+  timeStart: string;
+  timeEnd: string;
   classe: string;
   salle: string;
   students: number;
-  timeStart: string;
-  timeEnd: string;
 }
 
 interface Notification {
@@ -19,97 +19,109 @@ interface Notification {
   time: string;
 }
 
-interface WeekOverview {
+interface DayOverview {
   day: string;
   courses: string;
   hours: string;
 }
-
 @Component({
-  selector: 'app-teacher-dashboard',
+  selector: 'app-teacher-sidebar',
   standalone: true,
-  imports: [CommonModule],
-  templateUrl: './teacher-dashboard.component.html',
-  styleUrls: ['./teacher-dashboard.component.scss'],
+  imports: [CommonModule, RouterModule],
+  templateUrl:'./teacher-dashboard.component.html'
 })
-export class TeacherDashboardComponent implements OnInit {
+export class TeacherDashboardComponent {
   private authService = inject(AuthService);
-  private teacherService = inject(TeacherService);
 
+  // User info
   currentUser = this.authService.currentUser;
-  currentDate = signal('Lundi 20 Octobre 2025');
 
-  stats = signal({
-    todayCourses: 2,
-    totalCourses: 6,
-    weekHours: '10h',
-    notifications: 3,
+  logout(): void { this.authService.logout(); }
+  // Current date
+  currentDate = computed(() => {
+    const today = new Date();
+    const options: Intl.DateTimeFormatOptions = {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric'
+    };
+    return today.toLocaleDateString('fr-FR', options);
   });
 
-  todayCourses = signal<CourseCard[]>([
+  // Stats
+  stats = signal({
+    todayCourses: 3,
+    totalCourses: 12,
+    weekHours: 24,
+    notifications: 5
+  });
+
+  // Today's courses
+  todayCourses = signal<CourseToday[]>([
     {
-      title: 'Architecture web',
-      badge: 'CM',
-      badgeColor: 'bg-emerald-400',
-      classe: 'INGE 3 ISI FR',
-      salle: 'S003',
-      students: 35,
+      title: 'Mathématiques Avancées',
+      badge: 'En cours',
+      badgeColor: 'bg-emerald-500',
       timeStart: '08:00',
       timeEnd: '10:00',
+      classe: 'L3 Info',
+      salle: 'A101',
+      students: 45
     },
     {
-      title: 'Dev Mobile',
-      badge: 'TP',
-      badgeColor: 'bg-cyan-400',
-      classe: 'INGE 3 ISI FR',
-      salle: 'S003',
-      students: 35,
-      timeStart: '13:00',
-      timeEnd: '17:00',
+      title: 'Algorithmique',
+      badge: 'À venir',
+      badgeColor: 'bg-blue-500',
+      timeStart: '10:30',
+      timeEnd: '12:30',
+      classe: 'L2 Info',
+      salle: 'B205',
+      students: 38
     },
+    {
+      title: 'Bases de données',
+      badge: 'À venir',
+      badgeColor: 'bg-slate-400',
+      timeStart: '14:00',
+      timeEnd: '16:00',
+      classe: 'M1 Info',
+      salle: 'C103',
+      students: 32
+    }
   ]);
 
+  // Notifications
   notifications = signal<Notification[]>([
     {
-      title: 'Rappel: Cours de Programmation Java demain à 08:00',
-      time: '9:00',
+      title: 'Nouvelle modification de l\'emploi du temps',
+      time: 'Il y a 2h'
     },
     {
-      title: 'Emploi du temps mis à jour avec succès',
-      time: '9:00',
+      title: 'Rappel : Réunion pédagogique demain',
+      time: 'Il y a 4h'
     },
     {
-      title: 'Emploi du temps mis à jour avec succès',
-      time: '9:00',
+      title: 'Demande de rendez-vous étudiant',
+      time: 'Hier'
     },
-  ]);
-
-  weekOverview = signal<WeekOverview[]>([
-    { day: 'Lun', courses: '2 cours', hours: '6h' },
-    { day: 'mar', courses: 'aucun', hours: '0h' },
-    { day: 'mer', courses: '1 cours', hours: '2h' },
-    { day: 'ven', courses: 'aucun', hours: '0h' },
-    { day: 'jeu', courses: '1 cours', hours: '4h' },
-    { day: 'sam', courses: 'aucun', hours: '0h' },
-  ]);
-
-  ngOnInit(): void {
-    this.loadTeacherData();
-  }
-
-  loadTeacherData(): void {
-    // TODO: Charger les vraies données depuis l'API
-  }
-
-  logout(): void {
-    this.authService.logout();
-  }
-
-  getUserInitials(name: string): string {
-    const words = name.trim().split(' ');
-    if (words.length >= 2) {
-      return (words[0].charAt(0) + words[words.length - 1].charAt(0)).toUpperCase();
+    {
+      title: 'Évaluation de cours disponible',
+      time: 'Il y a 2 jours'
+    },
+    {
+      title: 'Nouveau document partagé',
+      time: 'Il y a 3 jours'
     }
-    return name.substring(0, 2).toUpperCase();
-  }
+  ]);
+
+  // Week overview
+  weekOverview = signal<DayOverview[]>([
+    { day: 'Lundi', courses: '3 cours', hours: '6h' },
+    { day: 'Mardi', courses: '4 cours', hours: '8h' },
+    { day: 'Mercredi', courses: '2 cours', hours: '4h' },
+    { day: 'Jeudi', courses: '3 cours', hours: '6h' },
+    { day: 'Vendredi', courses: '0 cours', hours: '0h' },
+    { day: 'Samedi', courses: '0 cours', hours: '0h' }
+  ]);
 }
