@@ -15,6 +15,21 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/login/login.component')
       .then(m => m.LoginComponent)
   },
+  {
+    path: 'auth/forgot-password',
+    loadComponent: () => import('./features/auth/forgot-password/forgot-password.component')
+      .then(m => m.ForgotPasswordComponent)
+  },
+  {
+    path: 'auth/verify-code',
+    loadComponent: () => import('./features/auth/verify-code/verify-code.component')
+      .then(m => m.VerifyCodeComponent)
+  },
+  {
+    path: 'auth/reset-password',
+    loadComponent: () => import('./features/auth/reset-password/reset-password.component')
+      .then(m => m.ResetPasswordComponent)
+  },
 
   // Routes Admin avec Layout
   {
