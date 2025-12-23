@@ -23,7 +23,6 @@ import com.timely.userservice.model.Admin;
 import com.timely.userservice.model.Role;
 import com.timely.userservice.model.Teacher;
 import com.timely.userservice.model.User;
-import com.timely.userservice.model.UserStatus;
 import com.timely.userservice.repository.TeacherRepository;
 import com.timely.userservice.repository.UserRepository;
 
@@ -37,7 +36,6 @@ public class UserServiceImpl implements UserService {
     private final TeacherRepository teacherRepository;
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
-    private final UserCodeGeneratorService userCodeGeneratorService;
 
     @Override
     @Transactional
@@ -47,13 +45,15 @@ public class UserServiceImpl implements UserService {
             throw new EmailAlreadyExistsException("Email already exists: " + request.getEmail());
         }
 
+        // Check if matricule already exists
+        if (request.getMatricule() != null && teacherRepository.existsByMatricule(request.getMatricule())) {
+            throw new MatriculeAlreadyExistsException("Matricule already exists: " + request.getMatricule());
+        }
+
         // Create teacher entity
         Teacher teacher = userMapper.toTeacherEntity(request);
         teacher.setPassword(passwordEncoder.encode(request.getPassword()));
         teacher.setRole(Role.ROLE_TEACHER);
-        
-        // Auto-generate matricule
-        teacher.setMatricule(userCodeGeneratorService.generateTeacherCode());
 
         // Save teacher
         Teacher savedTeacher = teacherRepository.save(teacher);
@@ -171,52 +171,10 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public void deleteUser(UUID id) {
-        // Soft delete by blocking the user instead of physical deletion
-        blockUser(id);
-    }
-    
-    @Override
-    @Transactional
-    public UserDto blockUser(UUID id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
-        
-        user.setStatus(UserStatus.BLOCKED);
-        User blockedUser = userRepository.save(user);
-        
-        if (blockedUser instanceof Teacher) {
-            return userMapper.toTeacherDto((Teacher) blockedUser);
-        } else if (blockedUser instanceof Admin) {
-            return userMapper.toAdminDto((Admin) blockedUser);
+        if (!userRepository.existsById(id)) {
+            throw new UserNotFoundException("User not found with id: " + id);
         }
-        return userMapper.toDto(blockedUser);
-    }
-    
-    @Override
-    @Transactional
-    public UserDto unblockUser(UUID id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
-        
-        user.setStatus(UserStatus.ACTIVE);
-        User unblockedUser = userRepository.save(user);
-        
-        if (unblockedUser instanceof Teacher) {
-            return userMapper.toTeacherDto((Teacher) unblockedUser);
-        } else if (unblockedUser instanceof Admin) {
-            return userMapper.toAdminDto((Admin) unblockedUser);
-        }
-        return userMapper.toDto(unblockedUser);
-    }
-
-    @Override
-    @Transactional
-    public void updatePassword(UUID id, String newPassword) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
-        
-        user.setPassword(passwordEncoder.encode(newPassword));
-        userRepository.save(user);
+        userRepository.deleteById(id);
     }
 
     @Override

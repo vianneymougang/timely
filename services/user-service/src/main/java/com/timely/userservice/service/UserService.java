@@ -31,11 +31,5 @@ public interface UserService {
     
     void deleteUser(UUID id);
     
-    UserDto blockUser(UUID id);
-    
-    UserDto unblockUser(UUID id);
-    
-    void updatePassword(UUID id, String newPassword);
-    
     boolean existsByEmail(String email);
 }

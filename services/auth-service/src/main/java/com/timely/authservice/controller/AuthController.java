@@ -1,28 +1,24 @@
 package com.timely.authservice.controller;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestHeader;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
 import com.timely.authservice.dto.AuthResponse;
 import com.timely.authservice.dto.LoginRequest;
 import com.timely.authservice.dto.RefreshTokenRequest;
-import com.timely.authservice.dto.RegisterTeacherRequest;
-import com.timely.authservice.repository.UserRepository;
-import com.timely.authservice.dto.TeacherResponseDTO;
 import com.timely.authservice.service.AuthService;
-import com.timely.authservice.model.Role;
-import com.timely.authservice.model.Teacher;
-import com.timely.authservice.model.User;
-import com.timely.authservice.repository.UserRepository;
 import com.timely.authservice.util.JwtUtil;
+
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/auth")
@@ -30,7 +26,6 @@ import java.util.stream.Collectors;
 public class AuthController {
 
     private final AuthService authService;
-    private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
 
     /**
@@ -39,16 +34,6 @@ public class AuthController {
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
         AuthResponse response = authService.login(request);
-        return ResponseEntity.ok(response);
-    }
-
-    /**
-     * Register teacher endpoint (Admin-only)
-     */
-    @PostMapping("/register/teacher")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<AuthResponse> registerTeacher(@Valid @RequestBody RegisterTeacherRequest request) {
-        AuthResponse response = authService.registerTeacher(request);
         return ResponseEntity.ok(response);
     }
 
@@ -86,14 +71,7 @@ public class AuthController {
                 Map<String, Object> response = new HashMap<>();
                 response.put("valid", true);
                 response.put("email", email);
-                
-                // Optionally include user details
-                userRepository.findByEmail(email).ifPresent(user -> {
-                    response.put("userId", user.getId());
-                    response.put("role", user.getRole());
-                    response.put("status", user.getStatus());
-                });
-                
+
                 return ResponseEntity.ok(response);
             }
         } catch (Exception e) {
@@ -104,50 +82,4 @@ public class AuthController {
         response.put("valid", false);
         return ResponseEntity.status(401).body(response);
     }
-
-    /**
-     * Get all teachers endpoint (Admin-only)
-     */
-    @GetMapping("/teachers")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<TeacherResponseDTO>> getAllTeachers() {
-        List<User> users = userRepository.findByRole(Role.ROLE_TEACHER);
-        List<TeacherResponseDTO> teachers = users.stream()
-                .filter(user -> user instanceof Teacher)
-                .map(user -> TeacherResponseDTO.fromTeacher((Teacher) user))
-                .collect(Collectors.toList());
-        return ResponseEntity.ok(teachers);
-    }
-
-    /**
-     * Get teacher by ID endpoint (Admin-only)
-     */
-    @GetMapping("/teachers/{teacherId}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<TeacherResponseDTO> getTeacherById(@PathVariable UUID teacherId) {
-        User user = userRepository.findById(teacherId)
-                .orElseThrow(() -> new RuntimeException("Teacher not found"));
-
-        if (!(user instanceof Teacher)) {
-            throw new RuntimeException("User is not a teacher");
-        }
-
-        return ResponseEntity.ok(TeacherResponseDTO.fromTeacher((Teacher) user));
-    }
-
-
-    /**
-     * Delete teacher endpoint (Admin-only)
-     */
-    @DeleteMapping("/teachers/{teacherId}")
-    @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<Map<String, String>> deleteTeacher(@PathVariable UUID teacherId) {
-        userRepository.deleteById(teacherId);
-        
-        Map<String, String> response = new HashMap<>();
-        response.put("message", "Teacher deleted successfully");
-        return ResponseEntity.ok(response);
-    }
-
-
 }
