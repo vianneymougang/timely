@@ -1,8 +1,8 @@
 package com.timely.authservice.service;
 
-import com.timely.authservice.model.User;
-import com.timely.authservice.repository.UserRepository;
-import lombok.RequiredArgsConstructor;
+import java.util.Collection;
+import java.util.Collections;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -10,32 +10,38 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
-import java.util.Collection;
-import java.util.Collections;
+import com.timely.authservice.client.UserServiceClient;
+import com.timely.authservice.dto.InternalUserDto;
+import com.timely.authservice.model.UserStatus;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class CustomUserDetailsService implements UserDetailsService {
 
-    private final UserRepository userRepository;
+    private final UserServiceClient userServiceClient;
 
     @Override
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found with email: " + email));
+        try {
+            InternalUserDto user = userServiceClient.findByEmail(email);
 
-        return new org.springframework.security.core.userdetails.User(
-                user.getEmail(),
-                user.getPassword(),
-                user.getStatus() == com.timely.authservice.model.UserStatus.ACTIVE,  // enabled
-                true,  // accountNonExpired
-                true,  // credentialsNonExpired
-                user.getStatus() != com.timely.authservice.model.UserStatus.SUSPENDED,  // accountNonLocked
-                getAuthorities(user)
-        );
+            return new org.springframework.security.core.userdetails.User(
+                    user.getEmail(),
+                    user.getPassword(),
+                    user.getStatus() == UserStatus.ACTIVE,  // enabled
+                    true,  // accountNonExpired
+                    true,  // credentialsNonExpired
+                    user.getStatus() != UserStatus.SUSPENDED,  // accountNonLocked
+                    getAuthorities(user)
+            );
+        } catch (Exception e) {
+            throw new UsernameNotFoundException("User not found with email: " + email, e);
+        }
     }
 
-    private Collection<? extends GrantedAuthority> getAuthorities(User user) {
+    private Collection<? extends GrantedAuthority> getAuthorities(InternalUserDto user) {
         return Collections.singletonList(new SimpleGrantedAuthority(user.getRole().name()));
     }
 }

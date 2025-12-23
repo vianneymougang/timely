@@ -1,15 +1,15 @@
 package com.timely.authservice.repository;
 
-import com.timely.authservice.model.RefreshToken;
-import com.timely.authservice.model.User;
+import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.UUID;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.UUID;
+import com.timely.authservice.model.RefreshToken;
 
 @Repository
 public interface RefreshTokenRepository extends JpaRepository<RefreshToken, UUID> {
@@ -17,7 +17,7 @@ public interface RefreshTokenRepository extends JpaRepository<RefreshToken, UUID
     
     @Modifying
     @Transactional
-    int deleteByUser(User user);
+    int deleteByUserId(UUID userId);
     
     @Modifying
     @Transactional

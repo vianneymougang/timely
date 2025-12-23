@@ -1,7 +1,8 @@
-package com.timely.authservice.dto;
+package com.timely.userservice.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -10,7 +11,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class RegisterTeacherRequest {
+public class CreateAdminRequest {
     @NotBlank(message = "Name is required")
     private String name;
 
@@ -25,17 +26,11 @@ public class RegisterTeacherRequest {
     @Size(min = 8, message = "Password must be at least 8 characters long")
     private String password;
 
-    private Integer telephoneNumber;
+    private Long telephoneNumber;
 
-    @NotBlank(message = "Matricule is required")
-    private String matricule;
+    @NotNull(message = "Access level is required")
+    private Integer accessLevel;
 
-    @NotBlank(message = "Grade is required")
-    private String grade;
-
-    @NotBlank(message = "Rank is required")
-    private String rank;
-
-    @NotBlank(message = "Hourly rate is required")
-    private String hourlyRate;
+    @NotNull(message = "Department is required")
+    private Integer department;
 }

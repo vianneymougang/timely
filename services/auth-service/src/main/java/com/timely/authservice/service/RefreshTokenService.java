@@ -1,17 +1,19 @@
 package com.timely.authservice.service;
 
-import com.timely.authservice.model.RefreshToken;
-import com.timely.authservice.model.User;
-import com.timely.authservice.repository.RefreshTokenRepository;
-import lombok.RequiredArgsConstructor;
+import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.lang.NonNull;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDateTime;
-import java.util.Optional;
-import java.util.UUID;
+import com.timely.authservice.model.RefreshToken;
+import com.timely.authservice.repository.RefreshTokenRepository;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
@@ -26,9 +28,9 @@ public class RefreshTokenService {
      * Create a new refresh token for a user
      */
     @Transactional
-    public RefreshToken createRefreshToken(User user) {
+    public RefreshToken createRefreshToken(UUID userId) {
         RefreshToken refreshToken = new RefreshToken();
-        refreshToken.setUser(user);
+        refreshToken.setUserId(userId);
         refreshToken.setToken(UUID.randomUUID().toString());
         refreshToken.setExpiryDate(LocalDateTime.now().plusSeconds(refreshTokenExpiration / 1000));
         refreshToken.setCreatedDate(LocalDateTime.now());
@@ -58,17 +60,15 @@ public class RefreshTokenService {
      * Delete all refresh tokens for a user (used during logout)
      */
     @Transactional
-    public int deleteByUserId(UUID userId) {
-        return refreshTokenRepository.deleteByUser(
-                refreshTokenRepository.findById(userId).orElseThrow().getUser()
-        );
+    public int deleteByUserId(@NonNull UUID userId) {
+        return refreshTokenRepository.deleteByUserId(userId);
     }
 
     /**
      * Delete a specific refresh token
      */
     @Transactional
-    public void deleteToken(RefreshToken token) {
+    public void deleteToken(@NonNull RefreshToken token) {
         refreshTokenRepository.delete(token);
     }
 
