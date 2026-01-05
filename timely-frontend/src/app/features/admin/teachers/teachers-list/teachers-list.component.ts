@@ -1,17 +1,17 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { TeacherService } from '../../../../core/services/teacher.service';
 import { Teacher } from '../../../../core/models/teacher.model';
 import { AuthService } from '../../../../core/services/auth.service';
+import { TeacherService } from '../../../../core/services/teacher.service';
 
 @Component({
   selector: 'app-teachers-list',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './teachers-list.component.html',
-  styleUrls: ['./teachers-list.component.scss']
+  styleUrls: ['./teachers-list.component.scss'],
 })
 export class TeachersListComponent implements OnInit {
   private teacherService = inject(TeacherService);
@@ -66,17 +66,17 @@ export class TeachersListComponent implements OnInit {
         } else if (error?.error?.error) {
           errorMessage = error.error.error;
         } else if (error?.status === 401) {
-          errorMessage = 'Vous devez être connecté en tant qu\'administrateur';
+          errorMessage = "Vous devez être connecté en tant qu'administrateur";
         } else if (error?.status === 403) {
           errorMessage = 'Accès refusé. Seuls les administrateurs peuvent voir les enseignants';
         } else if (error?.status === 500) {
-          errorMessage = 'Erreur serveur. Vérifiez que l\'auth-service est démarré';
+          errorMessage = "Erreur serveur. Vérifiez que l'auth-service est démarré";
         }
         alert('Erreur: ' + errorMessage);
       },
       complete: () => {
         this.isLoading.set(false);
-      }
+      },
     });
   }
 
@@ -88,9 +88,10 @@ export class TeachersListComponent implements OnInit {
     const query = this.searchQuery().toLowerCase();
     if (!query) return this.teachers();
 
-    return this.teachers().filter(teacher =>
-      `${teacher.firstName} ${teacher.lastName}`.toLowerCase().includes(query) ||
-      teacher.email.toLowerCase().includes(query)
+    return this.teachers().filter(
+      (teacher) =>
+        `${teacher.firstName} ${teacher.lastName}`.toLowerCase().includes(query) ||
+        teacher.email.toLowerCase().includes(query)
     );
   }
 
@@ -101,7 +102,6 @@ export class TeachersListComponent implements OnInit {
   addCourse() {
     this.openAddCourseModal();
   }
-
 
   showAddTeacherModal = signal(false);
   showAddCourseModal = signal(false);
@@ -122,7 +122,7 @@ export class TeachersListComponent implements OnInit {
   submitAddTeacher(form: any) {
     if (!form.valid) {
       // Afficher les erreurs de validation
-      Object.keys(form.controls).forEach(key => {
+      Object.keys(form.controls).forEach((key) => {
         const control = form.controls[key];
         if (control.invalid) {
           control.markAsTouched();
@@ -133,51 +133,76 @@ export class TeachersListComponent implements OnInit {
 
     this.isSubmittingTeacher.set(true);
     const data = form.value;
+    const userRole = data.userRole || 'teacher';
 
-    // Préparer la requête selon le format attendu par le backend
-    const registerRequest = {
-      name: data.firstName,
-      surname: data.lastName,
-      email: data.email,
-      password: data.password,
-      telephoneNumber: data.telephoneNumber ? parseInt(data.telephoneNumber) : undefined,
-      matricule: data.matricule,
-      grade: data.grade,
-      rank: data.rank,
-      hourlyRate: data.hourlyRate
-    };
+    if (userRole === 'admin') {
+      const registerRequest = {
+        name: data.firstName,
+        surname: data.lastName,
+        email: data.email,
+        telephoneNumber: data.telephoneNumber ? parseInt(data.telephoneNumber) : undefined,
+      };
 
-    this.authService.registerTeacher(registerRequest).subscribe({
-      next: () => {
-        this.isSubmittingTeacher.set(false);
-        this.closeModals();
-        this.loadTeachers();
-        // Optionnel: Afficher un message de succès
-        alert('Enseignant créé avec succès !');
-      },
-      error: (error) => {
-        this.isSubmittingTeacher.set(false);
-        console.error('Error creating teacher:', error);
-        // Afficher un message d'erreur plus détaillé
-        let errorMessage = 'Erreur lors de la création de l\'enseignant';
-        if (error?.error?.message) {
-          errorMessage = error.error.message;
-        } else if (error?.error?.error) {
-          errorMessage = error.error.error;
-        } else if (error?.message) {
-          errorMessage = error.message;
-        }
-        alert('Erreur: ' + errorMessage);
-      }
-    });
+      this.authService.registerAdmin(registerRequest).subscribe({
+        next: () => {
+          this.isSubmittingTeacher.set(false);
+          this.closeModals();
+          this.loadTeachers();
+          alert('Administrateur créé avec succès !');
+        },
+        error: (error) => {
+          this.isSubmittingTeacher.set(false);
+          console.error('Error creating admin:', error);
+          let errorMessage = "Erreur lors de la création de l'administrateur";
+          if (error?.error?.message) {
+            errorMessage = error.error.message;
+          } else if (error?.error?.error) {
+            errorMessage = error.error.error;
+          } else if (error?.message) {
+            errorMessage = error.message;
+          }
+          alert('Erreur: ' + errorMessage);
+        },
+      });
+    } else {
+      const registerRequest = {
+        name: data.firstName,
+        surname: data.lastName,
+        email: data.email,
+        telephoneNumber: data.telephoneNumber ? parseInt(data.telephoneNumber) : undefined,
+        grade: data.grade,
+        rank: data.rank,
+        hourlyRate: data.hourlyRate,
+      };
+
+      this.authService.registerTeacher(registerRequest).subscribe({
+        next: () => {
+          this.isSubmittingTeacher.set(false);
+          this.closeModals();
+          this.loadTeachers();
+          alert('Enseignant créé avec succès !');
+        },
+        error: (error) => {
+          this.isSubmittingTeacher.set(false);
+          console.error('Error creating teacher:', error);
+          let errorMessage = "Erreur lors de la création de l'enseignant";
+          if (error?.error?.message) {
+            errorMessage = error.error.message;
+          } else if (error?.error?.error) {
+            errorMessage = error.error.error;
+          } else if (error?.message) {
+            errorMessage = error.message;
+          }
+          alert('Erreur: ' + errorMessage);
+        },
+      });
+    }
   }
 
   submitAddCourse(form: any) {
     if (!form.valid) return;
 
-    console.log("Course added:", form.value);
+    console.log('Course added:', form.value);
     this.closeModals();
   }
-
-
 }

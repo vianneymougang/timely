@@ -8,6 +8,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.timely.userservice.config.RabbitMQConfig;
 import com.timely.userservice.dto.AdminDto;
 import com.timely.userservice.dto.CreateAdminRequest;
 import com.timely.userservice.dto.CreateTeacherRequest;
@@ -15,6 +16,7 @@ import com.timely.userservice.dto.InternalUserDto;
 import com.timely.userservice.dto.TeacherDto;
 import com.timely.userservice.dto.UpdateUserRequest;
 import com.timely.userservice.dto.UserDto;
+import com.timely.userservice.event.UserCreatedEvent;
 import com.timely.userservice.exception.EmailAlreadyExistsException;
 import com.timely.userservice.exception.MatriculeAlreadyExistsException;
 import com.timely.userservice.exception.UserNotFoundException;
@@ -26,6 +28,8 @@ import com.timely.userservice.model.User;
 import com.timely.userservice.model.UserStatus;
 import com.timely.userservice.repository.TeacherRepository;
 import com.timely.userservice.repository.UserRepository;
+import com.timely.userservice.util.PasswordGenerator;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 import lombok.RequiredArgsConstructor;
 
@@ -38,6 +42,7 @@ public class UserServiceImpl implements UserService {
     private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
     private final UserCodeGeneratorService userCodeGeneratorService;
+    private final RabbitTemplate rabbitTemplate;
 
     @Override
     @Transactional
@@ -47,9 +52,12 @@ public class UserServiceImpl implements UserService {
             throw new EmailAlreadyExistsException("Email already exists: " + request.getEmail());
         }
 
+        // Generate secure random password
+        String temporaryPassword = PasswordGenerator.generatePassword(12);
+
         // Create teacher entity
         Teacher teacher = userMapper.toTeacherEntity(request);
-        teacher.setPassword(passwordEncoder.encode(request.getPassword()));
+        teacher.setPassword(passwordEncoder.encode(temporaryPassword));
         teacher.setRole(Role.ROLE_TEACHER);
         
         // Auto-generate matricule
@@ -57,6 +65,20 @@ public class UserServiceImpl implements UserService {
 
         // Save teacher
         Teacher savedTeacher = teacherRepository.save(teacher);
+
+        // Publish event to RabbitMQ for email notification
+        UserCreatedEvent event = new UserCreatedEvent(
+            savedTeacher.getEmail(),
+            temporaryPassword,
+            savedTeacher.getName(),
+            savedTeacher.getSurname(),
+            "TEACHER"
+        );
+        rabbitTemplate.convertAndSend(
+            RabbitMQConfig.USER_EXCHANGE,
+            RabbitMQConfig.USER_CREATED_ROUTING_KEY,
+            event
+        );
 
         return userMapper.toTeacherDto(savedTeacher);
     }
@@ -69,13 +91,30 @@ public class UserServiceImpl implements UserService {
             throw new EmailAlreadyExistsException("Email already exists: " + request.getEmail());
         }
 
+        // Generate secure random password
+        String temporaryPassword = PasswordGenerator.generatePassword(12);
+
         // Create admin entity
         Admin admin = userMapper.toAdminEntity(request);
-        admin.setPassword(passwordEncoder.encode(request.getPassword()));
+        admin.setPassword(passwordEncoder.encode(temporaryPassword));
         admin.setRole(Role.ROLE_ADMIN);
 
         // Save admin
         Admin savedAdmin = (Admin) userRepository.save(admin);
+
+        // Publish event to RabbitMQ for email notification
+        UserCreatedEvent event = new UserCreatedEvent(
+            savedAdmin.getEmail(),
+            temporaryPassword,
+            savedAdmin.getName(),
+            savedAdmin.getSurname(),
+            "ADMIN"
+        );
+        rabbitTemplate.convertAndSend(
+            RabbitMQConfig.USER_EXCHANGE,
+            RabbitMQConfig.USER_CREATED_ROUTING_KEY,
+            event
+        );
 
         return userMapper.toAdminDto(savedAdmin);
     }

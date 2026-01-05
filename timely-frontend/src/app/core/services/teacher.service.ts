@@ -1,8 +1,8 @@
-import { Injectable, inject, signal } from '@angular/core';
-import { delay, Observable, of, tap, map } from 'rxjs';
+import { inject, Injectable, signal } from '@angular/core';
+import { delay, map, Observable, of, tap } from 'rxjs';
+import { MOCK_TEACHERS } from '../data/mock-data';
 import { Teacher } from '../models/teacher.model';
 import { ApiService } from './api.service';
-import { MOCK_TEACHERS } from '../data/mock-data';
 
 /**
  * Interface pour la réponse du backend
@@ -21,7 +21,7 @@ interface TeacherResponseDTO {
 }
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class TeacherService {
   private apiService = inject(ApiService);
@@ -55,7 +55,7 @@ export class TeacherService {
       assignedCourses: 0, // À implémenter si disponible dans le backend
       hourlyLoad: {
         used: 0, // À calculer ou récupérer du backend
-        total: 24
+        total: 24,
       },
       availability: {
         monday: '8h-17h',
@@ -63,7 +63,7 @@ export class TeacherService {
         wednesday: '8h-17h',
         thursday: '8h-17h',
         friday: '8h-17h',
-        saturday: '-'
+        saturday: '-',
       },
       schedule: {
         monday: '-',
@@ -71,38 +71,33 @@ export class TeacherService {
         wednesday: '-',
         thursday: '-',
         friday: '-',
-        saturday: '-'
+        saturday: '-',
       },
-      status: status
+      status: status,
     };
   }
 
   getTeachers(): Observable<Teacher[]> {
-    return this.apiService.get<TeacherResponseDTO[]>('/auth/teachers').pipe(
-      map(dtos => dtos.map(dto => this.mapToTeacher(dto))),
-      tap(teachers => this.teachers.set(teachers))
+    return this.apiService.get<TeacherResponseDTO[]>('/users/teachers').pipe(
+      map((dtos) => dtos.map((dto) => this.mapToTeacher(dto))),
+      tap((teachers) => this.teachers.set(teachers))
     );
   }
 
   getTeacherById(id: string): Observable<Teacher> {
-    return this.apiService.get<TeacherResponseDTO>(`/auth/teachers/${id}`).pipe(
-      map(dto => this.mapToTeacher(dto)),
-      tap(teacher => this.selectedTeacher.set(teacher))
+    return this.apiService.get<TeacherResponseDTO>(`/users/teachers/${id}`).pipe(
+      map((dto) => this.mapToTeacher(dto)),
+      tap((teacher) => this.selectedTeacher.set(teacher))
     );
-  }
-
-  createTeacher(teacher: Partial<Teacher>): Observable<Teacher> {
-    // Cette méthode n'est plus utilisée, on utilise AuthService.registerTeacher à la place
-    return this.apiService.post<Teacher>('/api/auth/register/teacher', teacher);
   }
 
   updateTeacher(id: string, teacher: Partial<Teacher>): Observable<Teacher> {
     // À implémenter si nécessaire dans le backend
-    return this.apiService.put<Teacher>(`/api/auth/teachers/${id}`, teacher);
+    return this.apiService.put<Teacher>(`/users/${id}`, teacher);
   }
 
   deleteTeacher(id: string): Observable<void> {
-    return this.apiService.delete<void>(`/auth/teachers/${id}`);
+    return this.apiService.delete<void>(`/users/${id}`);
   }
 
   getMockTeachers(): Observable<Teacher[]> {

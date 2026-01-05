@@ -1,13 +1,12 @@
-import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Injectable, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, throwError } from 'rxjs';
-import { tap, map, catchError } from 'rxjs/operators';
-import { User } from '../models/user.model';
+import { catchError, map, tap } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 import { AuthResponse } from '../models/auth-response.model';
 import { LoginRequest } from '../models/login-request.model';
-import { environment } from '../../../environments/environment';
-import {RegisterTeacherRequest} from '../models/user.model';
+import { RegisterAdminRequest, RegisterTeacherRequest, User } from '../models/user.model';
 import { ApiService } from './api.service';
 
 @Injectable({
@@ -16,7 +15,7 @@ import { ApiService } from './api.service';
 export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
-  private apiService = inject(ApiService)
+  private apiService = inject(ApiService);
 
   currentUser = signal<User | null>(null);
   isAuthenticated = signal<boolean>(false);
@@ -62,7 +61,7 @@ export class AuthService {
       email: authResponse.email,
       role: this.normalizeRole(authResponse.role),
       status: authResponse.status,
-      name: authResponse.name
+      name: authResponse.name,
     };
   }
   /**
@@ -85,12 +84,27 @@ export class AuthService {
         const user: User = this.mapAuthResponseToUser(authResponse);
         const response = {
           user,
-          token: authResponse.accessToken
+          token: authResponse.accessToken,
         };
 
         // Note: On ne connecte pas automatiquement l'admin après l'enregistrement
         // L'admin reste connecté avec son propre compte
         return response;
+      }),
+      catchError((error) => {
+        return throwError(() => error);
+      })
+    );
+  }
+
+  /**
+   * Enregistrer un nouvel admin (Admin uniquement)
+   */
+  registerAdmin(request: RegisterAdminRequest): Observable<{ user: User; token: string }> {
+    return this.apiService.post<AuthResponse>('/users/admin', request).pipe(
+      map((authResponse) => {
+        const user: User = this.mapAuthResponseToUser(authResponse);
+        return { user, token: authResponse.accessToken };
       }),
       catchError((error) => {
         return throwError(() => error);
@@ -238,5 +252,47 @@ export class AuthService {
 
   isTeacher(): boolean {
     return this.currentUser()?.role === 'teacher';
+  }
+
+  /**
+   * Request password reset - sends email with reset link
+   */
+  forgotPassword(email: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.AUTH_API}/forgot-password`, { email }).pipe(
+      catchError((error) => {
+        console.error('Forgot password error:', error);
+        return throwError(
+          () => new Error(error.error?.message || "Erreur lors de l'envoi de l'email")
+        );
+      })
+    );
+  }
+
+  /**
+   * Validate password reset token
+   */
+  validateResetToken(token: string): Observable<{ valid: boolean }> {
+    return this.http.get<{ valid: boolean }>(`${this.AUTH_API}/validate-reset-token/${token}`).pipe(
+      catchError((error) => {
+        console.error('Token validation error:', error);
+        return throwError(() => new Error(error.error?.message || 'Token invalide ou expiré'));
+      })
+    );
+  }
+
+  /**
+   * Reset password with token
+   */
+  resetPassword(token: string, newPassword: string): Observable<{ message: string }> {
+    return this.http
+      .post<{ message: string }>(`${this.AUTH_API}/reset-password`, { token, newPassword })
+      .pipe(
+        catchError((error) => {
+          console.error('Reset password error:', error);
+          return throwError(
+            () => new Error(error.error?.message || 'Erreur lors de la réinitialisation')
+          );
+        })
+      );
   }
 }

@@ -75,6 +75,7 @@ public class UserController {
      * Get all teachers
      */
     @GetMapping("/teachers")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<TeacherDto>> getAllTeachers() {
         List<TeacherDto> teachers = userService.getAllTeachers();
         return ResponseEntity.ok(teachers);

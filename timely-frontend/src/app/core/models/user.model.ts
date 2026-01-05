@@ -27,10 +27,15 @@ export interface RegisterTeacherRequest {
   name: string;
   surname: string;
   email: string;
-  password: string;
   telephoneNumber?: number;
-  matricule: string;
   grade: string;
   rank: string;
   hourlyRate: string;
+}
+
+export interface RegisterAdminRequest {
+  name: string;
+  surname: string;
+  email: string;
+  telephoneNumber?: number;
 }

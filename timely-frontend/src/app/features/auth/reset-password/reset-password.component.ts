@@ -1,39 +1,59 @@
-import { Component, signal, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router, RouterModule } from '@angular/router';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-reset-password',
   standalone: true,
   imports: [CommonModule, FormsModule, RouterModule],
   templateUrl: './reset-password.component.html',
-  styleUrls: ['./reset-password.component.scss']
+  styleUrls: ['./reset-password.component.scss'],
 })
 export class ResetPasswordComponent implements OnInit {
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
+  private authService = inject(AuthService);
 
-  email = signal('');
-  code = signal('');
+  token = signal('');
   newPassword = signal('');
   confirmPassword = signal('');
   errorMessage = signal('');
   isLoading = signal(false);
   showPassword = signal(false);
   showConfirmPassword = signal(false);
+  isValidatingToken = signal(true);
 
   ngOnInit(): void {
-    // Récupérer l'email et le code depuis l'état de navigation
-    const navigation = this.router.getCurrentNavigation();
-    const state = navigation?.extras?.state || history.state;
+    // Get token from URL query params (e.g., ?token=abc123)
+    this.route.queryParams.subscribe((params) => {
+      const token = params['token'];
+      if (token) {
+        this.token.set(token);
+        this.validateToken(token);
+      } else {
+        this.errorMessage.set('Token manquant. Veuillez utiliser le lien reçu par email.');
+        this.isValidatingToken.set(false);
+      }
+    });
+  }
 
-    if (state && state['email'] && state['code']) {
-      this.email.set(state['email']);
-      this.code.set(state['code']);
-    } else {
-      // Si pas d'email/code, rediriger vers forgot-password
-      this.router.navigate(['/auth/forgot-password']);
-    }
+  validateToken(token: string): void {
+    this.authService.validateResetToken(token).subscribe({
+      next: (response) => {
+        this.isValidatingToken.set(false);
+        if (!response.valid) {
+          this.errorMessage.set('Le lien de réinitialisation est invalide ou a expiré.');
+        }
+      },
+      error: (error) => {
+        this.isValidatingToken.set(false);
+        this.errorMessage.set(
+          error.message || 'Le lien de réinitialisation est invalide ou a expiré.'
+        );
+      },
+    });
   }
 
   onSubmit(): void {
@@ -57,31 +77,22 @@ export class ResetPasswordComponent implements OnInit {
 
     this.isLoading.set(true);
 
-    // TODO: Appel API pour réinitialiser le mot de passe
-    /*
-    this.authService.resetPassword(
-      this.email(),
-      this.code(),
-      this.newPassword()
-    ).subscribe({
+    this.authService.resetPassword(this.token(), this.newPassword()).subscribe({
       next: () => {
-        this.router.navigate(['/auth/login']);
+        this.isLoading.set(false);
+        // Redirect to login with success message
+        this.router.navigate(['/auth/login'], {
+          state: {
+            message:
+              'Mot de passe réinitialisé avec succès ! Vous pouvez maintenant vous connecter.',
+          },
+        });
       },
       error: (error) => {
-        this.errorMessage.set('Erreur lors de la réinitialisation');
+        this.errorMessage.set(error.message || 'Erreur lors de la réinitialisation');
         this.isLoading.set(false);
-      }
+      },
     });
-    */
-
-    // Simuler la réinitialisation (à remplacer par l'appel API)
-    setTimeout(() => {
-      this.isLoading.set(false);
-      // Rediriger vers login avec message de succès
-      this.router.navigate(['/auth/login'], {
-        state: { message: 'Mot de passe réinitialisé avec succès !' }
-      });
-    }, 1000);
   }
 
   togglePasswordVisibility(): void {
