@@ -7,6 +7,8 @@ import { User } from '../models/user.model';
 import { AuthResponse } from '../models/auth-response.model';
 import { LoginRequest } from '../models/login-request.model';
 import { environment } from '../../../environments/environment';
+import {RegisterTeacherRequest} from '../models/user.model';
+import { ApiService } from './api.service';
 
 @Injectable({
   providedIn: 'root',
@@ -14,6 +16,7 @@ import { environment } from '../../../environments/environment';
 export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
+  private apiService = inject(ApiService)
 
   currentUser = signal<User | null>(null);
   isAuthenticated = signal<boolean>(false);
@@ -40,6 +43,57 @@ export class AuthService {
         return throwError(
           () => new Error(error.error?.message || 'Email ou mot de passe incorrect')
         );
+      })
+    );
+  }
+
+  /**
+   * Convertir AuthResponse en User
+   */
+  private mapAuthResponseToUser(authResponse: AuthResponse): User {
+    // Le backend retourne 'name' qui contient le nom complet
+    // On peut le splitter ou utiliser directement
+    const nameParts = authResponse.name?.split(' ') || [];
+    const firstName = nameParts[0] || '';
+    const lastName = nameParts.slice(1).join(' ') || '';
+
+    return {
+      id: authResponse.userId,
+      email: authResponse.email,
+      role: this.normalizeRole(authResponse.role),
+      status: authResponse.status,
+      name: authResponse.name
+    };
+  }
+  /**
+   * Normaliser le rôle (ROLE_ADMIN -> admin, ROLE_TEACHER -> teacher)
+   */
+  private normalizeRole(role: string): 'admin' | 'teacher' {
+    if (role === 'ROLE_ADMIN' || role === 'admin') {
+      return 'admin';
+    }
+    return 'teacher';
+  }
+
+  /**
+   * Enregistrer un nouvel enseignant (Admin uniquement)
+   */
+  registerTeacher(request: RegisterTeacherRequest): Observable<{ user: User; token: string }> {
+    return this.apiService.post<AuthResponse>('/auth/register/teacher', request).pipe(
+      map((authResponse) => {
+        // Convertir AuthResponse en User
+        const user: User = this.mapAuthResponseToUser(authResponse);
+        const response = {
+          user,
+          token: authResponse.accessToken
+        };
+
+        // Note: On ne connecte pas automatiquement l'admin après l'enregistrement
+        // L'admin reste connecté avec son propre compte
+        return response;
+      }),
+      catchError((error) => {
+        return throwError(() => error);
       })
     );
   }

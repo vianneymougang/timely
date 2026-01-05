@@ -1,6 +1,8 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { adminGuard, teacherGuard } from './core/guards/role.guard';
+import { AdminLayoutComponent } from './layouts/admin-layout/admin-layout.component';
+import { TeacherLayoutComponent } from './layouts/teacher-layout/teacher-layout.component';
 
 export const routes: Routes = [
   {
@@ -13,10 +15,26 @@ export const routes: Routes = [
     loadComponent: () => import('./features/auth/login/login.component')
       .then(m => m.LoginComponent)
   },
+  {
+    path: 'auth/forgot-password',
+    loadComponent: () => import('./features/auth/forgot-password/forgot-password.component')
+      .then(m => m.ForgotPasswordComponent)
+  },
+  {
+    path: 'auth/verify-code',
+    loadComponent: () => import('./features/auth/verify-code/verify-code.component')
+      .then(m => m.VerifyCodeComponent)
+  },
+  {
+    path: 'auth/reset-password',
+    loadComponent: () => import('./features/auth/reset-password/reset-password.component')
+      .then(m => m.ResetPasswordComponent)
+  },
 
-  // Routes Admin
+  // Routes Admin avec Layout
   {
     path: 'admin',
+    component: AdminLayoutComponent,
     canActivate: [authGuard, adminGuard],
     children: [
       {
@@ -57,9 +75,10 @@ export const routes: Routes = [
     ]
   },
 
-  // Routes Teacher
+  // Routes Teacher avec Layout
   {
     path: 'teacher',
+    component: TeacherLayoutComponent,
     canActivate: [authGuard, teacherGuard],
     children: [
       {
@@ -78,9 +97,14 @@ export const routes: Routes = [
           .then(m => m.TeacherAvailabilityComponent)
       },
       {
-        path: 'courses',
-        loadComponent: () => import('./features/teacher/courses/teacher-courses.component')
-          .then(m => m.TeacherCoursesComponent)
+        path: 'notifications',
+        loadComponent: () => import('./features/teacher/notifications/teacher-notifications.component')
+          .then(m => m.TeacherNotificationsComponent)
+      },
+      {
+        path: 'profile',
+        loadComponent: () => import('./features/teacher/profile/teacher-profile.component')
+          .then(m => m.TeacherProfileComponent)
       }
     ]
   },
