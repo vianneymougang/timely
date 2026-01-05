@@ -1,4 +1,4 @@
-package com.timely.authservice.model;
+package com.timely.userservice.model;
 
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -18,5 +18,4 @@ public class Admin extends User {
 
     @NotNull
     private Integer department;
-
 }

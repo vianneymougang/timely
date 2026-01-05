@@ -1,30 +1,26 @@
 package com.timely.authservice.service;
 
-import com.timely.authservice.dto.AuthResponse;
-import com.timely.authservice.dto.LoginRequest;
-import com.timely.authservice.dto.RegisterTeacherRequest;
-import com.timely.authservice.model.RefreshToken;
-import com.timely.authservice.model.Role;
-import com.timely.authservice.model.Teacher;
-import com.timely.authservice.model.User;
-import com.timely.authservice.model.UserStatus;
-import com.timely.authservice.repository.UserRepository;
-import com.timely.authservice.util.JwtUtil;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.timely.authservice.client.UserServiceClient;
+import com.timely.authservice.dto.AuthResponse;
+import com.timely.authservice.dto.InternalUserDto;
+import com.timely.authservice.dto.LoginRequest;
+import com.timely.authservice.model.RefreshToken;
+import com.timely.authservice.util.JwtUtil;
+
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class AuthService {
 
-    private final UserRepository userRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final UserServiceClient userServiceClient;
     private final JwtUtil jwtUtil;
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenService refreshTokenService;
@@ -43,18 +39,12 @@ public class AuthService {
         // Load user details
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
         
-        // Find user entity
-        User user = userRepository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new RuntimeException("User not found"));
-
-        // Check if user is active
-        if (user.getStatus() != UserStatus.ACTIVE) {
-            throw new RuntimeException("Account is not active. Status: " + user.getStatus());
-        }
+        // Find user from user-service
+        InternalUserDto user = userServiceClient.findByEmail(request.getEmail());
 
         // Generate tokens
         String accessToken = jwtUtil.generateAccessToken(userDetails);
-        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user);
+        RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
 
         // Build response
         return AuthResponse.builder()
@@ -69,50 +59,6 @@ public class AuthService {
     }
 
     /**
-     * Register a new teacher (Admin-only operation)
-     */
-    @Transactional
-    public AuthResponse registerTeacher(RegisterTeacherRequest request) {
-        // Check if email already exists
-        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
-            throw new RuntimeException("Email already exists");
-        }
-
-        // Create new teacher
-        Teacher teacher = new Teacher();
-        teacher.setName(request.getName());
-        teacher.setSurname(request.getSurname());
-        teacher.setEmail(request.getEmail());
-        teacher.setPassword(passwordEncoder.encode(request.getPassword()));
-        teacher.setTelephoneNumber(request.getTelephoneNumber());
-        teacher.setRole(Role.ROLE_TEACHER);
-        teacher.setStatus(UserStatus.ACTIVE);
-        teacher.setMatricule(request.getMatricule());
-        teacher.setGrade(request.getGrade());
-        teacher.setRank(request.getRank());
-        teacher.setHourlyRate(request.getHourlyRate());
-
-        // Save teacher
-        Teacher savedTeacher = (Teacher) userRepository.save(teacher);
-
-        // Generate tokens
-        UserDetails userDetails = userDetailsService.loadUserByUsername(savedTeacher.getEmail());
-        String accessToken = jwtUtil.generateAccessToken(userDetails);
-        RefreshToken refreshToken = refreshTokenService.createRefreshToken(savedTeacher);
-
-        // Build response
-        return AuthResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken.getToken())
-                .userId(savedTeacher.getId())
-                .email(savedTeacher.getEmail())
-                .role(savedTeacher.getRole())
-                .name(savedTeacher.getName() + " " + savedTeacher.getSurname())
-                .status(savedTeacher.getStatus())
-                .build();
-    }
-
-    /**
      * Refresh access token using refresh token
      */
     @Transactional
@@ -123,8 +69,8 @@ public class AuthService {
         // Verify expiration
         refreshTokenService.verifyExpiration(refreshToken);
 
-        // Get user
-        User user = refreshToken.getUser();
+        // Get user from user-service
+        InternalUserDto user = userServiceClient.findById(refreshToken.getUserId());
 
         // Generate new access token
         UserDetails userDetails = userDetailsService.loadUserByUsername(user.getEmail());
@@ -132,7 +78,7 @@ public class AuthService {
 
         // Create new refresh token (token rotation)
         refreshTokenService.deleteToken(refreshToken);
-        RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user);
+        RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user.getId());
 
         // Build response
         return AuthResponse.builder()
