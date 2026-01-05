@@ -88,9 +88,29 @@ public class UserController {
         UserDto updated = userService.updateUser(id, request);
         return ResponseEntity.ok(updated);
     }
+    
+    /**
+     * Block user (Admin-only) - prevents login
+     */
+    @PutMapping("/{id}/block")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserDto> blockUser(@PathVariable UUID id) {
+        UserDto user = userService.blockUser(id);
+        return ResponseEntity.ok(user);
+    }
+    
+    /**
+     * Unblock user (Admin-only) - restores login access
+     */
+    @PutMapping("/{id}/unblock")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<UserDto> unblockUser(@PathVariable UUID id) {
+        UserDto user = userService.unblockUser(id);
+        return ResponseEntity.ok(user);
+    }
 
     /**
-     * Delete user (Admin-only)
+     * Delete user (Admin-only) - performs soft delete by blocking
      */
     @DeleteMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")

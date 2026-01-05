@@ -27,13 +27,18 @@ public class CustomUserDetailsService implements UserDetailsService {
         try {
             InternalUserDto user = userServiceClient.findByEmail(email);
 
+            // BLOCKED users cannot authenticate
+            // ACTIVE users are enabled, SUSPENDED/INACTIVE users are disabled but not locked
+            boolean enabled = (user.getStatus() == UserStatus.ACTIVE);
+            boolean accountNonLocked = (user.getStatus() != UserStatus.BLOCKED && user.getStatus() != UserStatus.SUSPENDED);
+
             return new org.springframework.security.core.userdetails.User(
                     user.getEmail(),
                     user.getPassword(),
-                    user.getStatus() == UserStatus.ACTIVE,  // enabled
+                    enabled,  // enabled only if ACTIVE
                     true,  // accountNonExpired
                     true,  // credentialsNonExpired
-                    user.getStatus() != UserStatus.SUSPENDED,  // accountNonLocked
+                    accountNonLocked,  // accountNonLocked (false if BLOCKED or SUSPENDED)
                     getAuthorities(user)
             );
         } catch (Exception e) {
