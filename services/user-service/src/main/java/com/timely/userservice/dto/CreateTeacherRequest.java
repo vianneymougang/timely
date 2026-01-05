@@ -27,9 +27,6 @@ public class CreateTeacherRequest {
 
     private Long telephoneNumber;
 
-    @NotBlank(message = "Matricule is required")
-    private String matricule;
-
     @NotBlank(message = "Grade is required")
     private String grade;
 

@@ -5,13 +5,17 @@ import java.util.UUID;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.timely.userservice.dto.InternalUserDto;
+import com.timely.userservice.dto.UpdatePasswordRequest;
 import com.timely.userservice.service.UserService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -46,5 +50,16 @@ public class InternalUserController {
     public ResponseEntity<Boolean> existsByEmail(@RequestParam String email) {
         boolean exists = userService.existsByEmail(email);
         return ResponseEntity.ok(exists);
+    }
+    
+    /**
+     * Update user password (for auth-service password reset)
+     */
+    @PutMapping("/{id}/password")
+    public ResponseEntity<Void> updatePassword(
+            @PathVariable UUID id, 
+            @Valid @RequestBody UpdatePasswordRequest request) {
+        userService.updatePassword(id, request.getNewPassword());
+        return ResponseEntity.ok().build();
     }
 }

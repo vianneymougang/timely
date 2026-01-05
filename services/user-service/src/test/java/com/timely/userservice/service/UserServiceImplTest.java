@@ -21,7 +21,6 @@ import com.timely.userservice.dto.InternalUserDto;
 import com.timely.userservice.dto.TeacherDto;
 import com.timely.userservice.dto.UserDto;
 import com.timely.userservice.exception.EmailAlreadyExistsException;
-import com.timely.userservice.exception.MatriculeAlreadyExistsException;
 import com.timely.userservice.exception.UserNotFoundException;
 import com.timely.userservice.mapper.UserMapper;
 import com.timely.userservice.model.Admin;
@@ -44,6 +43,9 @@ class UserServiceImplTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
+    
+    @Mock
+    private UserCodeGeneratorService userCodeGeneratorService;
 
     @InjectMocks
     private UserServiceImpl userService;
@@ -53,7 +55,7 @@ class UserServiceImplTest {
         // Given
         CreateTeacherRequest request = new CreateTeacherRequest(
                 "John", "Doe", "john.doe@timely.com", "password123",
-                123456L, "MAT001", "Professor", "Senior", "50"
+                123456L, "Professor", "Senior", "50"
         );
         
         Teacher teacher = new Teacher();
@@ -66,7 +68,7 @@ class UserServiceImplTest {
         expectedDto.setEmail(request.getEmail());
 
         when(userRepository.existsByEmail(request.getEmail())).thenReturn(false);
-        when(teacherRepository.existsByMatricule(request.getMatricule())).thenReturn(false);
+        when(userCodeGeneratorService.generateTeacherCode()).thenReturn("T000001");
         when(userMapper.toTeacherEntity(request)).thenReturn(teacher);
         when(passwordEncoder.encode(anyString())).thenReturn("encodedPassword");
         when(teacherRepository.save(any(Teacher.class))).thenReturn(teacher);
@@ -79,7 +81,7 @@ class UserServiceImplTest {
         assertThat(result).isNotNull();
         assertThat(result.getEmail()).isEqualTo(request.getEmail());
         verify(userRepository).existsByEmail(request.getEmail());
-        verify(teacherRepository).existsByMatricule(request.getMatricule());
+        verify(userCodeGeneratorService).generateTeacherCode();
         verify(teacherRepository).save(teacher);
     }
 
@@ -88,7 +90,7 @@ class UserServiceImplTest {
         // Given
         CreateTeacherRequest request = new CreateTeacherRequest(
                 "John", "Doe", "existing@timely.com", "password123",
-                123456L, "MAT001", "Professor", "Senior", "50"
+                123456L, "Professor", "Senior", "50"
         );
 
         when(userRepository.existsByEmail(request.getEmail())).thenReturn(true);
@@ -102,24 +104,7 @@ class UserServiceImplTest {
         verify(teacherRepository, never()).save(any());
     }
 
-    @Test
-    void createTeacher_WhenMatriculeExists_ShouldThrowException() {
-        // Given
-        CreateTeacherRequest request = new CreateTeacherRequest(
-                "John", "Doe", "john.doe@timely.com", "password123",
-                123456L, "MAT001", "Professor", "Senior", "50"
-        );
 
-        when(userRepository.existsByEmail(request.getEmail())).thenReturn(false);
-        when(teacherRepository.existsByMatricule(request.getMatricule())).thenReturn(true);
-
-        // When/Then
-        assertThatThrownBy(() -> userService.createTeacher(request))
-                .isInstanceOf(MatriculeAlreadyExistsException.class)
-                .hasMessage("Matricule already exists: MAT001");
-        
-        verify(teacherRepository, never()).save(any());
-    }
 
     @Test
     void createAdmin_ShouldCreateAdminSuccessfully() {
@@ -217,31 +202,90 @@ class UserServiceImplTest {
     }
 
     @Test
-    void deleteUser_WhenUserExists_ShouldDeleteSuccessfully() {
+    void deleteUser_WhenUserExists_ShouldBlockUser() {
         // Given
         UUID userId = UUID.randomUUID();
-        when(userRepository.existsById(userId)).thenReturn(true);
+        Teacher teacher = new Teacher();
+        teacher.setId(userId);
+        teacher.setEmail("teacher@timely.com");
+        
+        TeacherDto blockedDto = new TeacherDto();
+        blockedDto.setId(userId);
+
+        when(userRepository.findById(userId)).thenReturn(Optional.of(teacher));
+        when(userRepository.save(any(Teacher.class))).thenReturn(teacher);
+        when(userMapper.toTeacherDto(teacher)).thenReturn(blockedDto);
 
         // When
         userService.deleteUser(userId);
 
         // Then
-        verify(userRepository).existsById(userId);
-        verify(userRepository).deleteById(userId);
+        verify(userRepository).findById(userId);
+        verify(userRepository).save(teacher);
+        verify(userRepository, never()).deleteById(userId); // Should NOT physically delete
     }
 
     @Test
     void deleteUser_WhenUserDoesNotExist_ShouldThrowException() {
         // Given
         UUID userId = UUID.randomUUID();
-        when(userRepository.existsById(userId)).thenReturn(false);
+        when(userRepository.findById(userId)).thenReturn(Optional.empty());
 
         // When/Then
         assertThatThrownBy(() -> userService.deleteUser(userId))
                 .isInstanceOf(UserNotFoundException.class)
                 .hasMessageContaining("User not found with id");
         
+        verify(userRepository, never()).save(any());
         verify(userRepository, never()).deleteById(any());
+    }
+    
+    @Test
+    void blockUser_ShouldBlockUserSuccessfully() {
+        // Given
+        UUID userId = UUID.randomUUID();
+        Teacher teacher = new Teacher();
+        teacher.setId(userId);
+        teacher.setEmail("teacher@timely.com");
+        
+        TeacherDto blockedDto = new TeacherDto();
+        blockedDto.setId(userId);
+        
+        when(userRepository.findById(userId)).thenReturn(Optional.of(teacher));
+        when(userRepository.save(any(Teacher.class))).thenReturn(teacher);
+        when(userMapper.toTeacherDto(teacher)).thenReturn(blockedDto);
+        
+        // When
+        UserDto result = userService.blockUser(userId);
+        
+        // Then
+        assertThat(result).isNotNull();
+        verify(userRepository).findById(userId);
+        verify(userRepository).save(teacher);
+    }
+    
+    @Test
+    void unblockUser_ShouldUnblockUserSuccessfully() {
+        // Given
+        UUID userId = UUID.randomUUID();
+        Admin admin = new Admin();
+        admin.setId(userId);
+        admin.setEmail("admin@timely.com");
+        
+        AdminDto unblockedDto = new AdminDto();
+        unblockedDto.setId(userId);
+        
+        when(userRepository.findById(userId)).thenReturn(Optional.of(admin));
+        when(userRepository.save(any(Admin.class))).thenReturn(admin);
+        when(userMapper.toAdminDto(admin)).thenReturn(unblockedDto);
+        
+        // When
+        UserDto result = userService.unblockUser(userId);
+        
+        // Then
+        assertThat(result).isNotNull();
+        verify(userRepository).findById(userId);
+        verify(userRepository).save(admin);
     }
 
     @Test
