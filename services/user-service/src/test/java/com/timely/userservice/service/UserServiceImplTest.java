@@ -28,6 +28,7 @@ import com.timely.userservice.model.Role;
 import com.timely.userservice.model.Teacher;
 import com.timely.userservice.repository.TeacherRepository;
 import com.timely.userservice.repository.UserRepository;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
 
 @ExtendWith(MockitoExtension.class)
 class UserServiceImplTest {
@@ -43,9 +44,12 @@ class UserServiceImplTest {
 
     @Mock
     private PasswordEncoder passwordEncoder;
-    
+
     @Mock
     private UserCodeGeneratorService userCodeGeneratorService;
+
+    @Mock
+    private RabbitTemplate rabbitTemplate;
 
     @InjectMocks
     private UserServiceImpl userService;
@@ -54,7 +58,7 @@ class UserServiceImplTest {
     void createTeacher_ShouldCreateTeacherSuccessfully() {
         // Given
         CreateTeacherRequest request = new CreateTeacherRequest(
-                "John", "Doe", "john.doe@timely.com", "password123",
+                "John", "Doe", "john.doe@timely.com",
                 123456L, "Professor", "Senior", "50"
         );
         
@@ -89,7 +93,7 @@ class UserServiceImplTest {
     void createTeacher_WhenEmailExists_ShouldThrowException() {
         // Given
         CreateTeacherRequest request = new CreateTeacherRequest(
-                "John", "Doe", "existing@timely.com", "password123",
+                "John", "Doe", "existing@timely.com",
                 123456L, "Professor", "Senior", "50"
         );
 
@@ -110,7 +114,7 @@ class UserServiceImplTest {
     void createAdmin_ShouldCreateAdminSuccessfully() {
         // Given
         CreateAdminRequest request = new CreateAdminRequest(
-                "Jane", "Admin", "jane.admin@timely.com", "password123",
+                "Jane", "Admin", "jane.admin@timely.com",
                 987654L, 3, 1
         );
         

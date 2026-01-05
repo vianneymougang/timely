@@ -33,12 +33,15 @@ public interface UserMapper {
     @Mapping(target = "creationDate", ignore = true)
     @Mapping(target = "role", ignore = true)
     @Mapping(target = "status", ignore = true)
+    @Mapping(target = "password", ignore = true)
+    @Mapping(target = "matricule", ignore = true)
     Teacher toTeacherEntity(CreateTeacherRequest request);
-    
+
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "creationDate", ignore = true)
     @Mapping(target = "role", ignore = true)
     @Mapping(target = "status", ignore = true)
+    @Mapping(target = "password", ignore = true)
     Admin toAdminEntity(CreateAdminRequest request);
     
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

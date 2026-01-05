@@ -50,7 +50,6 @@ public abstract class User {
     @Column(name = "telephone_number")
     private Long telephoneNumber;
 
-    @NotNull
     @Column(nullable = false)
     private String password;
 

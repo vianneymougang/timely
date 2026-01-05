@@ -3,8 +3,8 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Teacher } from '../../../../core/models/teacher.model';
-import { AuthService } from '../../../../core/services/auth.service';
 import { TeacherService } from '../../../../core/services/teacher.service';
+import { UserService } from '../../../../core/services/user.service';
 
 @Component({
   selector: 'app-teachers-list',
@@ -15,7 +15,7 @@ import { TeacherService } from '../../../../core/services/teacher.service';
 })
 export class TeachersListComponent implements OnInit {
   private teacherService = inject(TeacherService);
-  private authService = inject(AuthService);
+  private userService = inject(UserService);
   private router = inject(Router);
 
   teachers = signal<Teacher[]>([]);
@@ -143,7 +143,7 @@ export class TeachersListComponent implements OnInit {
         telephoneNumber: data.telephoneNumber ? parseInt(data.telephoneNumber) : undefined,
       };
 
-      this.authService.registerAdmin(registerRequest).subscribe({
+      this.userService.createAdmin(registerRequest).subscribe({
         next: () => {
           this.isSubmittingTeacher.set(false);
           this.closeModals();
@@ -175,7 +175,7 @@ export class TeachersListComponent implements OnInit {
         hourlyRate: data.hourlyRate,
       };
 
-      this.authService.registerTeacher(registerRequest).subscribe({
+      this.userService.createTeacher(registerRequest).subscribe({
         next: () => {
           this.isSubmittingTeacher.set(false);
           this.closeModals();

@@ -2,12 +2,11 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, throwError } from 'rxjs';
-import { catchError, map, tap } from 'rxjs/operators';
+import { catchError, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { AuthResponse } from '../models/auth-response.model';
 import { LoginRequest } from '../models/login-request.model';
-import { RegisterAdminRequest, RegisterTeacherRequest, User } from '../models/user.model';
-import { ApiService } from './api.service';
+import { User } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root',
@@ -15,7 +14,6 @@ import { ApiService } from './api.service';
 export class AuthService {
   private http = inject(HttpClient);
   private router = inject(Router);
-  private apiService = inject(ApiService);
 
   currentUser = signal<User | null>(null);
   isAuthenticated = signal<boolean>(false);
@@ -42,72 +40,6 @@ export class AuthService {
         return throwError(
           () => new Error(error.error?.message || 'Email ou mot de passe incorrect')
         );
-      })
-    );
-  }
-
-  /**
-   * Convertir AuthResponse en User
-   */
-  private mapAuthResponseToUser(authResponse: AuthResponse): User {
-    // Le backend retourne 'name' qui contient le nom complet
-    // On peut le splitter ou utiliser directement
-    const nameParts = authResponse.name?.split(' ') || [];
-    const firstName = nameParts[0] || '';
-    const lastName = nameParts.slice(1).join(' ') || '';
-
-    return {
-      id: authResponse.userId,
-      email: authResponse.email,
-      role: this.normalizeRole(authResponse.role),
-      status: authResponse.status,
-      name: authResponse.name,
-    };
-  }
-  /**
-   * Normaliser le rôle (ROLE_ADMIN -> admin, ROLE_TEACHER -> teacher)
-   */
-  private normalizeRole(role: string): 'admin' | 'teacher' {
-    if (role === 'ROLE_ADMIN' || role === 'admin') {
-      return 'admin';
-    }
-    return 'teacher';
-  }
-
-  /**
-   * Enregistrer un nouvel enseignant (Admin uniquement)
-   */
-  registerTeacher(request: RegisterTeacherRequest): Observable<{ user: User; token: string }> {
-    return this.apiService.post<AuthResponse>('/auth/register/teacher', request).pipe(
-      map((authResponse) => {
-        // Convertir AuthResponse en User
-        const user: User = this.mapAuthResponseToUser(authResponse);
-        const response = {
-          user,
-          token: authResponse.accessToken,
-        };
-
-        // Note: On ne connecte pas automatiquement l'admin après l'enregistrement
-        // L'admin reste connecté avec son propre compte
-        return response;
-      }),
-      catchError((error) => {
-        return throwError(() => error);
-      })
-    );
-  }
-
-  /**
-   * Enregistrer un nouvel admin (Admin uniquement)
-   */
-  registerAdmin(request: RegisterAdminRequest): Observable<{ user: User; token: string }> {
-    return this.apiService.post<AuthResponse>('/users/admin', request).pipe(
-      map((authResponse) => {
-        const user: User = this.mapAuthResponseToUser(authResponse);
-        return { user, token: authResponse.accessToken };
-      }),
-      catchError((error) => {
-        return throwError(() => error);
       })
     );
   }
