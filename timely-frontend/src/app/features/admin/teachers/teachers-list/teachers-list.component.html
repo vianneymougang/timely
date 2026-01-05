@@ -2,6 +2,14 @@
   <app-sidebar></app-sidebar>
 
   <div class="flex-1 p-6">
+    <!-- Alert message -->
+    @if (alertMessage()) {
+      <div class="fixed top-4 right-4 z-50">
+        <div [class]="alertType() === 'success' ? 'bg-emerald-500 text-white px-4 py-2 rounded-lg shadow' : 'bg-red-500 text-white px-4 py-2 rounded-lg shadow'">
+          {{ alertMessage() }}
+        </div>
+      </div>
+    }
     <!-- Header -->
     <div class="flex justify-between items-center mb-6">
   <div>
@@ -74,11 +82,34 @@
                     {{ teacher.hourlyLoad.used }} de {{ teacher.hourlyLoad.total }} / 24h
                   </p>
                 </div>
-                @if (teacher.status === 'available') {
-                  <span class="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-medium">
-                    Disponible
-                  </span>
-                }
+                <div class="flex items-center gap-2">
+                  <!-- View -->
+                  <button (click)="selectTeacher(teacher)" title="Voir" class="p-2 rounded hover:bg-slate-100">
+                    <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.477 0 8.268 2.943 9.542 7-1.274 4.057-5.065 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                    </svg>
+                  </button>
+                  <!-- Edit -->
+                  <button (click)="openEdit(teacher); $event.stopPropagation()" title="Modifier" class="p-2 rounded hover:bg-slate-100">
+                    <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                    </svg>
+                  </button>
+                  <!-- Block/Unblock -->
+                  <button (click)="toggleBlock(teacher); $event.stopPropagation()" [title]="teacher.status === 'unavailable' ? 'Débloquer' : 'Bloquer'" class="p-2 rounded hover:bg-slate-100">
+                    <svg *ngIf="teacher.status !== 'unavailable'" class="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 11c0-1.657 0-3 0-3a4 4 0 10-8 0v3"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 13v2a4 4 0 004 4h8a4 4 0 004-4v-2"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 17h4"/>
+                    </svg>
+                    <svg *ngIf="teacher.status === 'unavailable'" class="w-5 h-5 text-amber-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12H9"/>
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 2a10 10 0 100 20 10 10 0 000-20z"/>
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
           }
@@ -220,7 +251,7 @@
           type="text"
           class="mt-1 w-full border rounded-lg p-2"
           name="firstName"
-          ngModel
+          [(ngModel)]="formFirstName"
           required
         />
       </div>
@@ -231,7 +262,7 @@
           type="text"
           class="mt-1 w-full border rounded-lg p-2"
           name="lastName"
-          ngModel
+          [(ngModel)]="formLastName"
           required
         />
       </div>
@@ -242,7 +273,7 @@
           type="email"
           class="mt-1 w-full border rounded-lg p-2"
           name="email"
-          ngModel
+          [(ngModel)]="formEmail"
           required
         />
       </div>

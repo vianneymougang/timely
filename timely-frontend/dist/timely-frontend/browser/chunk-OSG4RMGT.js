@@ -1,0 +1,1 @@
+import{La as n,eb as o,fb as s,ub as i}from"./chunk-OFXSGVHL.js";var a=["class","component"],m=class e{static \u0275fac=function(t){return new(t||e)};static \u0275cmp=n({type:e,selectors:[["app-settings",8,"component"]],attrs:a,decls:2,vars:0,template:function(t,c){t&1&&(o(0,"p"),i(1,"settings.component works!"),s())},encapsulation:2})};export{m as SettingsComponent};

@@ -32,7 +32,7 @@ public class GatewayConfig {
     private final LoadBalancerClient loadBalancerClient;
     private final RestTemplate restTemplate;
 
-    public GatewayConfig(DiscoveryClient discoveryClient, 
+    public GatewayConfig(DiscoveryClient discoveryClient,
                          LoadBalancerClient loadBalancerClient,
                          RestTemplate restTemplate) {
         this.discoveryClient = discoveryClient;

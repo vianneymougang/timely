@@ -1,0 +1,1 @@
+import{La as n,eb as o,fb as s,ub as a}from"./chunk-OFXSGVHL.js";var m=["class","component"],r=class t{static \u0275fac=function(e){return new(e||t)};static \u0275cmp=n({type:t,selectors:[["app-reservations",8,"component"]],attrs:m,decls:2,vars:0,template:function(e,p){e&1&&(o(0,"p"),a(1,"reservations.component works!"),s())},encapsulation:2})};export{r as ReservationsComponent};

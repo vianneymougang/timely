@@ -1,0 +1,1 @@
+import{La as o,eb as t,fb as n,ub as c}from"./chunk-OFXSGVHL.js";var p=["class","component"],r=class s{static \u0275fac=function(e){return new(e||s)};static \u0275cmp=o({type:s,selectors:[["app-ressources",8,"component"]],attrs:p,decls:2,vars:0,template:function(e,a){e&1&&(t(0,"p"),c(1,"ressources.component works!"),n())},encapsulation:2})};export{r as RessourcesComponent};

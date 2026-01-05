@@ -21,6 +21,23 @@ export class TeachersListComponent implements OnInit {
   selectedTeacher = signal<Teacher | null>(null);
   searchQuery = signal('');
   isLoading = signal(false);
+  // edit flow
+  editMode = signal(false);
+  editingTeacher = signal<Teacher | null>(null);
+  // form bindings for modal
+  formFirstName = signal('');
+  formLastName = signal('');
+  formEmail = signal('');
+  // alert message shown after operations
+  alertMessage = signal<string | null>(null);
+  alertType = signal<'success' | 'danger' | 'info'>('success');
+
+  private showAlert(message: string, type: 'success' | 'danger' | 'info' = 'success') {
+    this.alertMessage.set(message);
+    this.alertType.set(type);
+    // auto-hide after 3 seconds
+    setTimeout(() => this.alertMessage.set(null), 3000);
+  }
 
   /*ngOnInit(): void {
     // En développement, utilisez les données mock
@@ -79,6 +96,8 @@ export class TeachersListComponent implements OnInit {
   }
 
   addTeacher() {
+    this.editMode.set(false);
+    this.editingTeacher.set(null);
     this.openAddTeacherModal();
   }
 
@@ -94,6 +113,16 @@ export class TeachersListComponent implements OnInit {
     this.showAddTeacherModal.set(true);
   }
 
+  openEdit(teacher: Teacher) {
+    this.editMode.set(true);
+    this.editingTeacher.set(teacher);
+    // populate form bindings
+    this.formFirstName.set(teacher.firstName);
+    this.formLastName.set(teacher.lastName);
+    this.formEmail.set(teacher.email);
+    this.openAddTeacherModal();
+  }
+
   openAddCourseModal() {
     this.showAddCourseModal.set(true);
   }
@@ -101,27 +130,63 @@ export class TeachersListComponent implements OnInit {
   closeModals() {
     this.showAddTeacherModal.set(false);
     this.showAddCourseModal.set(false);
+    // reset form
+    this.formFirstName.set('');
+    this.formLastName.set('');
+    this.formEmail.set('');
+    this.editMode.set(false);
+    this.editingTeacher.set(null);
+  }
+
+  toggleBlock(teacher: Teacher) {
+    const newStatus = teacher.status === 'unavailable' ? 'available' : 'unavailable';
+    this.teacherService.updateTeacher(teacher.id!, { status: newStatus }).subscribe(() => {
+      this.loadTeachers();
+      // if currently selected, refresh selection
+      if (this.selectedTeacher()?.id === teacher.id) {
+        this.teacherService.getTeacherById(teacher.id!).subscribe(t => this.selectedTeacher.set(t));
+      }
+      // show confirmation message
+      const verb = newStatus === 'unavailable' ? 'bloqué' : 'débloqué';
+      this.showAlert(`Enseignant ${verb} avec succès`, 'success');
+    }, err => console.error('Failed to toggle block status', err));
   }
 
   submitAddTeacher(form: any) {
     if (!form.valid) return;
-
-    const data = form.value;
-
-    this.teacherService.createTeacher({
+    const data = {
+      firstName: this.formFirstName(),
+      lastName: this.formLastName(),
+      email: this.formEmail()
+    };
+    const payload: Partial<Teacher> = {
       firstName: data.firstName,
       lastName: data.lastName,
       email: data.email,
       initials: (data.firstName[0] + data.lastName[0]).toUpperCase(),
       assignedCourses: 0,
       hourlyLoad: { used: 0, total: 24 },
-      //availability: {},
-      //schedule: {},
       status: 'available'
-    }).subscribe(() => {
-      this.closeModals();
-      this.loadTeachers();
-    });
+    };
+
+    if (this.editMode()) {
+      const id = this.editingTeacher()?.id;
+      if (!id) return;
+      this.teacherService.updateTeacher(id, payload).subscribe(() => {
+        this.closeModals();
+        this.loadTeachers();
+        this.editMode.set(false);
+        this.editingTeacher.set(null);
+        // show confirmation after edit
+        this.showAlert('Enseignant modifié avec succès', 'success');
+      });
+    } else {
+      this.teacherService.createTeacher(payload).subscribe(() => {
+        this.closeModals();
+        this.loadTeachers();
+        this.showAlert('Enseignant ajouté avec succès', 'success');
+      });
+    }
   }
 
   submitAddCourse(form: any) {

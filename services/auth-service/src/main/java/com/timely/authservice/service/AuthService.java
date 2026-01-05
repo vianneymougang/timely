@@ -10,7 +10,6 @@ import com.timely.authservice.model.User;
 import com.timely.authservice.model.UserStatus;
 import com.timely.authservice.repository.UserRepository;
 import com.timely.authservice.util.JwtUtil;
-import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -20,7 +19,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
-@RequiredArgsConstructor
 public class AuthService {
 
     private final UserRepository userRepository;
@@ -29,6 +27,17 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenService refreshTokenService;
     private final CustomUserDetailsService userDetailsService;
+
+    public AuthService(UserRepository userRepository, PasswordEncoder passwordEncoder, 
+                      JwtUtil jwtUtil, AuthenticationManager authenticationManager,
+                      RefreshTokenService refreshTokenService, CustomUserDetailsService userDetailsService) {
+        this.userRepository = userRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;
+        this.authenticationManager = authenticationManager;
+        this.refreshTokenService = refreshTokenService;
+        this.userDetailsService = userDetailsService;
+    }
 
     /**
      * Authenticate user and generate tokens

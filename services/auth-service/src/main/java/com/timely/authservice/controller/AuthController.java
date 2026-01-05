@@ -8,7 +8,6 @@ import com.timely.authservice.repository.UserRepository;
 import com.timely.authservice.service.AuthService;
 import com.timely.authservice.util.JwtUtil;
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -19,12 +18,17 @@ import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/auth")
-@RequiredArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
     private final UserRepository userRepository;
     private final JwtUtil jwtUtil;
+
+    public AuthController(AuthService authService, UserRepository userRepository, JwtUtil jwtUtil) {
+        this.authService = authService;
+        this.userRepository = userRepository;
+        this.jwtUtil = jwtUtil;
+    }
 
     /**
      * Login endpoint

@@ -3,15 +3,9 @@ package com.timely.authservice.model;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @DiscriminatorValue("ADMIN")
-@Getter
-@Setter
-@NoArgsConstructor
 public class Admin extends User {
     @NotNull
     private Integer accessLevel;
@@ -19,4 +13,20 @@ public class Admin extends User {
     @NotNull
     private Integer department;
 
+    // Getters and Setters
+    public Integer getAccessLevel() {
+        return accessLevel;
+    }
+
+    public void setAccessLevel(Integer accessLevel) {
+        this.accessLevel = accessLevel;
+    }
+
+    public Integer getDepartment() {
+        return department;
+    }
+
+    public void setDepartment(Integer department) {
+        this.department = department;
+    }
 }
