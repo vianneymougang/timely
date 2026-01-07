@@ -101,21 +101,15 @@ export class TeacherAvailabilityComponent implements OnInit {
       return;
     }
 
-    // Créer une nouvelle copie complète pour assurer l'immutabilité
-    const slots = this.timeSlots().map((slot, index) => {
-      if (index === hourIndex) {
-        return {
-          ...slot,
-          slots: {
-            ...slot.slots,
-            [day]: !slot.slots[day]
-          }
-        };
-      }
-      return { ...slot };
-    });
+    // Créer une copie profonde complète
+    const currentSlots = this.timeSlots();
+    const newSlots = JSON.parse(JSON.stringify(currentSlots));
 
-    this.timeSlots.set(slots);
+    // Modifier uniquement le slot ciblé
+    newSlots[hourIndex].slots[day] = !newSlots[hourIndex].slots[day];
+
+    // Mettre à jour avec la nouvelle référence
+    this.timeSlots.set(newSlots);
     this.successMessage.set('');
   }
 
@@ -159,61 +153,67 @@ export class TeacherAvailabilityComponent implements OnInit {
   }
 
   clearAll(): void {
-    const slots = this.timeSlots().map(slot => ({
-      ...slot,
-      slots: {
-        lundi: false,
-        mardi: false,
-        mercredi: false,
-        jeudi: false,
-        vendredi: false,
-        samedi: false
+    const currentSlots = this.timeSlots();
+    const slots = JSON.parse(JSON.stringify(currentSlots));
+
+    slots.forEach((slot: TimeSlot, index: number) => {
+      // Ne pas modifier les créneaux de pause
+      if (!this.isPauseSlot(index)) {
+        slot.slots = {
+          lundi: false,
+          mardi: false,
+          mercredi: false,
+          jeudi: false,
+          vendredi: false,
+          samedi: false
+        };
       }
-    }));
+    });
+
     this.timeSlots.set(slots);
     this.successMessage.set('');
   }
 
   selectAll(): void {
-    const slots = this.timeSlots().map((slot, index) => {
+    const currentSlots = this.timeSlots();
+    const slots = JSON.parse(JSON.stringify(currentSlots));
+
+    slots.forEach((slot: TimeSlot, index: number) => {
       // Ne pas sélectionner les créneaux de pause
-      if (this.isPauseSlot(index)) {
-        return { ...slot };
-      }
-      return {
-        ...slot,
-        slots: {
+      if (!this.isPauseSlot(index)) {
+        slot.slots = {
           lundi: true,
           mardi: true,
           mercredi: true,
           jeudi: true,
           vendredi: true,
           samedi: true
-        }
-      };
+        };
+      }
     });
+
     this.timeSlots.set(slots);
     this.successMessage.set('');
   }
 
   selectWorkDays(): void {
-    const slots = this.timeSlots().map((slot, index) => {
+    const currentSlots = this.timeSlots();
+    const slots = JSON.parse(JSON.stringify(currentSlots));
+
+    slots.forEach((slot: TimeSlot, index: number) => {
       // Ne pas sélectionner les créneaux de pause
-      if (this.isPauseSlot(index)) {
-        return { ...slot };
-      }
-      return {
-        ...slot,
-        slots: {
+      if (!this.isPauseSlot(index)) {
+        slot.slots = {
           lundi: true,
           mardi: true,
           mercredi: true,
           jeudi: true,
           vendredi: true,
           samedi: false
-        }
-      };
+        };
+      }
     });
+
     this.timeSlots.set(slots);
     this.successMessage.set('');
   }

@@ -84,7 +84,7 @@
         </tr>
         </thead>
         <tbody>
-          @for (slot of timeSlots(); track $index) {
+          @for (slot of timeSlots(); track slot.hour) {
             <tr class="hover:bg-slate-50 transition-colors">
               <td class="sticky left-0 z-10 bg-white px-4 py-3 text-sm font-medium text-slate-700 border-r border-slate-200">
                 {{ slot.hour }}
