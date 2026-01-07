@@ -18,7 +18,7 @@ interface TimeSlot {
 })
 export class TeacherAvailabilityComponent implements OnInit {
   private authService = inject(AuthService);
-  
+
   currentUser = this.authService.currentUser;
   isSaving = signal(false);
   successMessage = signal('');
@@ -45,7 +45,8 @@ export class TeacherAvailabilityComponent implements OnInit {
 
   initializeTimeSlots(): void {
     const slots: TimeSlot[] = [];
-    
+
+    // Créer tous les créneaux de 8h à 17h (9 créneaux)
     for (let hour = 8; hour < 17; hour++) {
       slots.push({
         hour: `${hour}h - ${hour + 1}h`,
@@ -59,65 +60,96 @@ export class TeacherAvailabilityComponent implements OnInit {
         }
       });
     }
-    
+
     this.timeSlots.set(slots);
+  }
+
+  isPauseSlot(hourIndex: number): boolean {
+    // L'index 4 correspond à 12h-13h (8h=0, 9h=1, 10h=2, 11h=3, 12h=4)
+    return hourIndex === 4;
   }
 
   loadSavedAvailability(): void {
     // TODO: Charger les disponibilités sauvegardées depuis l'API
-    // this.availabilityService.getMyAvailability().subscribe(...)
-    
-    // Exemple de données pré-remplies pour la démo
-    const savedSlots = [...this.timeSlots()];
-    
-    // Lundi 12h-17h
-    savedSlots[4].slots['lundi'] = true; // 12h-13h
-    savedSlots[5].slots['lundi'] = true; // 13h-14h
-    savedSlots[6].slots['lundi'] = true; // 14h-15h
-    savedSlots[7].slots['lundi'] = true; // 15h-16h
-    savedSlots[8].slots['lundi'] = true; // 16h-17h
-    
-    // Mercredi 8h-17h
-    for (let i = 0; i < 9; i++) {
-      savedSlots[i].slots['mercredi'] = true;
+    // this.availabilityService.getMyAvailability().subscribe({
+    //   next: (data) => {
+    //     if (data && data.timeSlots) {
+    //       this.timeSlots.set(data.timeSlots);
+    //     }
+    //   },
+    //   error: (error) => {
+    //     console.error('Erreur lors du chargement des disponibilités', error);
+    //   }
+    // });
+
+    // Vérifier si des données sont stockées localement (localStorage)
+    const savedData = localStorage.getItem('teacher_availability');
+    if (savedData) {
+      try {
+        const parsed = JSON.parse(savedData);
+        this.timeSlots.set(parsed);
+      } catch (error) {
+        console.error('Erreur lors de la lecture des disponibilités', error);
+      }
     }
-    
-    // Vendredi 8h-11h et 10h-11h
-    savedSlots[0].slots['vendredi'] = true; // 8h-9h
-    savedSlots[1].slots['vendredi'] = true; // 9h-10h
-    savedSlots[2].slots['vendredi'] = true; // 10h-11h
-    
-    this.timeSlots.set(savedSlots);
+    // Sinon, la grille reste vide (déjà initialisée avec tous les slots à false)
   }
 
   toggleSlot(hourIndex: number, day: string): void {
-    const slots = [...this.timeSlots()];
-    slots[hourIndex].slots[day] = !slots[hourIndex].slots[day];
+    // Ne pas permettre la modification des créneaux de pause
+    if (this.isPauseSlot(hourIndex)) {
+      return;
+    }
+
+    // Créer une nouvelle copie complète pour assurer l'immutabilité
+    const slots = this.timeSlots().map((slot, index) => {
+      if (index === hourIndex) {
+        return {
+          ...slot,
+          slots: {
+            ...slot.slots,
+            [day]: !slot.slots[day]
+          }
+        };
+      }
+      return { ...slot };
+    });
+
     this.timeSlots.set(slots);
     this.successMessage.set('');
   }
 
   onMouseDown(hourIndex: number, day: string, event: MouseEvent): void {
     event.preventDefault();
+
+    // Ne pas permettre la sélection des créneaux de pause
+    if (this.isPauseSlot(hourIndex)) {
+      return;
+    }
+
     this.isDragging.set(true);
-    
+
     // Déterminer le mode (sélection ou désélection)
     const currentValue = this.timeSlots()[hourIndex].slots[day];
     this.dragMode.set(currentValue ? 'deselect' : 'select');
-    
+
     // Appliquer le changement
     this.toggleSlot(hourIndex, day);
   }
 
   onMouseEnter(hourIndex: number, day: string): void {
+    // Ne pas permettre la sélection des créneaux de pause
+    if (this.isPauseSlot(hourIndex)) {
+      return;
+    }
+
     if (this.isDragging()) {
-      const slots = [...this.timeSlots()];
+      const currentValue = this.timeSlots()[hourIndex].slots[day];
       const shouldSelect = this.dragMode() === 'select';
-      
-      // Appliquer seulement si l'état est différent
-      if (slots[hourIndex].slots[day] !== shouldSelect) {
-        slots[hourIndex].slots[day] = shouldSelect;
-        this.timeSlots.set(slots);
+
+      // Appliquer seulement si l'état est différent du mode
+      if ((shouldSelect && !currentValue) || (!shouldSelect && currentValue)) {
+        this.toggleSlot(hourIndex, day);
       }
     }
   }
@@ -143,33 +175,45 @@ export class TeacherAvailabilityComponent implements OnInit {
   }
 
   selectAll(): void {
-    const slots = this.timeSlots().map(slot => ({
-      ...slot,
-      slots: {
-        lundi: true,
-        mardi: true,
-        mercredi: true,
-        jeudi: true,
-        vendredi: true,
-        samedi: true
+    const slots = this.timeSlots().map((slot, index) => {
+      // Ne pas sélectionner les créneaux de pause
+      if (this.isPauseSlot(index)) {
+        return { ...slot };
       }
-    }));
+      return {
+        ...slot,
+        slots: {
+          lundi: true,
+          mardi: true,
+          mercredi: true,
+          jeudi: true,
+          vendredi: true,
+          samedi: true
+        }
+      };
+    });
     this.timeSlots.set(slots);
     this.successMessage.set('');
   }
 
   selectWorkDays(): void {
-    const slots = this.timeSlots().map(slot => ({
-      ...slot,
-      slots: {
-        lundi: true,
-        mardi: true,
-        mercredi: true,
-        jeudi: true,
-        vendredi: true,
-        samedi: false
+    const slots = this.timeSlots().map((slot, index) => {
+      // Ne pas sélectionner les créneaux de pause
+      if (this.isPauseSlot(index)) {
+        return { ...slot };
       }
-    }));
+      return {
+        ...slot,
+        slots: {
+          lundi: true,
+          mardi: true,
+          mercredi: true,
+          jeudi: true,
+          vendredi: true,
+          samedi: false
+        }
+      };
+    });
     this.timeSlots.set(slots);
     this.successMessage.set('');
   }
@@ -178,13 +222,20 @@ export class TeacherAvailabilityComponent implements OnInit {
     this.isSaving.set(true);
     this.successMessage.set('');
 
+    const availabilityData = this.timeSlots();
+
     // TODO: Envoyer les disponibilités à l'API
     /*
-    const availabilityData = this.timeSlots();
     this.availabilityService.updateMyAvailability(availabilityData).subscribe({
       next: () => {
+        // Sauvegarder aussi localement
+        localStorage.setItem('teacher_availability', JSON.stringify(availabilityData));
         this.successMessage.set('✓ Disponibilités enregistrées avec succès !');
         this.isSaving.set(false);
+
+        setTimeout(() => {
+          this.successMessage.set('');
+        }, 5000);
       },
       error: (error) => {
         alert('Erreur lors de l\'enregistrement');
@@ -193,11 +244,14 @@ export class TeacherAvailabilityComponent implements OnInit {
     });
     */
 
-    // Simulation
+    // Simulation : Sauvegarder dans localStorage
     setTimeout(() => {
+      // Sauvegarder les données
+      localStorage.setItem('teacher_availability', JSON.stringify(availabilityData));
+
       this.successMessage.set('✓ Disponibilités enregistrées avec succès !');
       this.isSaving.set(false);
-      
+
       // Effacer le message après 5 secondes
       setTimeout(() => {
         this.successMessage.set('');
