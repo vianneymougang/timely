@@ -2,17 +2,20 @@ spring:
   application:
     name: user-service
 
+  config:
+    import: optional:configserver:http://localhost:8888
+
   # Database Configuration
   datasource:
-    url: jdbc:postgresql://localhost:5002/user-service-db
-    username: admin
-    password: password
+    url: jdbc:postgresql://localhost:5432/user-service-db
+    username: postgres
+    password: postgres
     driver-class-name: org.postgresql.Driver
 
   # JPA Configuration
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:

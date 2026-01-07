@@ -28,40 +28,27 @@ public interface UserMapper {
     AdminDto toAdminDto(Admin admin);
     
     InternalUserDto toInternalDto(User user);
-    
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "creationDate", ignore = true)
-    @Mapping(target = "role", ignore = true)
-    @Mapping(target = "status", ignore = true)
-    @Mapping(target = "password", ignore = true)
-    @Mapping(target = "matricule", ignore = true)
-    Teacher toTeacherEntity(CreateTeacherRequest request);
 
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "creationDate", ignore = true)
-    @Mapping(target = "role", ignore = true)
-    @Mapping(target = "status", ignore = true)
-    @Mapping(target = "password", ignore = true)
     Admin toAdminEntity(CreateAdminRequest request);
     
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "password", ignore = true)
-    @Mapping(target = "creationDate", ignore = true)
-    @Mapping(target = "role", ignore = true)
+    //@Mapping(target = "id", ignore = true)
+    //@Mapping(target = "password", ignore = true)
+    //@Mapping(target = "creationDate", ignore = true)
+    //@Mapping(target = "role", ignore = true)
     void updateUserFromDto(UpdateUserRequest request, @MappingTarget User user);
     
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "password", ignore = true)
-    @Mapping(target = "creationDate", ignore = true)
-    @Mapping(target = "role", ignore = true)
+    //@Mapping(target = "id", ignore = true)
+    //@Mapping(target = "password", ignore = true)
+    //@Mapping(target = "creationDate", ignore = true)
+    //@Mapping(target = "role", ignore = true)
     void updateTeacherFromDto(UpdateUserRequest request, @MappingTarget Teacher teacher);
     
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
-    @Mapping(target = "id", ignore = true)
-    @Mapping(target = "password", ignore = true)
-    @Mapping(target = "creationDate", ignore = true)
-    @Mapping(target = "role", ignore = true)
+    //@Mapping(target = "id", ignore = true)
+    //@Mapping(target = "password", ignore = true)
+    //@Mapping(target = "creationDate", ignore = true)
+    //@Mapping(target = "role", ignore = true)
     void updateAdminFromDto(UpdateUserRequest request, @MappingTarget Admin admin);
 }
