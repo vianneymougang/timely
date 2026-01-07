@@ -30,6 +30,8 @@ public interface UserMapper {
     InternalUserDto toInternalDto(User user);
 
     Admin toAdminEntity(CreateAdminRequest request);
+
+    Teacher toTeacherEntity(CreateTeacherRequest request);
     
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
     //@Mapping(target = "id", ignore = true)
