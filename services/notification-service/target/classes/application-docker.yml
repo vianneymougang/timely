@@ -1,0 +1,70 @@
+spring:
+  application:
+    name: notification-service
+
+  config:
+    import: optional:configserver:http://config-server:8888
+
+  # RabbitMQ Configuration
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: admin
+    password: password
+
+  # Mail Configuration - MailTrap
+  mail:
+    host: mailtrap
+    port: 25
+    username: ""
+    password: ""
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+  # MongoDB Configuration
+  data:
+    mongodb:
+      host: mongodb
+      port: 27017
+      database: notification-service-db
+      username: admin
+      password: password
+      authentication-database: admin
+
+# Server Configuration
+server:
+  port: 8093
+
+# Eureka Client Configuration - Docker
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery-server:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: false
+    hostname: notification-service
+    appname: NOTIFICATION-SERVICE
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+
+# Actuator Configuration
+management:
+  endpoint:
+    health:
+      show-details: always
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    com.timely.notificationservice: DEBUG
+    org.springframework.amqp: DEBUG

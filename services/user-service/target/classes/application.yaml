@@ -1,0 +1,81 @@
+spring:
+  application:
+    name: user-service
+
+
+
+  # Spring Cloud Config
+  config:
+    import: optional:configserver:http://localhost:8888
+  cloud:
+    config:
+      enabled: false  # Disable for local development
+      import-check:
+        enabled: false
+
+  # Database Configuration
+  datasource:
+    url: jdbc:postgresql://localhost:5432/user-service-db
+    username: postgres
+    password:
+    driver-class-name: org.postgresql.Driver
+
+  # JPA Configuration
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  # Flyway Configuration
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+  # RabbitMQ Configuration
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    virtual-host: ${RABBITMQ_VHOST:/}
+
+# JWT Configuration (for token validation)
+jwt:
+  secret: ${JWT_SECRET:mySecretKeyForJWTTokenValidationThisShouldBeAtLeast256BitsLongForHS256Algorithm}
+  expiration: ${JWT_EXPIRATION:3600000}
+
+# Server Configuration
+server:
+  port: ${PORT:8092}
+
+# Eureka Client Configuration
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: when-authorized
+
+# Logging Configuration
+logging:
+  level:
+    root: INFO
+    com.timely.userservice: DEBUG

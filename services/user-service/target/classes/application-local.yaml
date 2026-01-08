@@ -1,0 +1,57 @@
+spring:
+  # Disable external services for local development
+  cloud:
+    config:
+      enabled: false
+  
+  # Use H2 for local development
+  datasource:
+    url: jdbc:h2:mem:userdb
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: password
+  
+  # JPA Configuration for H2
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: true
+    database-platform: org.hibernate.dialect.H2Dialect
+  
+  # Disable Flyway for H2 (let Hibernate create schema)
+  flyway:
+    enabled: false
+  
+  # H2 Console (for debugging)
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  # RabbitMQ Configuration (optional for local)
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+    connection-timeout: 1000
+    template:
+      mandatory: false
+
+# Disable Eureka for local development
+eureka:
+  client:
+    enabled: false
+
+# Logging
+logging:
+  level:
+    com.timely.userservice: DEBUG
+    org.springframework.security: DEBUG
+    org.flywaydb: OFF
+    org.hibernate.SQL: DEBUG
+
+# JWT Configuration (for local development)
+jwt:
+  secret: localDevelopmentSecretKeyForJWTTokenValidationThisShouldBeAtLeast256BitsLong
+  expiration: 3600000

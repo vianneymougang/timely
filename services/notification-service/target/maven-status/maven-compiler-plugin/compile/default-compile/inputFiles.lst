@@ -1,0 +1,8 @@
+C:\Users\LENOVO\Desktop\projetTutore\timely\services\notification-service\src\main\java\com\timely\notificationservice\config\MailConfig.java
+C:\Users\LENOVO\Desktop\projetTutore\timely\services\notification-service\src\main\java\com\timely\notificationservice\config\RabbitMQConfig.java
+C:\Users\LENOVO\Desktop\projetTutore\timely\services\notification-service\src\main\java\com\timely\notificationservice\event\PasswordResetEvent.java
+C:\Users\LENOVO\Desktop\projetTutore\timely\services\notification-service\src\main\java\com\timely\notificationservice\event\UserCreatedEvent.java
+C:\Users\LENOVO\Desktop\projetTutore\timely\services\notification-service\src\main\java\com\timely\notificationservice\listener\PasswordResetEventListener.java
+C:\Users\LENOVO\Desktop\projetTutore\timely\services\notification-service\src\main\java\com\timely\notificationservice\listener\UserCreatedEventListener.java
+C:\Users\LENOVO\Desktop\projetTutore\timely\services\notification-service\src\main\java\com\timely\notificationservice\NotificationServiceApplication.java
+C:\Users\LENOVO\Desktop\projetTutore\timely\services\notification-service\src\main\java\com\timely\notificationservice\service\EmailService.java
