@@ -54,6 +54,9 @@ public class GatewayConfig {
                 // User Service Routes - Forward all /api/users/** requests
                 .add(route(path("/api/users/**"), this::forwardToUserService))
                 
+                // Availability Routes - Forward all /api/availability/** requests
+                .add(route(path("/api/availability/**"), this::forwardToUserService))
+                
                 // Health check endpoint
                 .GET("/gateway/health", request -> 
                     ServerResponse.ok().body("API Gateway is running"))

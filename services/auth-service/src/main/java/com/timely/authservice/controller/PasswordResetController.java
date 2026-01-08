@@ -9,7 +9,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.timely.authservice.dto.ForgotPasswordRequest;
+import com.timely.authservice.dto.MessageResponse;
 import com.timely.authservice.dto.ResetPasswordRequest;
+import com.timely.authservice.dto.ValidateTokenResponse;
 import com.timely.authservice.service.PasswordResetService;
 
 import jakarta.validation.Valid;
@@ -27,26 +29,26 @@ public class PasswordResetController {
      * Always returns success to prevent email enumeration
      */
     @PostMapping("/forgot-password")
-    public ResponseEntity<String> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
+    public ResponseEntity<MessageResponse> forgotPassword(@Valid @RequestBody ForgotPasswordRequest request) {
         passwordResetService.requestPasswordReset(request.getEmail());
-        return ResponseEntity.ok("If an account exists with this email, you will receive a password reset link.");
+        return ResponseEntity.ok(new MessageResponse("If an account exists with this email, you will receive a password reset link."));
     }
     
     /**
      * Validate reset token
      */
     @GetMapping("/validate-reset-token/{token}")
-    public ResponseEntity<Void> validateResetToken(@PathVariable String token) {
+    public ResponseEntity<ValidateTokenResponse> validateResetToken(@PathVariable String token) {
         boolean isValid = passwordResetService.validateResetToken(token);
-        return isValid ? ResponseEntity.ok().build() : ResponseEntity.badRequest().build();
+        return ResponseEntity.ok(new ValidateTokenResponse(isValid));
     }
     
     /**
      * Reset password using token
      */
     @PostMapping("/reset-password")
-    public ResponseEntity<String> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+    public ResponseEntity<MessageResponse> resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
         passwordResetService.resetPassword(request.getToken(), request.getNewPassword());
-        return ResponseEntity.ok("Password has been reset successfully.");
+        return ResponseEntity.ok(new MessageResponse("Password has been reset successfully."));
     }
 }
