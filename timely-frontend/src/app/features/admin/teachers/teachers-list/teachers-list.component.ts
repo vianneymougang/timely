@@ -3,6 +3,10 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Teacher } from '../../../../core/models/teacher.model';
+import {
+  AvailabilityResponseDto,
+  AvailabilityService,
+} from '../../../../core/services/availability.service';
 import { TeacherService } from '../../../../core/services/teacher.service';
 import { UserService } from '../../../../core/services/user.service';
 
@@ -17,11 +21,14 @@ export class TeachersListComponent implements OnInit {
   private teacherService = inject(TeacherService);
   private userService = inject(UserService);
   private router = inject(Router);
+  private availabilityService = inject(AvailabilityService);
 
   teachers = signal<Teacher[]>([]);
   selectedTeacher = signal<Teacher | null>(null);
+  selectedTeacherAvailability = signal<AvailabilityResponseDto | null>(null);
   searchQuery = signal('');
   isLoading = signal(false);
+  isLoadingAvailability = signal(false);
   isSubmittingTeacher = signal(false);
 
   /*ngOnInit(): void {
@@ -82,6 +89,38 @@ export class TeachersListComponent implements OnInit {
 
   selectTeacher(teacher: Teacher): void {
     this.selectedTeacher.set(teacher);
+    this.loadTeacherAvailability(teacher.id);
+  }
+
+  loadTeacherAvailability(teacherId: string): void {
+    this.isLoadingAvailability.set(true);
+    this.selectedTeacherAvailability.set(null);
+
+    this.availabilityService.getTeacherAvailability(teacherId).subscribe({
+      next: (availability) => {
+        this.selectedTeacherAvailability.set(availability);
+        this.isLoadingAvailability.set(false);
+      },
+      error: (error) => {
+        console.error('Error loading teacher availability:', error);
+        // Set to null on error (teacher may not have set availability)
+        this.selectedTeacherAvailability.set(null);
+        this.isLoadingAvailability.set(false);
+      },
+    });
+  }
+
+  getAvailableSlotsCount(): number {
+    const availability = this.selectedTeacherAvailability();
+    if (!availability || !availability.timeSlots) return 0;
+
+    return availability.timeSlots.reduce((total, slot) => {
+      return total + Object.values(slot.slots).filter((v) => v).length;
+    }, 0);
+  }
+
+  isPauseSlotByIndex(hourIndex: number): boolean {
+    return hourIndex === 4; // 12h-13h
   }
 
   filteredTeachers(): Teacher[] {

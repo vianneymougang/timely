@@ -194,29 +194,76 @@
       </div>
 
       <!-- Weekly Availability -->
+      <!-- Detailed Availability Grid -->
       <div class="mb-6">
-        <h4 class="font-semibold text-slate-800 mb-3">Disponibilités de la semaines</h4>
-        <div class="grid grid-cols-6 gap-2">
-          @for (day of ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']; track
-          day) {
-          <div class="text-center">
-            <div class="text-xs text-slate-600 mb-1 capitalize">
-              {{ day.substring(0, 3) }}
-            </div>
-            <div
-              class="py-2 rounded text-xs font-medium"
-              [ngClass]="
-                selectedTeacher()!.availability[day] === '-' ||
-                !selectedTeacher()!.availability[day]
-                  ? 'bg-red-100 text-red-700'
-                  : 'bg-emerald-100 text-emerald-700'
-              "
-            >
-              {{ selectedTeacher()!.availability[day] || '-' }}
-            </div>
-          </div>
-          }
+        <h4 class="font-semibold text-slate-800 mb-3">Disponibilités détaillées</h4>
+
+        @if (isLoadingAvailability()) {
+        <div class="text-center py-4">
+          <div
+            class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-teal-600"
+          ></div>
+          <p class="text-sm text-slate-600 mt-2">Chargement des disponibilités...</p>
         </div>
+        } @else if (!selectedTeacherAvailability()) {
+        <div
+          class="text-center py-4 text-slate-500 text-sm bg-slate-50 rounded-lg border border-slate-200"
+        >
+          Aucune disponibilité enregistrée pour cet enseignant
+        </div>
+        } @else {
+        <!-- Summary -->
+        <div class="mb-3 text-sm text-slate-600 flex items-center gap-2">
+          <span class="inline-block w-3 h-3 bg-emerald-400 rounded-sm"></span>
+          <span class="font-medium">{{ getAvailableSlotsCount() }} créneaux disponibles</span>
+        </div>
+
+        <!-- Read-only Grid -->
+        <div class="overflow-x-auto border border-slate-200 rounded-lg">
+          <table class="w-full border-collapse text-xs">
+            <thead>
+              <tr class="bg-slate-50 border-b border-slate-200">
+                <th
+                  class="px-2 py-2 text-left font-medium text-slate-500 w-16 sticky left-0 bg-slate-50 z-10"
+                >
+                  Heure
+                </th>
+                @for (day of ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']; track day) {
+                <th class="px-1 py-2 text-center font-medium text-slate-500 w-12">{{ day }}</th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (slot of selectedTeacherAvailability()!.timeSlots; track slot.hour; let hourIndex
+              = $index) {
+              <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50">
+                <td
+                  class="px-2 py-1 font-medium text-slate-700 bg-white sticky left-0 z-10 border-r border-slate-100"
+                >
+                  {{ slot.hour }}
+                </td>
+                @for (day of ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi']; track
+                day) {
+                <td class="p-0 border-r border-slate-100 last:border-0 relative h-8">
+                  @if (isPauseSlotByIndex(hourIndex)) {
+                  <div class="absolute inset-0 bg-slate-100 flex items-center justify-center">
+                    <span class="text-[10px] text-slate-400 font-medium">Pause</span>
+                  </div>
+                  } @else {
+                  <div
+                    class="absolute inset-0 m-[1px] rounded-sm transition-colors duration-200"
+                    [ngClass]="slot.slots[day] ? 'bg-emerald-400' : 'bg-transparent'"
+                    [attr.title]="slot.slots[day] ? 'Disponible' : 'Non disponible'"
+                  ></div>
+                  }
+                </td>
+                }
+              </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+        }
       </div>
 
       <!-- Schedule -->

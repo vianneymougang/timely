@@ -1,6 +1,10 @@
-import { Component, OnInit, signal, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { AuthService } from '../../../core/services/auth.service';
+import {
+  AvailabilityRequestDto,
+  AvailabilityService,
+} from '../../../core/services/availability.service';
 
 interface TimeSlot {
   hour: string;
@@ -14,10 +18,11 @@ interface TimeSlot {
   standalone: true,
   imports: [CommonModule],
   templateUrl: './teacher-availability.component.html',
-  styleUrls: ['./teacher-availability.component.scss']
+  styleUrls: ['./teacher-availability.component.scss'],
 })
 export class TeacherAvailabilityComponent implements OnInit {
   private authService = inject(AuthService);
+  private availabilityService = inject(AvailabilityService);
 
   currentUser = this.authService.currentUser;
   isSaving = signal(false);
@@ -32,7 +37,7 @@ export class TeacherAvailabilityComponent implements OnInit {
     { key: 'mercredi', label: 'Mercredi' },
     { key: 'jeudi', label: 'Jeudi' },
     { key: 'vendredi', label: 'Vendredi' },
-    { key: 'samedi', label: 'Samedi' }
+    { key: 'samedi', label: 'Samedi' },
   ];
 
   // Créneaux horaires (8h - 17h)
@@ -56,8 +61,8 @@ export class TeacherAvailabilityComponent implements OnInit {
           mercredi: false,
           jeudi: false,
           vendredi: false,
-          samedi: false
-        }
+          samedi: false,
+        },
       });
     }
 
@@ -70,29 +75,21 @@ export class TeacherAvailabilityComponent implements OnInit {
   }
 
   loadSavedAvailability(): void {
-    // TODO: Charger les disponibilités sauvegardées depuis l'API
-    // this.availabilityService.getMyAvailability().subscribe({
-    //   next: (data) => {
-    //     if (data && data.timeSlots) {
-    //       this.timeSlots.set(data.timeSlots);
-    //     }
-    //   },
-    //   error: (error) => {
-    //     console.error('Erreur lors du chargement des disponibilités', error);
-    //   }
-    // });
-
-    // Vérifier si des données sont stockées localement (localStorage)
-    const savedData = localStorage.getItem('teacher_availability');
-    if (savedData) {
-      try {
-        const parsed = JSON.parse(savedData);
-        this.timeSlots.set(parsed);
-      } catch (error) {
-        console.error('Erreur lors de la lecture des disponibilités', error);
-      }
-    }
-    // Sinon, la grille reste vide (déjà initialisée avec tous les slots à false)
+    this.availabilityService.getMyAvailability().subscribe({
+      next: (data) => {
+        if (data && data.timeSlots) {
+          this.timeSlots.set(data.timeSlots);
+        }
+      },
+      error: (error) => {
+        // 404 means teacher hasn't set availability yet, show empty grid
+        if (error?.status === 404) {
+          console.log('No availability set yet');
+        } else {
+          console.error('Error loading availability:', error);
+        }
+      },
+    });
   }
 
   toggleSlot(hourIndex: number, day: string): void {
@@ -165,7 +162,7 @@ export class TeacherAvailabilityComponent implements OnInit {
           mercredi: false,
           jeudi: false,
           vendredi: false,
-          samedi: false
+          samedi: false,
         };
       }
     });
@@ -187,7 +184,7 @@ export class TeacherAvailabilityComponent implements OnInit {
           mercredi: true,
           jeudi: true,
           vendredi: true,
-          samedi: true
+          samedi: true,
         };
       }
     });
@@ -209,7 +206,7 @@ export class TeacherAvailabilityComponent implements OnInit {
           mercredi: true,
           jeudi: true,
           vendredi: true,
-          samedi: false
+          samedi: false,
         };
       }
     });
@@ -222,14 +219,12 @@ export class TeacherAvailabilityComponent implements OnInit {
     this.isSaving.set(true);
     this.successMessage.set('');
 
-    const availabilityData = this.timeSlots();
+    const availabilityData: AvailabilityRequestDto = {
+      timeSlots: this.timeSlots(),
+    };
 
-    // TODO: Envoyer les disponibilités à l'API
-    /*
-    this.availabilityService.updateMyAvailability(availabilityData).subscribe({
+    this.availabilityService.saveMyAvailability(availabilityData).subscribe({
       next: () => {
-        // Sauvegarder aussi localement
-        localStorage.setItem('teacher_availability', JSON.stringify(availabilityData));
         this.successMessage.set('✓ Disponibilités enregistrées avec succès !');
         this.isSaving.set(false);
 
@@ -238,30 +233,20 @@ export class TeacherAvailabilityComponent implements OnInit {
         }, 5000);
       },
       error: (error) => {
-        alert('Erreur lors de l\'enregistrement');
+        console.error('Error saving availability:', error);
+        let errorMessage = "Erreur lors de l'enregistrement";
+        if (error?.error?.message) {
+          errorMessage = error.error.message;
+        }
+        alert(errorMessage);
         this.isSaving.set(false);
-      }
+      },
     });
-    */
-
-    // Simulation : Sauvegarder dans localStorage
-    setTimeout(() => {
-      // Sauvegarder les données
-      localStorage.setItem('teacher_availability', JSON.stringify(availabilityData));
-
-      this.successMessage.set('✓ Disponibilités enregistrées avec succès !');
-      this.isSaving.set(false);
-
-      // Effacer le message après 5 secondes
-      setTimeout(() => {
-        this.successMessage.set('');
-      }, 5000);
-    }, 1000);
   }
 
   getSelectedSlotsCount(): number {
     return this.timeSlots().reduce((total, slot) => {
-      return total + Object.values(slot.slots).filter(v => v).length;
+      return total + Object.values(slot.slots).filter((v) => v).length;
     }, 0);
   }
 
