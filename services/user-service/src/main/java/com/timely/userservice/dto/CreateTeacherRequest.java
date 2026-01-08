@@ -1,10 +1,21 @@
-package com.timely.authservice.dto;
+package com.timely.userservice.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
+<<<<<<< HEAD:services/auth-service/src/main/java/com/timely/authservice/dto/RegisterTeacherRequest.java
 import jakarta.validation.constraints.Size;
 
 public class RegisterTeacherRequest {
+=======
+import lombok.AllArgsConstructor;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+@Data
+@NoArgsConstructor
+@AllArgsConstructor
+public class CreateTeacherRequest {
+>>>>>>> 0ea8e076f89dd6ae6a11210df6b146a8af9075d8:services/user-service/src/main/java/com/timely/userservice/dto/CreateTeacherRequest.java
     @NotBlank(message = "Name is required")
     private String name;
 
@@ -15,14 +26,7 @@ public class RegisterTeacherRequest {
     @Email(message = "Email should be valid")
     private String email;
 
-    @NotBlank(message = "Password is required")
-    @Size(min = 8, message = "Password must be at least 8 characters long")
-    private String password;
-
-    private Integer telephoneNumber;
-
-    @NotBlank(message = "Matricule is required")
-    private String matricule;
+    private Long telephoneNumber;
 
     @NotBlank(message = "Grade is required")
     private String grade;

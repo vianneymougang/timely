@@ -24,6 +24,11 @@ import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import com.timely.authservice.filter.JwtAuthenticationFilter;
+<<<<<<< HEAD
+=======
+
+import lombok.RequiredArgsConstructor;
+>>>>>>> 0ea8e076f89dd6ae6a11210df6b146a8af9075d8
 
 @Configuration
 @EnableWebSecurity
@@ -45,6 +50,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/login", "/api/auth/refresh").permitAll()
+                        .requestMatchers("/api/auth/forgot-password", "/api/auth/reset-password", "/api/auth/validate-reset-token/**").permitAll()
                         .requestMatchers("/actuator/**").permitAll()
                         .anyRequest().authenticated()
                 )

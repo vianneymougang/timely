@@ -1,10 +1,31 @@
-package com.timely.authservice.model;
+package com.timely.userservice.model;
 
-import jakarta.persistence.*;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.UUID;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.DiscriminatorColumn;
+import jakarta.persistence.DiscriminatorType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotNull;
+<<<<<<< HEAD:services/auth-service/src/main/java/com/timely/authservice/model/User.java
+import java.time.LocalDate;
+import java.util.UUID;
+=======
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+>>>>>>> 0ea8e076f89dd6ae6a11210df6b146a8af9075d8:services/user-service/src/main/java/com/timely/userservice/model/User.java
 
 @Entity
 @Table(name = "users")
@@ -29,9 +50,8 @@ public abstract class User {
     private String email;
 
     @Column(name = "telephone_number")
-    private Integer telephoneNumber;
+    private Long telephoneNumber;
 
-    @NotNull
     @Column(nullable = false)
     private String password;
 

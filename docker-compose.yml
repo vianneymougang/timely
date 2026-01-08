@@ -19,6 +19,26 @@ services:
       - timely-microservices
     restart: unless-stopped
 
+  user-service-db:
+    container_name: user-service-db
+    image: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - user-postgres:/var/lib/postgresql/data
+    ports:
+      - "5002:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - timely-microservices
+    restart: unless-stopped
+
   pgadmin:
     container_name: timely_ms_pgadmin
     image: dpage/pgadmin4
@@ -60,14 +80,36 @@ services:
     networks:
       - timely-microservices
 
-  mail-dev:
-    container_name: timely_ms_mail_dev
-    image: maildev/maildev
+  mailtrap:
+    image: dbck/mailtrap:latest
+    container_name: timely_ms_mailtrap
     ports:
-      - "1080:1080"
-      - "1025:1025"
+      - "1080:80" # Web UI - http://localhost:1080
+      - "1025:25" # SMTP
+      - "1587:587" # SMTP with StartTLS
     networks:
       - timely-microservices
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: timely_ms_rabbitmq
+    ports:
+      - "5672:5672" # AMQP
+      - "15672:15672" # Management UI - http://localhost:15672
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: password
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - timely-microservices
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   # Microservices Infrastructure
   config-server:
@@ -136,6 +178,10 @@ services:
     depends_on:
       auth-service-db:
         condition: service_healthy
+      user-service:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
       discovery-server:
         condition: service_healthy
       config-server:
@@ -152,9 +198,77 @@ services:
     environment:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_DATASOURCE_URL=jdbc:postgresql://auth-service-db:5432/auth-service-db
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=admin
+      - SPRING_RABBITMQ_PASSWORD=password
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
       - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
       - EUREKA_INSTANCE_HOSTNAME=auth-service
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
+    restart: unless-stopped
+
+  user-service:
+    container_name: timely-user-service
+    build: ./services/user-service
+    ports:
+      - "8092:8092"
+    depends_on:
+      user-service-db:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      api-gateway:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8092/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - timely-microservices
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://user-service-db:5432/user-service-db
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+      - EUREKA_INSTANCE_HOSTNAME=user-service
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
+    restart: unless-stopped
+
+  notification-service:
+    container_name: timely-notification-service
+    build: ./services/notification-service
+    ports:
+      - "8093:8093"
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      mongodb:
+        condition: service_started
+      discovery-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8093/actuator/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - timely-microservices
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATA_MONGODB_HOST=mongodb
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=admin
+      - SPRING_RABBITMQ_PASSWORD=password
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+      - EUREKA_INSTANCE_HOSTNAME=notification-service
       - EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
     restart: unless-stopped
 
@@ -164,5 +278,7 @@ networks:
 
 volumes:
   postgres:
+  user-postgres:
   pgadmin:
   mongo:
+  rabbitmq_data:

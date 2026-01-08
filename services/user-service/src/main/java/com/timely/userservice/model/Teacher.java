@@ -1,9 +1,12 @@
-package com.timely.authservice.model;
+package com.timely.userservice.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @DiscriminatorValue("TEACHER")

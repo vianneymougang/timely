@@ -6,15 +6,21 @@ spring:
 
   # Database Configuration
   datasource:
+<<<<<<< HEAD
     url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:auth-service-db}
     username: ${DB_USERNAME:postgres}
     password: ${DB_PASSWORD:password}
+=======
+    url: jdbc:postgresql://localhost:5432/auth-service-db
+    username: admin
+    password: password
+>>>>>>> 0ea8e076f89dd6ae6a11210df6b146a8af9075d8
     driver-class-name: org.postgresql.Driver
 
   # JPA Configuration
   jpa:
     hibernate:
-      ddl-auto: validate
+      ddl-auto: update
     show-sql: true
     properties:
       hibernate:

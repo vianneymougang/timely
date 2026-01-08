@@ -1,0 +1,40 @@
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+/* Désactiver la sélection de texte pendant le drag */
+.select-none {
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+}
+
+/* Style pour le sticky header */
+table thead th.sticky {
+  position: sticky;
+  top: 0;
+  z-index: 20;
+}
+
+/* Style pour la première colonne sticky */
+table tbody td.sticky {
+  position: sticky;
+  left: 0;
+  z-index: 10;
+}
+
+table tbody tr:hover td.sticky {
+  background-color: #f8fafc;
+}

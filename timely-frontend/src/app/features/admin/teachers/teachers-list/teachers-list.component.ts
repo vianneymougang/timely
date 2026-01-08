@@ -1,26 +1,34 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { SidebarComponent } from '../../../../shared/components/sidebar/sidebar.component';
-import { TeacherService } from '../../../../core/services/teacher.service';
 import { Teacher } from '../../../../core/models/teacher.model';
+import {
+  AvailabilityResponseDto,
+  AvailabilityService,
+} from '../../../../core/services/availability.service';
+import { TeacherService } from '../../../../core/services/teacher.service';
+import { UserService } from '../../../../core/services/user.service';
 
 @Component({
   selector: 'app-teachers-list',
   standalone: true,
-  imports: [CommonModule, FormsModule, SidebarComponent],
+  imports: [CommonModule, FormsModule],
   templateUrl: './teachers-list.component.html',
-  styleUrls: ['./teachers-list.component.scss']
+  styleUrls: ['./teachers-list.component.scss'],
 })
 export class TeachersListComponent implements OnInit {
   private teacherService = inject(TeacherService);
+  private userService = inject(UserService);
   private router = inject(Router);
+  private availabilityService = inject(AvailabilityService);
 
   teachers = signal<Teacher[]>([]);
   selectedTeacher = signal<Teacher | null>(null);
+  selectedTeacherAvailability = signal<AvailabilityResponseDto | null>(null);
   searchQuery = signal('');
   isLoading = signal(false);
+<<<<<<< HEAD
   // edit flow
   editMode = signal(false);
   editingTeacher = signal<Teacher | null>(null);
@@ -38,6 +46,10 @@ export class TeachersListComponent implements OnInit {
     // auto-hide after 3 seconds
     setTimeout(() => this.alertMessage.set(null), 3000);
   }
+=======
+  isLoadingAvailability = signal(false);
+  isSubmittingTeacher = signal(false);
+>>>>>>> 0ea8e076f89dd6ae6a11210df6b146a8af9075d8
 
   /*ngOnInit(): void {
     // En développement, utilisez les données mock
@@ -53,14 +65,7 @@ export class TeachersListComponent implements OnInit {
   }*/
 
   ngOnInit(): void {
-    this.isLoading.set(true);
-    this.teacherService.getMockTeachers().subscribe(teachers => {
-      this.teachers.set(teachers);
-      if (teachers.length > 0) {
-        this.selectTeacher(teachers[0]);
-      }
-      this.isLoading.set(false);
-    });
+    this.loadTeachers();
   }
 
   loadTeachers(): void {
@@ -69,29 +74,83 @@ export class TeachersListComponent implements OnInit {
       next: (teachers) => {
         this.teachers.set(teachers);
         if (teachers.length > 0) {
-          this.selectTeacher(teachers[0]);
+          // Sélectionner le premier enseignant si aucun n'est sélectionné
+          if (!this.selectedTeacher()) {
+            this.selectTeacher(teachers[0]);
+          }
+        } else {
+          this.selectedTeacher.set(null);
         }
       },
       error: (error) => {
         console.error('Error loading teachers:', error);
+        this.teachers.set([]);
+        this.selectedTeacher.set(null);
+        // Afficher un message d'erreur à l'utilisateur
+        let errorMessage = 'Erreur lors du chargement des enseignants';
+        if (error?.error?.message) {
+          errorMessage = error.error.message;
+        } else if (error?.error?.error) {
+          errorMessage = error.error.error;
+        } else if (error?.status === 401) {
+          errorMessage = "Vous devez être connecté en tant qu'administrateur";
+        } else if (error?.status === 403) {
+          errorMessage = 'Accès refusé. Seuls les administrateurs peuvent voir les enseignants';
+        } else if (error?.status === 500) {
+          errorMessage = "Erreur serveur. Vérifiez que l'auth-service est démarré";
+        }
+        alert('Erreur: ' + errorMessage);
       },
       complete: () => {
         this.isLoading.set(false);
-      }
+      },
     });
   }
 
   selectTeacher(teacher: Teacher): void {
     this.selectedTeacher.set(teacher);
+    this.loadTeacherAvailability(teacher.id);
+  }
+
+  loadTeacherAvailability(teacherId: string): void {
+    this.isLoadingAvailability.set(true);
+    this.selectedTeacherAvailability.set(null);
+
+    this.availabilityService.getTeacherAvailability(teacherId).subscribe({
+      next: (availability) => {
+        this.selectedTeacherAvailability.set(availability);
+        this.isLoadingAvailability.set(false);
+      },
+      error: (error) => {
+        console.error('Error loading teacher availability:', error);
+        // Set to null on error (teacher may not have set availability)
+        this.selectedTeacherAvailability.set(null);
+        this.isLoadingAvailability.set(false);
+      },
+    });
+  }
+
+  getAvailableSlotsCount(): number {
+    const availability = this.selectedTeacherAvailability();
+    if (!availability || !availability.timeSlots) return 0;
+
+    return availability.timeSlots.reduce((total, slot) => {
+      return total + Object.values(slot.slots).filter((v) => v).length;
+    }, 0);
+  }
+
+  isPauseSlotByIndex(hourIndex: number): boolean {
+    return hourIndex === 4; // 12h-13h
   }
 
   filteredTeachers(): Teacher[] {
     const query = this.searchQuery().toLowerCase();
     if (!query) return this.teachers();
 
-    return this.teachers().filter(teacher =>
-      `${teacher.firstName} ${teacher.lastName}`.toLowerCase().includes(query) ||
-      teacher.email.toLowerCase().includes(query)
+    return this.teachers().filter(
+      (teacher) =>
+        `${teacher.firstName} ${teacher.lastName}`.toLowerCase().includes(query) ||
+        teacher.email.toLowerCase().includes(query)
     );
   }
 
@@ -104,7 +163,6 @@ export class TeachersListComponent implements OnInit {
   addCourse() {
     this.openAddCourseModal();
   }
-
 
   showAddTeacherModal = signal(false);
   showAddCourseModal = signal(false);
@@ -153,6 +211,7 @@ export class TeachersListComponent implements OnInit {
   }
 
   submitAddTeacher(form: any) {
+<<<<<<< HEAD
     if (!form.valid) return;
     const data = {
       firstName: this.formFirstName(),
@@ -185,6 +244,83 @@ export class TeachersListComponent implements OnInit {
         this.closeModals();
         this.loadTeachers();
         this.showAlert('Enseignant ajouté avec succès', 'success');
+=======
+    if (!form.valid) {
+      // Afficher les erreurs de validation
+      Object.keys(form.controls).forEach((key) => {
+        const control = form.controls[key];
+        if (control.invalid) {
+          control.markAsTouched();
+        }
+      });
+      return;
+    }
+
+    this.isSubmittingTeacher.set(true);
+    const data = form.value;
+    const userRole = data.userRole || 'teacher';
+
+    if (userRole === 'admin') {
+      const registerRequest = {
+        name: data.firstName,
+        surname: data.lastName,
+        email: data.email,
+        telephoneNumber: data.telephoneNumber ? parseInt(data.telephoneNumber) : undefined,
+      };
+
+      this.userService.createAdmin(registerRequest).subscribe({
+        next: () => {
+          this.isSubmittingTeacher.set(false);
+          this.closeModals();
+          this.loadTeachers();
+          alert('Administrateur créé avec succès !');
+        },
+        error: (error) => {
+          this.isSubmittingTeacher.set(false);
+          console.error('Error creating admin:', error);
+          let errorMessage = "Erreur lors de la création de l'administrateur";
+          if (error?.error?.message) {
+            errorMessage = error.error.message;
+          } else if (error?.error?.error) {
+            errorMessage = error.error.error;
+          } else if (error?.message) {
+            errorMessage = error.message;
+          }
+          alert('Erreur: ' + errorMessage);
+        },
+      });
+    } else {
+      const registerRequest = {
+        name: data.firstName,
+        surname: data.lastName,
+        email: data.email,
+        telephoneNumber: data.telephoneNumber ? parseInt(data.telephoneNumber) : undefined,
+        grade: data.grade,
+        rank: data.rank,
+        hourlyRate: data.hourlyRate,
+      };
+
+      this.userService.createTeacher(registerRequest).subscribe({
+        next: () => {
+          this.isSubmittingTeacher.set(false);
+          this.closeModals();
+          this.loadTeachers();
+          alert('Enseignant créé avec succès !');
+        },
+        error: (error) => {
+          this.isSubmittingTeacher.set(false);
+          console.error('Error creating teacher:', error);
+          let errorMessage = "Erreur lors de la création de l'enseignant";
+          if (error?.error?.message) {
+            errorMessage = error.error.message;
+          } else if (error?.error?.error) {
+            errorMessage = error.error.error;
+          } else if (error?.message) {
+            errorMessage = error.message;
+          }
+          alert('Erreur: ' + errorMessage);
+        },
+>>>>>>> 0ea8e076f89dd6ae6a11210df6b146a8af9075d8
       });
     }
   }
@@ -192,9 +328,7 @@ export class TeachersListComponent implements OnInit {
   submitAddCourse(form: any) {
     if (!form.valid) return;
 
-    console.log("Course added:", form.value);
+    console.log('Course added:', form.value);
     this.closeModals();
   }
-
-
 }

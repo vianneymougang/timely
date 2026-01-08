@@ -1,9 +1,23 @@
 package com.timely.authservice.model;
 
+<<<<<<< HEAD
 import jakarta.persistence.*;
 
+=======
+>>>>>>> 0ea8e076f89dd6ae6a11210df6b146a8af9075d8
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.Table;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Table(name = "refresh_tokens")
@@ -15,9 +29,8 @@ public class RefreshToken {
     @Column(nullable = false, unique = true)
     private String token;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+    @Column(name = "user_id", nullable = false)
+    private UUID userId;  // Changed from User entity to UUID
 
     @Column(name = "expiry_date", nullable = false)
     private LocalDateTime expiryDate;

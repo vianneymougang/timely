@@ -1,12 +1,12 @@
-import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
+import { Injectable, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, throwError } from 'rxjs';
-import { tap, map, catchError } from 'rxjs/operators';
-import { User } from '../models/user.model';
+import { catchError, tap } from 'rxjs/operators';
+import { environment } from '../../../environments/environment';
 import { AuthResponse } from '../models/auth-response.model';
 import { LoginRequest } from '../models/login-request.model';
-import { environment } from '../../../environments/environment';
+import { User } from '../models/user.model';
 
 @Injectable({
   providedIn: 'root',
@@ -184,5 +184,47 @@ export class AuthService {
 
   isTeacher(): boolean {
     return this.currentUser()?.role === 'teacher';
+  }
+
+  /**
+   * Request password reset - sends email with reset link
+   */
+  forgotPassword(email: string): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${this.AUTH_API}/forgot-password`, { email }).pipe(
+      catchError((error) => {
+        console.error('Forgot password error:', error);
+        return throwError(
+          () => new Error(error.error?.message || "Erreur lors de l'envoi de l'email")
+        );
+      })
+    );
+  }
+
+  /**
+   * Validate password reset token
+   */
+  validateResetToken(token: string): Observable<{ valid: boolean }> {
+    return this.http.get<{ valid: boolean }>(`${this.AUTH_API}/validate-reset-token/${token}`).pipe(
+      catchError((error) => {
+        console.error('Token validation error:', error);
+        return throwError(() => new Error(error.error?.message || 'Token invalide ou expiré'));
+      })
+    );
+  }
+
+  /**
+   * Reset password with token
+   */
+  resetPassword(token: string, newPassword: string): Observable<{ message: string }> {
+    return this.http
+      .post<{ message: string }>(`${this.AUTH_API}/reset-password`, { token, newPassword })
+      .pipe(
+        catchError((error) => {
+          console.error('Reset password error:', error);
+          return throwError(
+            () => new Error(error.error?.message || 'Erreur lors de la réinitialisation')
+          );
+        })
+      );
   }
 }

@@ -1,4 +1,4 @@
-package com.timely.authservice.model;
+package com.timely.userservice.model;
 
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
@@ -12,6 +12,7 @@ public class Admin extends User {
 
     @NotNull
     private Integer department;
+<<<<<<< HEAD:services/auth-service/src/main/java/com/timely/authservice/model/Admin.java
 
     // Getters and Setters
     public Integer getAccessLevel() {
@@ -29,4 +30,6 @@ public class Admin extends User {
     public void setDepartment(Integer department) {
         this.department = department;
     }
+=======
+>>>>>>> 0ea8e076f89dd6ae6a11210df6b146a8af9075d8:services/user-service/src/main/java/com/timely/userservice/model/Admin.java
 }
