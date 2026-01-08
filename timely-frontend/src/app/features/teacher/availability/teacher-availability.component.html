@@ -1,19 +1,37 @@
-<!--<p>about works! {{mess}}</p>
-
-<div class="contry">
-  <h3 class="title">LISTE DES PAYS</h3>
-  <ul>
-    @for (item of countries; track $index) {
-      <li> <img src="{{item.flags.png}}" alt="">{{item.name.common}} </li>
-    }
-  </ul>
-</div>-->
-
 <main class="flex-1 p-8 overflow-y-auto" (mouseup)="onMouseUp()" (mouseleave)="onMouseUp()">
   <!-- Header -->
-  <header class="mb-8">
-    <h2 class="text-3xl font-bold text-slate-800 mb-2">Disponibilités hebdomadaires</h2>
-    <p class="text-slate-500">Définir mes créneaux de disponibilité</p>
+  <header class="mb-8 flex items-center justify-between gap-6 flex-wrap">
+    <!-- Titre + sous-titre -->
+    <div>
+      <h2 class="text-3xl font-bold text-slate-800 mb-1">
+        Disponibilités hebdomadaires
+      </h2>
+      <p class="text-slate-500">
+        Définir mes créneaux de disponibilité
+      </p>
+    </div>
+        <!-- Submit Button -->
+    <div class="mt-8 flex justify-end">
+      <button
+        type="button"
+        (click)="submitAvailability()"
+        [disabled]="isSaving() || getSelectedSlotsCount() === 0"
+        class="px-8 py-3 bg-teal-600 hover:bg-teal-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center gap-2">
+        @if (isSaving()) {
+          <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+          </svg>
+          Enregistrement...
+        } @else {
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+          </svg>
+          Soumettre disponibilités
+        }
+      </button>
+    </div>
   </header>
 
   <!-- Info Banner -->
@@ -127,29 +145,6 @@
         </tbody>
       </table>
     </div>
-  </div>
-
-  <!-- Submit Button -->
-  <div class="mt-8 flex justify-end">
-    <button
-      type="button"
-      (click)="submitAvailability()"
-      [disabled]="isSaving() || getSelectedSlotsCount() === 0"
-      class="px-8 py-3 bg-teal-600 hover:bg-teal-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center gap-2">
-      @if (isSaving()) {
-        <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-        </svg>
-        Enregistrement...
-      } @else {
-        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
-        </svg>
-        Soumettre disponibilités
-      }
-    </button>
   </div>
 
   <!-- Legend -->
