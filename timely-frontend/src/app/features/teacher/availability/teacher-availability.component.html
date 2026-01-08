@@ -1,3 +1,14 @@
+<!--<p>about works! {{mess}}</p>
+
+<div class="contry">
+  <h3 class="title">LISTE DES PAYS</h3>
+  <ul>
+    @for (item of countries; track $index) {
+      <li> <img src="{{item.flags.png}}" alt="">{{item.name.common}} </li>
+    }
+  </ul>
+</div>-->
+
 <main class="flex-1 p-8 overflow-y-auto" (mouseup)="onMouseUp()" (mouseleave)="onMouseUp()">
   <!-- Header -->
   <header class="mb-8">
@@ -8,7 +19,7 @@
   <!-- Info Banner -->
   <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 flex items-start gap-3">
     <svg class="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
             d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
     </svg>
     <div class="flex-1">
@@ -60,7 +71,7 @@
   @if (successMessage()) {
     <div class="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-lg mb-6 flex items-center gap-3 animate-fade-in">
       <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
               d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
       </svg>
       <span class="font-medium">{{ successMessage() }}</span>
@@ -72,26 +83,26 @@
     <div class="overflow-x-auto">
       <table class="w-full border-collapse">
         <thead>
-        <tr class="bg-slate-50">
-          <th class="sticky left-0 z-10 bg-slate-50 px-4 py-3 text-left text-sm font-semibold text-slate-700 border-b border-r border-slate-200 min-w-[120px]">
-            Horaires
-          </th>
-          @for (day of weekDays; track day.key) {
-            <th class="px-4 py-3 text-center text-sm font-semibold text-slate-700 border-b border-slate-200 min-w-[140px]">
-              {{ day.label }}
+          <tr class="bg-slate-50">
+            <th class="sticky left-0 z-10 bg-slate-50 px-4 py-3 text-left text-sm font-semibold text-slate-700 border-b border-r border-slate-200 min-w-[120px]">
+              Horaires
             </th>
-          }
-        </tr>
+            @for (day of weekDays; track day.key) {
+              <th class="px-4 py-3 text-center text-sm font-semibold text-slate-700 border-b border-slate-200 min-w-[140px]">
+                {{ day.label }}
+              </th>
+            }
+          </tr>
         </thead>
         <tbody>
-          @for (slot of timeSlots(); track slot.hour) {
+          @for (slot of timeSlots(); track slot.hour; let rowIndex = $index) {
             <tr class="hover:bg-slate-50 transition-colors">
               <td class="sticky left-0 z-10 bg-white px-4 py-3 text-sm font-medium text-slate-700 border-r border-slate-200">
                 {{ slot.hour }}
               </td>
               @for (day of weekDays; track day.key) {
                 <td class="border border-slate-200 p-0">
-                  @if (isPauseSlot($index)) {
+                  @if (isPauseSlot(rowIndex)) {
                     <!-- Cellule de pause - non cliquable -->
                     <div class="w-full h-16 bg-slate-200 flex items-center justify-center cursor-not-allowed">
                       <span class="text-slate-500 text-sm font-medium">Pause</span>
@@ -100,11 +111,11 @@
                     <!-- Cellule normale - cliquable -->
                     <button
                       type="button"
-                      (mousedown)="onMouseDown($index, day.key, $event)"
-                      (mouseenter)="onMouseEnter($index, day.key)"
-                      [class]="'w-full h-16 transition-all cursor-pointer select-none ' +
-                        (slot.slots[day.key]
-                          ? 'bg-emerald-400 hover:bg-emerald-500'
+                      (mousedown)="onMouseDown(rowIndex, day.key, $event)"
+                      (mouseenter)="onMouseEnter(rowIndex, day.key)"
+                      [class]="'w-full h-16 transition-all cursor-pointer select-none ' + 
+                        (slot.slots[day.key] 
+                          ? 'bg-emerald-400 hover:bg-emerald-500' 
                           : 'bg-white hover:bg-slate-100')"
                       [attr.aria-label]="'Créneau ' + slot.hour + ' ' + day.label + (slot.slots[day.key] ? ' sélectionné' : ' non sélectionné')">
                     </button>
@@ -133,7 +144,7 @@
         Enregistrement...
       } @else {
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                 d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
         </svg>
         Soumettre disponibilités
