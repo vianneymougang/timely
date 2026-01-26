@@ -1,8 +1,8 @@
-# ⏳ Timely
+# Timely
 
 Timely est une application moderne basée sur des microservices, conçue pour une gestion efficace des emplois de temps des salles et professeurs de l'Université Saint Jean. Ce dépôt contient le code source des microservices backend et de l'application frontend.
 
-## 🚀 Stack Technique
+## Stack Technique
 
 ### Frontend
 
@@ -26,7 +26,7 @@ Timely est une application moderne basée sur des microservices, conçue pour un
 
 ---
 
-## 📋 Prérequis
+## Prérequis
 
 Avant de commencer, assurez-vous d'avoir installé les éléments suivants sur votre machine :
 
@@ -36,7 +36,7 @@ Avant de commencer, assurez-vous d'avoir installé les éléments suivants sur v
 
 ---
 
-## 🛠️ Installation et Configuration
+## Installation et Configuration
 
 ### 1. Cloner le Dépôt
 
@@ -90,7 +90,7 @@ Le frontend est une application Angular qui s'exécute localement.
 
 ---
 
-## 🏗️ Vue d'ensemble de l'Architecture
+## Vue d'ensemble de l'Architecture
 
 Le projet suit une architecture microservices. Voici les principaux services et leurs ports :
 
@@ -149,7 +149,7 @@ Le projet suit une architecture microservices. Voici les principaux services et 
 
 ---
 
-## 🤝 Contribuer
+## Contribuer
 
 1. Créez une nouvelle branche pour votre fonctionnalité ou correctif.
 2. Committez vos changements avec des messages descriptifs.
