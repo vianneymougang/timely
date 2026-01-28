@@ -25,22 +25,6 @@
         </svg>
         Ajouter un utilisateur
       </button>
-
-      <!-- Bouton ajouter cours -->
-      <button
-        (click)="addCourse()"
-        class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors"
-      >
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            stroke-width="2"
-            d="M12 4v16m8-8H4"
-          />
-        </svg>
-        Ajouter un cours
-      </button>
     </div>
   </div>
 
@@ -460,55 +444,5 @@
 </div>
 }
 
-<!-- Modal Ajouter Cours -->
-@if (showAddCourseModal()) {
-<div class="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-  <div class="bg-white w-full max-w-lg rounded-xl shadow-xl p-6 animate-fadeIn">
-    <h2 class="text-xl font-bold mb-4 text-slate-800">Ajouter un cours</h2>
-
-    <form #courseForm="ngForm" class="space-y-4">
-      <div>
-        <label class="text-sm font-medium">Nom du cours</label>
-        <input
-          type="text"
-          class="mt-1 w-full border rounded-lg p-2"
-          name="courseName"
-          ngModel
-          required
-        />
-      </div>
-
-      <div>
-        <label class="text-sm font-medium">Volume horaire</label>
-        <input
-          type="number"
-          class="mt-1 w-full border rounded-lg p-2"
-          name="hours"
-          ngModel
-          required
-        />
-      </div>
-
-      <div class="flex justify-end gap-3 pt-4">
-        <button
-          type="button"
-          (click)="closeModals()"
-          class="px-4 py-2 bg-slate-200 rounded-lg hover:bg-slate-300"
-        >
-          Annuler
-        </button>
-
-        <button
-          type="submit"
-          (click)="submitAddCourse(courseForm)"
-          class="px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700"
-        >
-          Ajouter
-        </button>
-      </div>
-    </form>
-  </div>
-</div>
-}
 <!--
 </div>-->

@@ -27,6 +27,7 @@ export class SidebarComponent {
     { icon: 'event_note', label: 'Réservations', route: '/admin/reservations' },
     { icon: 'school', label: 'Enseignants', route: '/admin/teachers' },
     { icon: 'menu_book', label: 'Cours & UE', route: '/admin/courses' },
+    { icon: 'account_tree', label: 'Écoles & Filières', route: '/admin/academic' },
     { icon: 'inventory_2', label: 'Ressources', route: '/admin/resources' },
     { icon: 'bar_chart', label: 'Statistiques', route: '/admin/statistics' },
     { icon: 'settings', label: 'Paramètres', route: '/admin/settings' },
