@@ -138,19 +138,11 @@ export class TeachersListComponent implements OnInit {
     this.openAddTeacherModal();
   }
 
-  addCourse() {
-    this.openAddCourseModal();
-  }
-
   showAddTeacherModal = signal(false);
   showAddCourseModal = signal(false);
 
   openAddTeacherModal() {
     this.showAddTeacherModal.set(true);
-  }
-
-  openAddCourseModal() {
-    this.showAddCourseModal.set(true);
   }
 
   closeModals() {

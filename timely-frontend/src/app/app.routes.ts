@@ -48,6 +48,11 @@ export const routes: Routes = [
           .then(m => m.CoursesManagementComponent)
       },
       {
+        path: 'academic',
+        loadComponent: () => import('./features/admin/academic-management/academic-management.component')
+          .then(m => m.AcademicManagementComponent)
+      },
+      {
         path: 'teachers',
         loadComponent: () => import('./features/admin/teachers/teachers-list/teachers-list.component')
           .then(m => m.TeachersListComponent)
