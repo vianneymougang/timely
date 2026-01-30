@@ -14,13 +14,13 @@ import {
 } from '../../../core/models/academic.model';
 
 @Component({
-  selector: 'app-academic-management',
+  selector: 'app-academic',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './academic-management.component.html',
-  styleUrls: ['./academic-management.component.scss']
+  templateUrl: './academic.component.html',
+  styleUrls: ['./academic.component.scss']
 })
-export class AcademicManagementComponent implements OnInit {
+export class AcademicComponent implements OnInit {
   private ecoleService = inject(EcoleService);
   private filiereService = inject(FiliereService);
   private classeService = inject(ClasseService);

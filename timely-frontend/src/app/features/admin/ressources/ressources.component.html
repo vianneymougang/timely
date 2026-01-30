@@ -1,1 +1,517 @@
-<p>ressources.component works!</p>
+<div class="p-8 max-w-7xl mx-auto">
+  <!-- En-tête -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-slate-800 mb-2">Gestion des Ressources</h1>
+    <p class="text-slate-600">Gérez les matériels et équipements de l'établissement</p>
+  </div>
+
+  <!-- Tabs de navigation -->
+  <div class="flex gap-4 mb-6 border-b border-slate-200">
+    <button
+      (click)="setActiveSection('materiel')"
+      [class.border-teal-600]="activeSection() === 'materiel'"
+      [class.text-teal-600]="activeSection() === 'materiel'"
+      [class.text-slate-600]="activeSection() !== 'materiel'"
+      class="pb-3 px-4 font-medium border-b-2 transition-colors hover:text-teal-600"
+    >
+      <span class="flex items-center gap-2">
+        <span class="material-icons text-xl">inventory</span>
+        Matériels ({{ materiels().length }})
+      </span>
+    </button>
+    <button
+      (click)="setActiveSection('equipement')"
+      [class.border-teal-600]="activeSection() === 'equipement'"
+      [class.text-teal-600]="activeSection() === 'equipement'"
+      [class.text-slate-600]="activeSection() !== 'equipement'"
+      class="pb-3 px-4 font-medium border-b-2 transition-colors hover:text-teal-600"
+    >
+      <span class="flex items-center gap-2">
+        <span class="material-icons text-xl">devices</span>
+        Équipements ({{ equipements().length }})
+      </span>
+    </button>
+  </div>
+
+  <!-- Section Matériels -->
+  @if (activeSection() === 'materiel') {
+    <div>
+      <!-- Bouton d'ajout -->
+      <div class="mb-6 flex justify-between items-center">
+        <div class="text-slate-600">
+          <span class="font-medium">{{ materiels().length }}</span> matériels au total
+        </div>
+        <button
+          (click)="openMaterielModal()"
+          class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+        >
+          <span class="material-icons">add</span>
+          Nouveau matériel
+        </button>
+      </div>
+
+      <!-- Grille de cartes de matériels -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @for (materiel of materiels(); track materiel.id) {
+          <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border border-slate-200">
+            <!-- En-tête de la carte -->
+            <div class="flex justify-between items-start mb-4">
+              <div class="flex-1">
+                <h3 class="text-lg font-semibold text-slate-800 mb-1">{{ materiel.nom }}</h3>
+                <p class="text-sm text-slate-500">{{ materiel.type }}</p>
+              </div>
+              <span
+                [class]="getEtatBadgeClass(materiel.etat)"
+                class="px-2 py-1 rounded text-xs font-semibold whitespace-nowrap"
+              >
+                {{ materiel.etat }}
+              </span>
+            </div>
+
+            <!-- Description -->
+            @if (materiel.description) {
+              <p class="text-sm text-slate-600 mb-4 line-clamp-2">{{ materiel.description }}</p>
+            }
+
+            <!-- Informations -->
+            <div class="space-y-2 mb-4">
+              <div class="flex items-center gap-2 text-sm">
+                <div class="bg-teal-50 rounded-lg p-3 flex-1">
+                  <div class="text-xs text-teal-600 font-medium mb-1">Quantité totale</div>
+                  <div class="text-2xl font-bold text-teal-700">{{ materiel.quantite }}</div>
+                </div>
+                <div class="bg-blue-50 rounded-lg p-3 flex-1">
+                  <div class="text-xs text-blue-600 font-medium mb-1">Disponible</div>
+                  <div class="text-2xl font-bold text-blue-700">{{ getQuantiteDisponible(materiel.id!) }}</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Actions -->
+            <div class="flex gap-2 pt-4 border-t border-slate-200">
+              <button
+                (click)="openMaterielModal(materiel)"
+                class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1"
+              >
+                <span class="material-icons text-sm">edit</span>
+                Modifier
+              </button>
+              <button
+                (click)="deleteMateriel(materiel.id!)"
+                class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center"
+              >
+                <span class="material-icons text-sm">delete</span>
+              </button>
+            </div>
+          </div>
+        } @empty {
+          <div class="col-span-3 text-center py-12">
+            <span class="material-icons text-6xl text-slate-300 mb-4">inventory</span>
+            <p class="text-slate-500">Aucun matériel pour le moment</p>
+            <button
+              (click)="openMaterielModal()"
+              class="mt-4 text-teal-600 hover:text-teal-700 font-medium"
+            >
+              Ajouter votre premier matériel
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  }
+
+  <!-- Section Équipements -->
+  @if (activeSection() === 'equipement') {
+    <div>
+      <!-- Bouton d'ajout -->
+      <div class="mb-6 flex justify-between items-center">
+        <div class="text-slate-600">
+          <span class="font-medium">{{ equipements().length }}</span> équipements au total
+        </div>
+        <button
+          (click)="openEquipementModal()"
+          class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
+        >
+          <span class="material-icons">add</span>
+          Nouvel équipement
+        </button>
+      </div>
+
+      <!-- Grille de cartes d'équipements -->
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @for (equipement of equipements(); track equipement.id) {
+          <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border border-slate-200">
+            <!-- En-tête de la carte -->
+            <div class="flex justify-between items-start mb-4">
+              <div class="flex-1">
+                <h3 class="text-lg font-semibold text-slate-800 mb-1">{{ equipement.nom }}</h3>
+                <p class="text-sm text-slate-500">{{ equipement.type }}</p>
+              </div>
+              <span
+                [class]="getEtatBadgeClass(equipement.etat)"
+                class="px-2 py-1 rounded text-xs font-semibold whitespace-nowrap"
+              >
+                {{ equipement.etat }}
+              </span>
+            </div>
+
+            <!-- Description -->
+            @if (equipement.description) {
+              <p class="text-sm text-slate-600 mb-4 line-clamp-2">{{ equipement.description }}</p>
+            }
+
+            <!-- Matériels affectés -->
+            @if (getMaterielsAffectes(equipement).length > 0) {
+              <div class="mb-4">
+                <h4 class="text-xs font-semibold text-slate-700 mb-2 flex items-center gap-1">
+                  <span class="material-icons text-sm">build</span>
+                  Matériels inclus
+                </h4>
+                <div class="space-y-1">
+                  @for (ma of getMaterielsAffectes(equipement); track ma.materielId) {
+                    <div class="flex items-center justify-between text-xs bg-slate-50 rounded px-2 py-1">
+                      <span class="text-slate-600">{{ getMaterielName(ma.materielId) }}</span>
+                      <span class="font-semibold text-slate-700">×{{ ma.quantiteAffectee }}</span>
+                    </div>
+                  }
+                </div>
+              </div>
+            } @else {
+              <div class="mb-4 h-16 flex items-center justify-center text-xs text-slate-400">
+                Aucun matériel affecté
+              </div>
+            }
+
+            <!-- Actions -->
+            <div class="flex gap-2 pt-4 border-t border-slate-200">
+              <button
+                (click)="openEquipementModal(equipement)"
+                class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1"
+              >
+                <span class="material-icons text-sm">edit</span>
+                Modifier
+              </button>
+              <button
+                (click)="deleteEquipement(equipement.id!)"
+                class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center"
+              >
+                <span class="material-icons text-sm">delete</span>
+              </button>
+            </div>
+          </div>
+        } @empty {
+          <div class="col-span-3 text-center py-12">
+            <span class="material-icons text-6xl text-slate-300 mb-4">devices</span>
+            <p class="text-slate-500">Aucun équipement pour le moment</p>
+            <button
+              (click)="openEquipementModal()"
+              class="mt-4 text-teal-600 hover:text-teal-700 font-medium"
+            >
+              Ajouter votre premier équipement
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  }
+  <!-- Modal Matériel -->
+  @if (showMaterielModal()) {
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <!-- En-tête du modal -->
+        <div class="flex justify-between items-center p-6 border-b border-slate-200">
+          <h2 class="text-2xl font-bold text-slate-800">
+            {{ editingMateriel() ? 'Modifier le matériel' : 'Nouveau matériel' }}
+          </h2>
+          <button
+            (click)="closeMaterielModal()"
+            class="text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            <span class="material-icons">close</span>
+          </button>
+        </div>
+
+        <!-- Formulaire -->
+        <form [formGroup]="materielForm" (ngSubmit)="saveMateriel()" class="p-6">
+          <div class="space-y-4">
+            <!-- Nom -->
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">
+                Nom du matériel *
+              </label>
+              <input
+                type="text"
+                formControlName="nom"
+                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                placeholder="Ex: Chaises ergonomiques"
+              />
+              @if (materielForm.get('nom')?.invalid && materielForm.get('nom')?.touched) {
+                <p class="text-red-600 text-sm mt-1">Le nom est requis (min. 3 caractères)</p>
+              }
+            </div>
+
+            <!-- Type et État -->
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">
+                  Type *
+                </label>
+                <input
+                  type="text"
+                  formControlName="type"
+                  class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  placeholder="Ex: Mobilier"
+                />
+                @if (materielForm.get('type')?.invalid && materielForm.get('type')?.touched) {
+                  <p class="text-red-600 text-sm mt-1">Le type est requis</p>
+                }
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">
+                  État *
+                </label>
+                <select
+                  formControlName="etat"
+                  class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                >
+                  @for (etat of etats; track etat) {
+                    <option [value]="etat">{{ etat }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+
+            <!-- Quantité -->
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">
+                Quantité *
+              </label>
+              <input
+                type="number"
+                formControlName="quantite"
+                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                placeholder="Ex: 50"
+                min="1"
+              />
+              @if (materielForm.get('quantite')?.invalid && materielForm.get('quantite')?.touched) {
+                <p class="text-red-600 text-sm mt-1">La quantité doit être au minimum 1</p>
+              }
+            </div>
+
+            <!-- Description -->
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">
+                Description
+              </label>
+              <textarea
+                formControlName="description"
+                rows="3"
+                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
+                placeholder="Description optionnelle du matériel..."
+              ></textarea>
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex gap-3 mt-6 pt-6 border-t border-slate-200">
+            <button
+              type="button"
+              (click)="closeMaterielModal()"
+              class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              [disabled]="materielForm.invalid"
+              [class.opacity-50]="materielForm.invalid"
+              [class.cursor-not-allowed]="materielForm.invalid"
+              class="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors disabled:hover:bg-teal-600"
+            >
+              {{ editingMateriel() ? 'Enregistrer' : 'Créer' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+  <!-- Modal Équipement -->
+  @if (showEquipementModal()) {
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-xl max-w-3xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <!-- En-tête du modal -->
+        <div class="flex justify-between items-center p-6 border-b border-slate-200">
+          <h2 class="text-2xl font-bold text-slate-800">
+            {{ editingEquipement() ? 'Modifier l\'équipement' : 'Nouvel équipement' }}
+          </h2>
+          <button
+            (click)="closeEquipementModal()"
+            class="text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            <span class="material-icons">close</span>
+          </button>
+        </div>
+
+        <!-- Formulaire -->
+        <form [formGroup]="equipementForm" (ngSubmit)="saveEquipement()" class="p-6">
+          <div class="space-y-4">
+            <!-- Nom -->
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">
+                Nom de l'équipement *
+              </label>
+              <input
+                type="text"
+                formControlName="nom"
+                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                placeholder="Ex: Projecteur HD"
+              />
+              @if (equipementForm.get('nom')?.invalid && equipementForm.get('nom')?.touched) {
+                <p class="text-red-600 text-sm mt-1">Le nom est requis (min. 3 caractères)</p>
+              }
+            </div>
+
+            <!-- Type et État -->
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">
+                  Type *
+                </label>
+                <input
+                  type="text"
+                  formControlName="type"
+                  class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  placeholder="Ex: Audiovisuel"
+                />
+                @if (equipementForm.get('type')?.invalid && equipementForm.get('type')?.touched) {
+                  <p class="text-red-600 text-sm mt-1">Le type est requis</p>
+                }
+              </div>
+
+              <div>
+                <label class="block text-sm font-medium text-slate-700 mb-1">
+                  État *
+                </label>
+                <select
+                  formControlName="etat"
+                  class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                >
+                  @for (etat of etats; track etat) {
+                    <option [value]="etat">{{ etat }}</option>
+                  }
+                </select>
+              </div>
+            </div>
+
+            <!-- Description -->
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">
+                Description
+              </label>
+              <textarea
+                formControlName="description"
+                rows="3"
+                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
+                placeholder="Description optionnelle de l'équipement..."
+              ></textarea>
+            </div>
+
+            <!-- Matériels affectés -->
+            <div>
+              <div class="flex justify-between items-center mb-3">
+                <label class="block text-sm font-medium text-slate-700">
+                  Matériels affectés
+                </label>
+                <button
+                  type="button"
+                  (click)="addMaterielAffecte()"
+                  class="text-teal-600 hover:text-teal-700 text-sm font-medium flex items-center gap-1"
+                >
+                  <span class="material-icons text-sm">add_circle</span>
+                  Ajouter un matériel
+                </button>
+              </div>
+
+              @if (materielsAffectesArray.length === 0) {
+                <div class="text-center py-6 bg-slate-50 rounded-lg border-2 border-dashed border-slate-200">
+                  <span class="material-icons text-slate-300 text-4xl mb-2">inventory_2</span>
+                  <p class="text-sm text-slate-500">Aucun matériel affecté</p>
+                  <p class="text-xs text-slate-400 mt-1">Cliquez sur "Ajouter un matériel" pour commencer</p>
+                </div>
+              } @else {
+                <div class="space-y-3" formArrayName="materielsAffectes">
+                  @for (materielControl of materielsAffectesArray.controls; track i; let i = $index) {
+                    <div [formGroupName]="i" class="flex gap-3 items-start bg-slate-50 p-3 rounded-lg">
+                      <!-- Sélection matériel -->
+                      <div class="flex-1">
+                        <select
+                          formControlName="materielId"
+                          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                        >
+                          <option value="">Sélectionnez un matériel</option>
+                          @for (materiel of materiels(); track materiel.id) {
+                            <option [value]="materiel.id">
+                              {{ materiel.nom }} ({{ materiel.type }}) - Disponible: {{ getQuantiteDisponible(materiel.id!) }}
+                            </option>
+                          }
+                        </select>
+                      </div>
+
+                      <!-- Quantité -->
+                      <div class="w-24">
+                        <input
+                          type="number"
+                          formControlName="quantiteAffectee"
+                          class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                          placeholder="Qté"
+                          min="1"
+                        />
+                      </div>
+
+                      <!-- Bouton supprimer -->
+                      <button
+                        type="button"
+                        (click)="removeMaterielAffecte(i)"
+                        class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                      >
+                        <span class="material-icons text-sm">delete</span>
+                      </button>
+                    </div>
+                  }
+                </div>
+              }
+
+              @if (materielsAffectesArray.length > 0) {
+                <p class="text-xs text-slate-500 mt-2">
+                  <span class="material-icons text-xs align-middle">info</span>
+                  Assurez-vous que les quantités ne dépassent pas les stocks disponibles
+                </p>
+              }
+            </div>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex gap-3 mt-6 pt-6 border-t border-slate-200">
+            <button
+              type="button"
+              (click)="closeEquipementModal()"
+              class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              [disabled]="equipementForm.invalid"
+              [class.opacity-50]="equipementForm.invalid"
+              [class.cursor-not-allowed]="equipementForm.invalid"
+              class="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors disabled:hover:bg-teal-600"
+            >
+              {{ editingEquipement() ? 'Enregistrer' : 'Créer' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>

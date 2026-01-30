@@ -44,13 +44,13 @@ export const routes: Routes = [
       },
       {
         path: 'courses',
-        loadComponent: () => import('./features/admin/courses-management/courses-management.component')
-          .then(m => m.CoursesManagementComponent)
+        loadComponent: () => import('./features/admin/courses/courses.component')
+          .then(m => m.CoursesComponent)
       },
       {
         path: 'academic',
-        loadComponent: () => import('./features/admin/academic-management/academic-management.component')
-          .then(m => m.AcademicManagementComponent)
+        loadComponent: () => import('./features/admin/academic/academic.component')
+          .then(m => m.AcademicComponent)
       },
       {
         path: 'teachers',
@@ -82,6 +82,11 @@ export const routes: Routes = [
         path: 'settings',
         loadComponent: () => import('./features/admin/settings/settings.component')
           .then(m => m.SettingsComponent)
+      },
+      {
+        path: 'students',
+        loadComponent: () => import ('./features/admin/etudiants/etudiants.component')
+          .then(m => m.EtudiantsComponent)
       }
     ]
   },
