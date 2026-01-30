@@ -39,7 +39,7 @@ export class EquipementService {
       etat: 'Excellent',
       description: '',
       materielsAffectes: [
-        { materielId: '3', quantiteAffectee: 5 } // 5 marqueurs
+        { materielId: '3', quantiteAffectee: 5 }
       ]
     },
   ];
