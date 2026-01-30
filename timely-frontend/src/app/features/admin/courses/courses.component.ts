@@ -10,10 +10,10 @@ import { Cours, UE, Filiere, CreateCoursDTO, CreateUEDTO } from '../../../core/m
   selector: 'app-courses-management',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
-  templateUrl: './courses-management.component.html',
-  styleUrls: ['./courses-management.component.scss']
+  templateUrl: './courses.component.html',
+  styleUrls: ['./courses.component.scss']
 })
-export class CoursesManagementComponent implements OnInit {
+export class CoursesComponent implements OnInit {
   private coursService = inject(CoursService);
   private ueService = inject(UEService);
   private filiereService = inject(FiliereService);
