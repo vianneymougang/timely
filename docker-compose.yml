@@ -39,6 +39,86 @@ services:
       - timely-microservices
     restart: unless-stopped
 
+  planning-service-db:
+    container_name: planning-service-db
+    image: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - planning-postgres:/var/lib/postgresql/data
+    ports:
+      - "5003:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - timely-microservices
+    restart: unless-stopped
+
+  booking-service-db:
+    container_name: booking-service-db
+    image: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - booking-postgres:/var/lib/postgresql/data
+    ports:
+      - "5004:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - timely-microservices
+    restart: unless-stopped
+
+  report-service-db:
+    container_name: report-service-db
+    image: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - report-postgres:/var/lib/postgresql/data
+    ports:
+      - "5006:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - timely-microservices
+    restart: unless-stopped
+
+  agora-service-db:
+    container_name: agora-service-db
+    image: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - agora-postgres:/var/lib/postgresql/data
+    ports:
+      - "5007:5432"
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "admin"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - timely-microservices
+    restart: unless-stopped
+
   pgadmin:
     container_name: timely_ms_pgadmin
     image: dpage/pgadmin4
@@ -79,6 +159,22 @@ services:
       ME_CONFIG_MONGODB_SERVER: mongodb
     networks:
       - timely-microservices
+
+  redis:
+    container_name: timely_ms_redis
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - timely-microservices
+    restart: unless-stopped
 
   mailtrap:
     image: dbck/mailtrap:latest
@@ -155,6 +251,12 @@ services:
         condition: service_healthy
       config-server:
         condition: service_healthy
+      auth-service:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+      planning-service:
+        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8090/actuator/health"]
       interval: 10s
@@ -185,8 +287,6 @@ services:
       discovery-server:
         condition: service_healthy
       config-server:
-        condition: service_healthy
-      api-gateway:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8091/actuator/health"]
@@ -220,8 +320,6 @@ services:
         condition: service_healthy
       config-server:
         condition: service_healthy
-      api-gateway:
-        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8092/actuator/health"]
       interval: 10s
@@ -238,11 +336,67 @@ services:
       - EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
     restart: unless-stopped
 
+  planning-service:
+    container_name: timely-planning-service
+    build: ./services/planning-service
+    ports:
+      - "8093:8093"
+    depends_on:
+      planning-service-db:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8093/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - timely-microservices
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://planning-service-db:5432/planning-service-db
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+      - EUREKA_INSTANCE_HOSTNAME=planning-service
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
+    restart: unless-stopped
+
+  booking-service:
+    container_name: timely-booking-service
+    build: ./services/booking-service
+    ports:
+      - "8094:8094"
+    depends_on:
+      booking-service-db:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8094/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - timely-microservices
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://booking-service-db:5432/booking-service-db
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+      - EUREKA_INSTANCE_HOSTNAME=booking-service
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
+    restart: unless-stopped
+
   notification-service:
     container_name: timely-notification-service
     build: ./services/notification-service
     ports:
-      - "8093:8093"
+      - "8095:8095"
     depends_on:
       rabbitmq:
         condition: service_healthy
@@ -253,7 +407,7 @@ services:
       config-server:
         condition: service_healthy
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:8093/actuator/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8095/actuator/health"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -272,6 +426,62 @@ services:
       - EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
     restart: unless-stopped
 
+  report-service:
+    container_name: timely-report-service
+    build: ./services/report-service
+    ports:
+      - "8096:8096"
+    depends_on:
+      report-service-db:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8096/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - timely-microservices
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://report-service-db:5432/report-service-db
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+      - EUREKA_INSTANCE_HOSTNAME=report-service
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
+    restart: unless-stopped
+
+  agora-service:
+    container_name: timely-agora-service
+    build: ./services/agora-service
+    ports:
+      - "8097:8097"
+    depends_on:
+      agora-service-db:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8097/actuator/health" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - timely-microservices
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://agora-service-db:5432/agora-service-db
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+      - EUREKA_INSTANCE_HOSTNAME=agora-service
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
+    restart: unless-stopped
+
 networks:
   timely-microservices:
     driver: bridge
@@ -279,6 +489,11 @@ networks:
 volumes:
   postgres:
   user-postgres:
+  planning-postgres:
+  booking-postgres:
+  report-postgres:
+  agora-postgres:
   pgadmin:
   mongo:
+  redis_data:
   rabbitmq_data:

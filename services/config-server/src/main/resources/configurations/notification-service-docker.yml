@@ -1,6 +1,7 @@
+server:
+  port: 8095
+
 spring:
-  application:
-    name: notification-service
   rabbitmq:
     host: rabbitmq
     port: 5672
@@ -9,8 +10,8 @@ spring:
   mail:
     host: mailtrap
     port: 25
-    username: # Not required for MailTrap
-    password: # Not required for MailTrap
+    username: ""
+    password: ""
     properties:
       mail:
         smtp:
@@ -26,24 +27,13 @@ spring:
       password: password
       authentication-database: admin
 
-server:
-  port: 8093
-
 eureka:
-  client:
-    service-url:
-      defaultZone: http://discovery-server:8761/eureka/
-    register-with-eureka: true
-    fetch-registry: true
   instance:
     prefer-ip-address: false
     hostname: notification-service
 
-management:
-  endpoint:
-    health:
-      show-details: always
-  endpoints:
-    web:
-      exposure:
-        include: health,info
+logging:
+  level:
+    root: INFO
+    com.timely.notificationservice: DEBUG
+    org.springframework.amqp: DEBUG

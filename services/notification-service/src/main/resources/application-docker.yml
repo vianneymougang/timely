@@ -37,7 +37,7 @@ spring:
 
 # Server Configuration
 server:
-  port: 8093
+  port: 8095
 
 # Eureka Client Configuration - Docker
 eureka:

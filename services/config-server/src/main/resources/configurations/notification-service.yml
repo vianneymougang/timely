@@ -1,49 +1,8 @@
-spring:
-  application:
-    name: notification-service
-  rabbitmq:
-    host: localhost
-    port: 5672
-    username: admin
-    password: password
-  mail:
-    host: localhost
-    port: 1025
-    username: # Not required for MailTrap
-    password: # Not required for MailTrap
-    properties:
-      mail:
-        smtp:
-          auth: false
-          starttls:
-            enable: false
-  data:
-    mongodb:
-      host: localhost
-      port: 27017
-      database: notification-service-db
-      username: admin
-      password: password
-      authentication-database: admin
-
 server:
-  port: 8093
+  port: 8095
 
-eureka:
-  client:
-    service-url:
-      defaultZone: http://localhost:8761/eureka/
-    register-with-eureka: true
-    fetch-registry: true
-  instance:
-    prefer-ip-address: true
-    hostname: localhost
-
-management:
-  endpoint:
-    health:
-      show-details: always
-  endpoints:
-    web:
-      exposure:
-        include: health,info
+logging:
+  level:
+    root: INFO
+    com.timely.notificationservice: DEBUG
+    org.springframework.amqp: DEBUG

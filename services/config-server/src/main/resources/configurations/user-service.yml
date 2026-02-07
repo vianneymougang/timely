@@ -3,8 +3,5 @@ server:
 
 logging:
   level:
-    root: info
-    com.timely.userservice: debug
-
-jwt:
-  secret: ${JWT_SECRET:mySecretKeyForJWTTokenGenerationThisShouldBeAtLeast256BitsLongForHS256Algorithm}
+    root: INFO
+    com.timely.userservice: DEBUG
