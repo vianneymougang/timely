@@ -1,7 +1,7 @@
 import { inject, Injectable, signal } from '@angular/core';
 import { delay, map, Observable, of, tap } from 'rxjs';
 import { MOCK_TEACHERS } from '../data/mock-data';
-import { Teacher } from '../models/teacher.model';
+import { Teacher, UserStatus } from '../models/teacher.model';
 import { ApiService } from './api.service';
 
 /**
@@ -37,11 +37,11 @@ export class TeacherService {
 
     // Mapper le status backend vers le status frontend
     let status: 'available' | 'busy' | 'unavailable' = 'available';
-    if (dto.status === 'INACTIVE' || dto.status === 'SUSPENDED') {
+    const userStatus = (dto.status as UserStatus) || 'ACTIVE';
+
+    if (dto.status === 'INACTIVE' || dto.status === 'SUSPENDED' || dto.status === 'BLOCKED') {
       status = 'unavailable';
     } else if (dto.status === 'ACTIVE') {
-      // Pour l'instant, on considère tous les ACTIVE comme available
-      // Vous pouvez ajouter une logique plus complexe basée sur la charge horaire
       status = 'available';
     }
 
@@ -52,9 +52,9 @@ export class TeacherService {
       email: dto.email,
       initials: initials,
       phone: dto.telephoneNumber?.toString(),
-      assignedCourses: 0, // À implémenter si disponible dans le backend
+      assignedCourses: 0,
       hourlyLoad: {
-        used: 0, // À calculer ou récupérer du backend
+        used: 0,
         total: 24,
       },
       availability: {
@@ -74,6 +74,7 @@ export class TeacherService {
         saturday: '-',
       },
       status: status,
+      userStatus: userStatus,
     };
   }
 

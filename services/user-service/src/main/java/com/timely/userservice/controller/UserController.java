@@ -16,6 +16,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.timely.userservice.dto.AdminDto;
+import com.timely.userservice.dto.BulkUserActionRequest;
+import com.timely.userservice.dto.BulkUserActionResponse;
 import com.timely.userservice.dto.CreateAdminRequest;
 import com.timely.userservice.dto.CreateTeacherRequest;
 import com.timely.userservice.dto.TeacherDto;
@@ -108,6 +110,26 @@ public class UserController {
     public ResponseEntity<UserDto> unblockUser(@PathVariable UUID id) {
         UserDto user = userService.unblockUser(id);
         return ResponseEntity.ok(user);
+    }
+
+    /**
+     * Bulk block users (Admin-only) - blocks multiple users at once
+     */
+    @PutMapping("/bulk-block")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<BulkUserActionResponse> bulkBlockUsers(@Valid @RequestBody BulkUserActionRequest request) {
+        BulkUserActionResponse response = userService.bulkBlockUsers(request.getUserIds());
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * Bulk unblock users (Admin-only) - unblocks multiple users at once
+     */
+    @PutMapping("/bulk-unblock")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<BulkUserActionResponse> bulkUnblockUsers(@Valid @RequestBody BulkUserActionRequest request) {
+        BulkUserActionResponse response = userService.bulkUnblockUsers(request.getUserIds());
+        return ResponseEntity.ok(response);
     }
 
     /**

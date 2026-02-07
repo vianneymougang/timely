@@ -56,6 +56,17 @@ export interface UpdateUserRequest {
   telephoneNumber?: number;
 }
 
+export interface BulkUserActionRequest {
+  userIds: string[];
+}
+
+export interface BulkUserActionResponse {
+  successCount: number;
+  failureCount: number;
+  successIds: string[];
+  failures: { userId: string; reason: string }[];
+}
+
 @Injectable({
   providedIn: 'root',
 })
@@ -174,5 +185,37 @@ export class UserService {
         );
       })
     );
+  }
+
+  /**
+   * Bloquer plusieurs utilisateurs (Admin uniquement)
+   */
+  bulkBlockUsers(userIds: string[]): Observable<BulkUserActionResponse> {
+    return this.apiService
+      .put<BulkUserActionResponse>(`${this.USERS_API}/bulk-block`, { userIds })
+      .pipe(
+        catchError((error) => {
+          console.error('Error bulk blocking users:', error);
+          return throwError(
+            () => new Error(error.error?.message || 'Erreur lors du blocage des utilisateurs')
+          );
+        })
+      );
+  }
+
+  /**
+   * Débloquer plusieurs utilisateurs (Admin uniquement)
+   */
+  bulkUnblockUsers(userIds: string[]): Observable<BulkUserActionResponse> {
+    return this.apiService
+      .put<BulkUserActionResponse>(`${this.USERS_API}/bulk-unblock`, { userIds })
+      .pipe(
+        catchError((error) => {
+          console.error('Error bulk unblocking users:', error);
+          return throwError(
+            () => new Error(error.error?.message || 'Erreur lors du déblocage des utilisateurs')
+          );
+        })
+      );
   }
 }

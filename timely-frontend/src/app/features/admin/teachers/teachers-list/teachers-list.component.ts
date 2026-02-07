@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Teacher } from '../../../../core/models/teacher.model';
@@ -30,6 +30,21 @@ export class TeachersListComponent implements OnInit {
   isLoading = signal(false);
   isLoadingAvailability = signal(false);
   isSubmittingTeacher = signal(false);
+
+  // Sélection multiple
+  selectedTeacherIds = signal<Set<string>>(new Set());
+  isSelectionMode = signal(false);
+  isBulkActionLoading = signal(false);
+
+  // Computed pour vérifier si tous les enseignants filtrés sont sélectionnés
+  allFilteredSelected = computed(() => {
+    const filtered = this.filteredTeachers();
+    const selected = this.selectedTeacherIds();
+    return filtered.length > 0 && filtered.every((t) => selected.has(t.id));
+  });
+
+  // Nombre d'enseignants sélectionnés
+  selectedCount = computed(() => this.selectedTeacherIds().size);
 
   /*ngOnInit(): void {
     // En développement, utilisez les données mock
@@ -235,5 +250,158 @@ export class TeachersListComponent implements OnInit {
 
     console.log('Course added:', form.value);
     this.closeModals();
+  }
+
+  // Méthodes pour la sélection multiple
+  toggleSelectionMode(): void {
+    this.isSelectionMode.update((v) => !v);
+    if (!this.isSelectionMode()) {
+      this.selectedTeacherIds.set(new Set());
+    }
+  }
+
+  toggleTeacherSelection(teacherId: string, event: Event): void {
+    event.stopPropagation();
+    this.selectedTeacherIds.update((set) => {
+      const newSet = new Set(set);
+      if (newSet.has(teacherId)) {
+        newSet.delete(teacherId);
+      } else {
+        newSet.add(teacherId);
+      }
+      return newSet;
+    });
+  }
+
+  isTeacherSelected(teacherId: string): boolean {
+    return this.selectedTeacherIds().has(teacherId);
+  }
+
+  toggleSelectAll(): void {
+    const filtered = this.filteredTeachers();
+    if (this.allFilteredSelected()) {
+      this.selectedTeacherIds.set(new Set());
+    } else {
+      this.selectedTeacherIds.set(new Set(filtered.map((t) => t.id)));
+    }
+  }
+
+  clearSelection(): void {
+    this.selectedTeacherIds.set(new Set());
+  }
+
+  // Actions de blocage/déblocage
+  blockTeacher(teacherId: string): void {
+    if (confirm('Êtes-vous sûr de vouloir bloquer cet enseignant ?')) {
+      this.userService.blockUser(teacherId).subscribe({
+        next: () => {
+          const currentSelectedId = this.selectedTeacher()?.id;
+          this.loadTeachers();
+          // Mettre à jour le teacher sélectionné après le rechargement
+          if (currentSelectedId) {
+            setTimeout(() => {
+              const updatedTeacher = this.teachers().find((t) => t.id === currentSelectedId);
+              if (updatedTeacher) {
+                this.selectedTeacher.set(updatedTeacher);
+              }
+            }, 100);
+          }
+          alert('Enseignant bloqué avec succès');
+        },
+        error: (error) => {
+          console.error('Error blocking teacher:', error);
+          alert("Erreur lors du blocage de l'enseignant: " + error.message);
+        },
+      });
+    }
+  }
+
+  unblockTeacher(teacherId: string): void {
+    if (confirm('Êtes-vous sûr de vouloir débloquer cet enseignant ?')) {
+      this.userService.unblockUser(teacherId).subscribe({
+        next: () => {
+          const currentSelectedId = this.selectedTeacher()?.id;
+          this.loadTeachers();
+          // Mettre à jour le teacher sélectionné après le rechargement
+          if (currentSelectedId) {
+            setTimeout(() => {
+              const updatedTeacher = this.teachers().find((t) => t.id === currentSelectedId);
+              if (updatedTeacher) {
+                this.selectedTeacher.set(updatedTeacher);
+              }
+            }, 100);
+          }
+          alert('Enseignant débloqué avec succès');
+        },
+        error: (error) => {
+          console.error('Error unblocking teacher:', error);
+          alert("Erreur lors du déblocage de l'enseignant: " + error.message);
+        },
+      });
+    }
+  }
+
+  bulkBlockTeachers(): void {
+    const selectedIds = Array.from(this.selectedTeacherIds());
+    if (selectedIds.length === 0) {
+      alert('Veuillez sélectionner au moins un enseignant');
+      return;
+    }
+
+    if (
+      confirm(`Êtes-vous sûr de vouloir bloquer ${selectedIds.length} enseignant(s) ?`)
+    ) {
+      this.isBulkActionLoading.set(true);
+      this.userService.bulkBlockUsers(selectedIds).subscribe({
+        next: (response) => {
+          this.isBulkActionLoading.set(false);
+          this.selectedTeacherIds.set(new Set());
+          this.loadTeachers();
+          alert(
+            `${response.successCount} enseignant(s) bloqué(s) avec succès.` +
+              (response.failureCount > 0
+                ? ` ${response.failureCount} échec(s).`
+                : '')
+          );
+        },
+        error: (error) => {
+          this.isBulkActionLoading.set(false);
+          console.error('Error bulk blocking teachers:', error);
+          alert('Erreur lors du blocage des enseignants: ' + error.message);
+        },
+      });
+    }
+  }
+
+  bulkUnblockTeachers(): void {
+    const selectedIds = Array.from(this.selectedTeacherIds());
+    if (selectedIds.length === 0) {
+      alert('Veuillez sélectionner au moins un enseignant');
+      return;
+    }
+
+    if (
+      confirm(`Êtes-vous sûr de vouloir débloquer ${selectedIds.length} enseignant(s) ?`)
+    ) {
+      this.isBulkActionLoading.set(true);
+      this.userService.bulkUnblockUsers(selectedIds).subscribe({
+        next: (response) => {
+          this.isBulkActionLoading.set(false);
+          this.selectedTeacherIds.set(new Set());
+          this.loadTeachers();
+          alert(
+            `${response.successCount} enseignant(s) débloqué(s) avec succès.` +
+              (response.failureCount > 0
+                ? ` ${response.failureCount} échec(s).`
+                : '')
+          );
+        },
+        error: (error) => {
+          this.isBulkActionLoading.set(false);
+          console.error('Error bulk unblocking teachers:', error);
+          alert('Erreur lors du déblocage des enseignants: ' + error.message);
+        },
+      });
+    }
   }
 }

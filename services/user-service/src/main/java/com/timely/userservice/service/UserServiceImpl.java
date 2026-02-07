@@ -1,6 +1,8 @@
 package com.timely.userservice.service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -10,6 +12,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.timely.userservice.config.RabbitMQConfig;
 import com.timely.userservice.dto.AdminDto;
+import com.timely.userservice.dto.BulkUserActionResponse;
 import com.timely.userservice.dto.CreateAdminRequest;
 import com.timely.userservice.dto.CreateTeacherRequest;
 import com.timely.userservice.dto.InternalUserDto;
@@ -262,5 +265,77 @@ public class UserServiceImpl implements UserService {
     @Transactional(readOnly = true)
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
+    }
+
+    @Override
+    @Transactional
+    public BulkUserActionResponse bulkBlockUsers(List<UUID> userIds) {
+        List<UUID> successIds = new ArrayList<>();
+        List<BulkUserActionResponse.FailedUserAction> failures = new ArrayList<>();
+
+        for (UUID userId : userIds) {
+            try {
+                Optional<User> userOpt = userRepository.findById(userId);
+                if (userOpt.isPresent()) {
+                    User user = userOpt.get();
+                    user.setStatus(UserStatus.BLOCKED);
+                    userRepository.save(user);
+                    successIds.add(userId);
+                } else {
+                    failures.add(BulkUserActionResponse.FailedUserAction.builder()
+                            .userId(userId)
+                            .reason("Utilisateur non trouvé")
+                            .build());
+                }
+            } catch (Exception e) {
+                failures.add(BulkUserActionResponse.FailedUserAction.builder()
+                        .userId(userId)
+                        .reason(e.getMessage())
+                        .build());
+            }
+        }
+
+        return BulkUserActionResponse.builder()
+                .successCount(successIds.size())
+                .failureCount(failures.size())
+                .successIds(successIds)
+                .failures(failures)
+                .build();
+    }
+
+    @Override
+    @Transactional
+    public BulkUserActionResponse bulkUnblockUsers(List<UUID> userIds) {
+        List<UUID> successIds = new ArrayList<>();
+        List<BulkUserActionResponse.FailedUserAction> failures = new ArrayList<>();
+
+        for (UUID userId : userIds) {
+            try {
+                Optional<User> userOpt = userRepository.findById(userId);
+                if (userOpt.isPresent()) {
+                    User user = userOpt.get();
+                    user.setStatus(UserStatus.ACTIVE);
+                    userRepository.save(user);
+                    successIds.add(userId);
+                } else {
+                    failures.add(BulkUserActionResponse.FailedUserAction.builder()
+                            .userId(userId)
+                            .reason("Utilisateur non trouvé")
+                            .build());
+                }
+            } catch (Exception e) {
+                failures.add(BulkUserActionResponse.FailedUserAction.builder()
+                        .userId(userId)
+                        .reason(e.getMessage())
+                        .build());
+            }
+        }
+
+        return BulkUserActionResponse.builder()
+                .successCount(successIds.size())
+                .failureCount(failures.size())
+                .successIds(successIds)
+                .failures(failures)
+                .build();
     }
 }

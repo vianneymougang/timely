@@ -32,8 +32,12 @@ public interface UserService {
     void deleteUser(UUID id);
     
     UserDto blockUser(UUID id);
-    
+
     UserDto unblockUser(UUID id);
+
+    com.timely.userservice.dto.BulkUserActionResponse bulkBlockUsers(java.util.List<UUID> userIds);
+
+    com.timely.userservice.dto.BulkUserActionResponse bulkUnblockUsers(java.util.List<UUID> userIds);
     
     void updatePassword(UUID id, String newPassword);
     

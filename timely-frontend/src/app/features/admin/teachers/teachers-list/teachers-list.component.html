@@ -10,6 +10,25 @@
     </div>
 
     <div class="flex items-center gap-3">
+      <!-- Bouton mode sélection -->
+      <button
+        (click)="toggleSelectionMode()"
+        [class]="isSelectionMode()
+          ? 'bg-slate-700 text-white'
+          : 'bg-slate-200 text-slate-700 hover:bg-slate-300'"
+        class="px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors"
+      >
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"
+          />
+        </svg>
+        {{ isSelectionMode() ? 'Annuler' : 'Sélection multiple' }}
+      </button>
+
       <!-- Bouton ajouter utilisateur -->
       <button
         (click)="addTeacher()"
@@ -39,6 +58,72 @@
     />
   </div>
 
+  <!-- Barre d'actions pour la sélection multiple -->
+  @if (isSelectionMode() && selectedCount() > 0) {
+  <div class="bg-slate-100 rounded-lg p-4 mb-6 flex items-center justify-between">
+    <div class="flex items-center gap-4">
+      <span class="text-sm font-medium text-slate-700">
+        {{ selectedCount() }} enseignant(s) sélectionné(s)
+      </span>
+      <button
+        (click)="toggleSelectAll()"
+        class="text-sm text-blue-600 hover:text-blue-800 font-medium"
+      >
+        {{ allFilteredSelected() ? 'Tout désélectionner' : 'Tout sélectionner' }}
+      </button>
+    </div>
+    <div class="flex items-center gap-3">
+      <!-- Bouton Bloquer -->
+      <button
+        (click)="bulkBlockTeachers()"
+        [disabled]="isBulkActionLoading()"
+        class="bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors"
+      >
+        @if (isBulkActionLoading()) {
+        <span class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+        } @else {
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+          />
+        </svg>
+        }
+        Bloquer
+      </button>
+      <!-- Bouton Débloquer -->
+      <button
+        (click)="bulkUnblockTeachers()"
+        [disabled]="isBulkActionLoading()"
+        class="bg-emerald-600 hover:bg-emerald-700 disabled:bg-emerald-400 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors"
+      >
+        @if (isBulkActionLoading()) {
+        <span class="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white"></span>
+        } @else {
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            stroke-width="2"
+            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+          />
+        </svg>
+        }
+        Débloquer
+      </button>
+      <!-- Bouton Annuler -->
+      <button
+        (click)="clearSelection()"
+        class="bg-slate-200 hover:bg-slate-300 text-slate-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+      >
+        Annuler
+      </button>
+    </div>
+  </div>
+  }
+
   <!-- Two Column Layout -->
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
     <!-- Teachers List -->
@@ -55,26 +140,52 @@
         (click)="selectTeacher(teacher)"
         [class.ring-2]="selectedTeacher()?.id === teacher.id"
         [class.ring-teal-500]="selectedTeacher()?.id === teacher.id"
+        [class.opacity-60]="teacher.userStatus === 'BLOCKED'"
         class="bg-white rounded-xl shadow-sm p-4 hover:shadow-md transition-all cursor-pointer"
       >
         <div class="flex items-center gap-3">
+          <!-- Checkbox pour la sélection multiple -->
+          @if (isSelectionMode()) {
+          <div class="flex-shrink-0">
+            <input
+              type="checkbox"
+              [checked]="isTeacherSelected(teacher.id)"
+              (click)="toggleTeacherSelection(teacher.id, $event)"
+              class="w-5 h-5 text-teal-600 border-slate-300 rounded focus:ring-teal-500 cursor-pointer"
+            />
+          </div>
+          }
           <div
-            class="bg-teal-100 rounded-full w-12 h-12 flex items-center justify-center flex-shrink-0"
+            [class]="teacher.userStatus === 'BLOCKED'
+              ? 'bg-red-100 rounded-full w-12 h-12 flex items-center justify-center flex-shrink-0'
+              : 'bg-teal-100 rounded-full w-12 h-12 flex items-center justify-center flex-shrink-0'"
           >
-            <span class="text-lg font-bold text-teal-700">{{ teacher.initials }}</span>
+            <span
+              [class]="teacher.userStatus === 'BLOCKED'
+                ? 'text-lg font-bold text-red-700'
+                : 'text-lg font-bold text-teal-700'"
+            >{{ teacher.initials }}</span>
           </div>
           <div class="flex-1 min-w-0">
             <h3 class="font-semibold text-slate-800 truncate">
               {{ teacher.firstName }} {{ teacher.lastName }}
             </h3>
             <p class="text-sm text-slate-500">
-              {{ teacher.status === 'available' ? 'Disponible' : 'Occupé' }}
+              @if (teacher.userStatus === 'BLOCKED') {
+                Bloqué
+              } @else {
+                {{ teacher.status === 'available' ? 'Disponible' : 'Occupé' }}
+              }
             </p>
             <p class="text-xs text-slate-400">
               {{ teacher.hourlyLoad.used }} de {{ teacher.hourlyLoad.total }} / 24h
             </p>
           </div>
-          @if (teacher.status === 'available') {
+          @if (teacher.userStatus === 'BLOCKED') {
+          <span class="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
+            Bloqué
+          </span>
+          } @else if (teacher.status === 'available') {
           <span class="px-2 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-medium">
             Disponible
           </span>
@@ -151,11 +262,57 @@
             <span>{{ selectedTeacher()!.assignedCourses }} cours assignés</span>
           </div>
         </div>
+        @if (selectedTeacher()!.userStatus === 'BLOCKED') {
+        <span
+          class="px-3 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium flex-shrink-0"
+        >
+          Bloqué
+        </span>
+        } @else {
         <span
           class="px-3 py-1 bg-emerald-100 text-emerald-700 rounded-full text-xs font-medium flex-shrink-0"
         >
-          Disponible
+          Actif
         </span>
+        }
+      </div>
+
+      <!-- Boutons d'action Bloquer/Débloquer -->
+      <div class="mb-6 pb-6 border-b">
+        <h4 class="font-semibold text-slate-800 mb-3">Actions</h4>
+        <div class="flex gap-3">
+          @if (selectedTeacher()!.userStatus === 'BLOCKED') {
+          <button
+            (click)="unblockTeacher(selectedTeacher()!.id)"
+            class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+            Débloquer l'enseignant
+          </button>
+          } @else {
+          <button
+            (click)="blockTeacher(selectedTeacher()!.id)"
+            class="flex-1 bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-2 transition-colors"
+          >
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"
+              />
+            </svg>
+            Bloquer l'enseignant
+          </button>
+          }
+        </div>
       </div>
 
       <!-- Hourly Load -->

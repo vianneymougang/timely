@@ -1,6 +1,7 @@
 import { User } from '../models/user.model';
+import { Teacher, UserStatus } from '../models/teacher.model';
 
-export const MOCK_TEACHERS = [
+export const MOCK_TEACHERS: Teacher[] = [
   {
     id: '1',
     firstName: 'Arthur',
@@ -30,6 +31,7 @@ export const MOCK_TEACHERS = [
       saturday: '-',
     },
     status: 'available' as const,
+    userStatus: 'ACTIVE' as UserStatus,
   },
   {
     id: '2',
@@ -60,6 +62,7 @@ export const MOCK_TEACHERS = [
       saturday: '9h-11h',
     },
     status: 'available' as const,
+    userStatus: 'ACTIVE' as UserStatus,
   },
   {
     id: '3',
@@ -90,6 +93,7 @@ export const MOCK_TEACHERS = [
       saturday: '-',
     },
     status: 'busy' as const,
+    userStatus: 'ACTIVE' as UserStatus,
   },
   {
     id: '4',
@@ -120,6 +124,7 @@ export const MOCK_TEACHERS = [
       saturday: '8h-10h',
     },
     status: 'busy' as const,
+    userStatus: 'ACTIVE' as UserStatus,
   },
   {
     id: '5',
@@ -150,6 +155,7 @@ export const MOCK_TEACHERS = [
       saturday: '-',
     },
     status: 'available' as const,
+    userStatus: 'ACTIVE' as UserStatus,
   },
 ];
 

@@ -334,17 +334,17 @@ PostgreSQL (`agora_db`) : exports_agora, mapping_entites, logs_integration
 
 ## 📊 Tableau Récapitulatif
 
-| Service | Port | Base de Données | Responsabilité Principale | Technologies Clés |
-|---------|------|-----------------|---------------------------|-------------------|
-| **API Gateway** | 8080 | Redis | Routage et sécurité | Spring Cloud Gateway, Resilience4j |
-| **Eureka Server** | 8761 | Aucune | Découverte de services | Spring Cloud Netflix Eureka |
-| **Auth Service** | 8081 | PostgreSQL (auth_db) | Authentification JWT | Spring Security, JWT, BCrypt |
-| **User Service** | 8082 | PostgreSQL (user_db) | Gestion utilisateurs/disponibilités | Spring Data JPA, MapStruct |
-| **Planning Service** | 8083 | PostgreSQL (planning_db) | Génération emplois du temps | Algorithmes heuristiques |
-| **Booking Service** | 8084 | PostgreSQL (booking_db) | Réservations salles/cours | Spring Data JPA, Redis |
-| **Notification Service** | 8085 | PostgreSQL (notification_db) | Notifications multi-canal | Spring Mail, Twilio API |
-| **Report Service** | 8086 | PostgreSQL (report_db) | Rapports et statistiques | Apache POI, iText |
-| **Agora Integration** | 8087 | PostgreSQL (agora_db) | Export vers ENT | RestTemplate, Spring Batch |
+| Service                  | Port | Base de Données              | Responsabilité Principale           | Technologies Clés                  |
+|--------------------------|------|------------------------------|-------------------------------------|------------------------------------|
+| **API Gateway**          | 8080 | Redis                        | Routage et sécurité                 | Spring Cloud Gateway, Resilience4j |
+| **Eureka Server**        | 8761 | Aucune                       | Découverte de services              | Spring Cloud Netflix Eureka        |
+| **Auth Service**         | 8081 | PostgreSQL (auth_db)         | Authentification JWT                | Spring Security, JWT, BCrypt       |
+| **User Service**         | 8082 | PostgreSQL (user_db)         | Gestion utilisateurs/disponibilités | Spring Data JPA, MapStruct         |
+| **Planning Service**     | 8083 | PostgreSQL (planning_db)     | Génération emplois du temps         | Algorithmes heuristiques           |
+| **Booking Service**      | 8084 | PostgreSQL (booking_db)      | Réservations salles/cours           | Spring Data JPA, Redis             |
+| **Notification Service** | 8085 | PostgreSQL (notification_db) | Notifications multi-canal           | Spring Mail, Twilio API            |
+| **Report Service**       | 8086 | PostgreSQL (report_db)       | Rapports et statistiques            | Apache POI, iText                  |
+| **Agora Integration**    | 8087 | PostgreSQL (agora_db)        | Export vers ENT                     | RestTemplate, Spring Batch         |
 
 ---
 
