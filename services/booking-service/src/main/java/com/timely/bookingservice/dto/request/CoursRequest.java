@@ -1,0 +1,39 @@
+package com.timely.bookingservice.dto.request;
+
+import java.util.UUID;
+
+import com.timely.bookingservice.entity.enums.StatutCours;
+import com.timely.bookingservice.entity.enums.TypeCours;
+
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
+import lombok.Getter;
+import lombok.Setter;
+
+@Getter
+@Setter
+public class CoursRequest {
+
+    @NotNull(message = "L'UE est obligatoire")
+    private UUID ueId;
+
+    @NotNull(message = "La classe est obligatoire")
+    private UUID classeId;
+
+    private UUID enseignantId;
+
+    @NotBlank(message = "L'intitulé est obligatoire")
+    private String intitule;
+
+    @NotNull(message = "Le type de cours est obligatoire")
+    private TypeCours typeCours;
+
+    @NotNull(message = "Le volume horaire est obligatoire")
+    @Min(value = 1, message = "Le volume horaire doit être supérieur à 0")
+    private Integer volumeHoraire;
+
+    private Integer effectifGroupe;
+    private String description;
+    private StatutCours statut;
+}
