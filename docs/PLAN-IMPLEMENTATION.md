@@ -15,8 +15,8 @@
 | api-gateway | `com.timely.apigateway` | 8090 | ✅ Complet | Routage + CORS |
 | auth-service | `com.timely.authservice` | 8091 | ✅ Complet | User/Role/Token/PasswordReset |
 | user-service | `com.timely.userservice` | 8092 | ✅ Complet | User/Teacher/Admin/Disponibilité |
-| **booking-service** | `com.timely.bookingservice` | 8094 | ⬜ Scaffolding | Application class + configs |
-| **planning-service** | `com.timely.planningservice` | 8093 | ⬜ Scaffolding | Application class + configs |
+| **booking-service** | `com.timely.bookingservice` | 8094 | ✅ Complet | 11 entités + CRUD complet |
+| **planning-service** | `com.timely.planningservice` | 8093 | ✅ Complet | EmploiDuTemps/Creneau/Conflit + détection conflits |
 | **notification-service** | `com.timely.notificationservice` | 8095 | 🔶 Partiel | Event listeners RabbitMQ, email |
 | **report-service** | `com.timely.reportservice` | 8096 | ⬜ Scaffolding | Application class + configs |
 | **agora-service** | `com.timely.agora_ervice` | 8097 | ⬜ Scaffolding | Application class + configs (typo package) |
