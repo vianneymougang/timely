@@ -14,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -23,6 +24,7 @@ public class TemplateService {
 
     private final TemplateRepository templateRepository;
     private final TemplateMapper templateMapper;
+    private final TemplateEngineService templateEngineService;
 
     @Transactional
     public TemplateResponse createTemplate(TemplateRequest request) {
@@ -106,5 +108,29 @@ public class TemplateService {
 
         templateRepository.deleteById(id);
         log.info("Template deleted successfully with id: {}", id);
+    }
+
+    /**
+     * Rendre un template avec des variables
+     */
+    public String renderTemplate(String templateId, Map<String, Object> variables) {
+        log.debug("Rendering template: {} with variables: {}", templateId, variables);
+
+        Template template = templateRepository.findById(templateId)
+                .orElseThrow(() -> new ResourceNotFoundException("Template non trouvé avec l'id: " + templateId));
+
+        if (!template.getActif()) {
+            throw new IllegalStateException("Le template n'est pas actif");
+        }
+
+        return templateEngineService.processTemplate(template.getContenuTemplate(), variables);
+    }
+
+    /**
+     * Prévisualiser un template avec des exemples de variables
+     */
+    public String previewTemplate(String templateId, Map<String, Object> sampleVariables) {
+        log.debug("Previewing template: {}", templateId);
+        return renderTemplate(templateId, sampleVariables);
     }
 }

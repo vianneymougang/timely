@@ -12,6 +12,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/notifications/templates")
@@ -70,5 +71,14 @@ public class TemplateController {
     public ResponseEntity<Void> deleteTemplate(@PathVariable String id) {
         templateService.deleteTemplate(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{id}/preview")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<String> previewTemplate(
+            @PathVariable String id,
+            @RequestBody Map<String, Object> sampleVariables) {
+        String rendered = templateService.previewTemplate(id, sampleVariables);
+        return ResponseEntity.ok(rendered);
     }
 }

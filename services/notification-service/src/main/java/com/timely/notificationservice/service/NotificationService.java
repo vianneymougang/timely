@@ -8,6 +8,7 @@ import com.timely.notificationservice.document.enums.StatutNotification;
 import com.timely.notificationservice.dto.request.ScheduleNotificationRequest;
 import com.timely.notificationservice.dto.request.SendNotificationRequest;
 import com.timely.notificationservice.dto.response.HistoriqueResponse;
+import com.timely.notificationservice.dto.response.NotificationDetailsResponse;
 import com.timely.notificationservice.dto.response.NotificationResponse;
 import com.timely.notificationservice.exception.ResourceNotFoundException;
 import com.timely.notificationservice.mapper.NotificationMapper;
@@ -15,12 +16,14 @@ import com.timely.notificationservice.repository.HistoriqueEnvoiRepository;
 import com.timely.notificationservice.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 @Service
@@ -32,6 +35,9 @@ public class NotificationService {
     private final HistoriqueEnvoiRepository historiqueEnvoiRepository;
     private final NotificationMapper notificationMapper;
     private final EmailService emailService;
+    private final SMSService smsService;
+    private final PushNotificationService pushNotificationService;
+    private final TemplateEngineService templateEngineService;
 
     private static final int MAX_TENTATIVES = 3;
 
@@ -76,6 +82,36 @@ public class NotificationService {
                 .collect(Collectors.toList());
     }
 
+    @Async("notificationExecutor")
+    public CompletableFuture<Boolean> sendNotificationAsync(String notificationId) {
+        log.info("Sending notification asynchronously: {}", notificationId);
+
+        try {
+            Notification notification = notificationRepository.findById(notificationId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Notification non trouvée avec l'id: " + notificationId));
+
+            boolean success = sendViaCanal(notification);
+
+            if (success) {
+                notification.setStatut(StatutNotification.SENT);
+                notification.setDateEnvoi(LocalDateTime.now());
+                log.info("Async notification sent successfully: {}", notificationId);
+            } else {
+                notification.setStatut(StatutNotification.FAILED);
+                notification.setTentativesRestantes(notification.getTentativesRestantes() - 1);
+                log.error("Failed to send async notification: {}", notificationId);
+            }
+
+            notificationRepository.save(notification);
+            enregistrerHistorique(notification, success, null);
+
+            return CompletableFuture.completedFuture(success);
+        } catch (Exception e) {
+            log.error("Error in async notification sending: {}", e.getMessage(), e);
+            return CompletableFuture.completedFuture(false);
+        }
+    }
+
     @Transactional
     public NotificationResponse scheduleNotification(ScheduleNotificationRequest request) {
         log.info("Scheduling notification for user: {} at {}",
@@ -103,6 +139,41 @@ public class NotificationService {
         Notification notification = notificationRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Notification non trouvée avec l'id: " + id));
         return notificationMapper.toResponse(notification);
+    }
+
+    @Transactional(readOnly = true)
+    public NotificationDetailsResponse getNotificationDetails(String id) {
+        log.debug("Fetching notification details with id: {}", id);
+        Notification notification = notificationRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Notification non trouvée avec l'id: " + id));
+
+        NotificationDetailsResponse details = new NotificationDetailsResponse();
+        details.setId(notification.getId());
+        details.setDestinataireId(notification.getDestinataireId());
+        details.setTypeNotification(notification.getTypeNotification());
+        details.setSujet(notification.getSujet());
+        details.setContenu(notification.getContenu());
+        details.setCanal(notification.getCanal());
+        details.setStatut(notification.getStatut());
+        details.setDateCreation(notification.getDateCreation());
+        details.setDateEnvoi(notification.getDateEnvoi());
+        details.setDateLecture(notification.getDateLecture());
+        details.setTentativesRestantes(notification.getTentativesRestantes());
+
+        // Récupérer l'historique
+        List<HistoriqueEnvoi> historiques = historiqueEnvoiRepository.findByNotificationId(id);
+        details.setHistorique(historiques.stream()
+                .map(this::toHistoriqueResponse)
+                .collect(Collectors.toList()));
+        details.setNombreTentatives(historiques.size());
+
+        // Récupérer le dernier message d'erreur s'il existe
+        historiques.stream()
+                .filter(h -> h.getMessageErreur() != null)
+                .findFirst()
+                .ifPresent(h -> details.setDernierMessageErreur(h.getMessageErreur()));
+
+        return details;
     }
 
     @Transactional(readOnly = true)
@@ -183,15 +254,41 @@ public class NotificationService {
     }
 
     private boolean sendSMS(Notification notification) {
-        // TODO: Implémenter l'envoi SMS avec Twilio
-        log.warn("SMS sending not yet implemented");
-        return false;
+        try {
+            if (!smsService.isEnabled()) {
+                log.warn("SMS service is disabled");
+                return false;
+            }
+
+            // TODO: Récupérer le numéro de téléphone du destinataire depuis user-service
+            String phoneNumber = "+1234567890"; // Placeholder
+
+            return smsService.sendSMS(phoneNumber, notification.getContenu());
+        } catch (Exception e) {
+            log.error("Error sending SMS: {}", e.getMessage(), e);
+            return false;
+        }
     }
 
     private boolean sendPush(Notification notification) {
-        // TODO: Implémenter l'envoi Push avec Firebase
-        log.warn("Push notification sending not yet implemented");
-        return false;
+        try {
+            if (!pushNotificationService.isEnabled()) {
+                log.warn("Push notification service is disabled");
+                return false;
+            }
+
+            // TODO: Récupérer le token FCM du destinataire depuis user-service
+            String fcmToken = "placeholder-fcm-token"; // Placeholder
+
+            return pushNotificationService.sendPushNotification(
+                    fcmToken,
+                    notification.getSujet(),
+                    notification.getContenu()
+            );
+        } catch (Exception e) {
+            log.error("Error sending push notification: {}", e.getMessage(), e);
+            return false;
+        }
     }
 
     private void enregistrerHistorique(Notification notification, boolean success, String messageErreur) {

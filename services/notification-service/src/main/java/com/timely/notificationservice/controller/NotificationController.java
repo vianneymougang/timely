@@ -3,6 +3,7 @@ package com.timely.notificationservice.controller;
 import com.timely.notificationservice.dto.request.ScheduleNotificationRequest;
 import com.timely.notificationservice.dto.request.SendNotificationRequest;
 import com.timely.notificationservice.dto.response.HistoriqueResponse;
+import com.timely.notificationservice.dto.response.NotificationDetailsResponse;
 import com.timely.notificationservice.dto.response.NotificationResponse;
 import com.timely.notificationservice.service.NotificationService;
 import jakarta.validation.Valid;
@@ -52,6 +53,13 @@ public class NotificationController {
     @PreAuthorize("hasAuthority('ADMIN')")
     public ResponseEntity<NotificationResponse> getNotificationStatus(@PathVariable String id) {
         NotificationResponse response = notificationService.getNotificationStatus(id);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}/details")
+    @PreAuthorize("hasAuthority('ADMIN')")
+    public ResponseEntity<NotificationDetailsResponse> getNotificationDetails(@PathVariable String id) {
+        NotificationDetailsResponse response = notificationService.getNotificationDetails(id);
         return ResponseEntity.ok(response);
     }
 
