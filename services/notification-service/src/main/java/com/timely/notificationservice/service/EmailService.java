@@ -17,21 +17,43 @@ public class EmailService {
     private static final Logger logger = LoggerFactory.getLogger(EmailService.class);
     private final JavaMailSender mailSender;
     
+    /**
+     * Send a generic email with subject and body
+     */
+    public void sendEmail(String to, String subject, String body) {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
+
+            helper.setFrom("no-reply@timely.com");
+            helper.setTo(to);
+            helper.setSubject(subject);
+            helper.setText(body, false);
+
+            mailSender.send(message);
+            logger.info("Email sent successfully to: {}", to);
+
+        } catch (MessagingException e) {
+            logger.error("Failed to send email to: {}", to, e);
+            throw new RuntimeException("Failed to send email", e);
+        }
+    }
+
     public void sendPasswordResetEmail(String to, String resetLink, String recipientName) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
-            
+
             helper.setFrom("no-reply@timely.com");
             helper.setTo(to);
             helper.setSubject("Réinitialisation de votre mot de passe - Timely");
-            
+
             String htmlContent = buildPasswordResetEmailTemplate(recipientName, resetLink);
             helper.setText(htmlContent, true);
-            
+
             mailSender.send(message);
             logger.info("Password reset email sent successfully to: {}", to);
-            
+
         } catch (MessagingException e) {
             logger.error("Failed to send password reset email to: {}", to, e);
             throw new RuntimeException("Failed to send email", e);

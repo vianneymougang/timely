@@ -23,7 +23,14 @@ public class RabbitMQConfig {
     public static final String USER_EXCHANGE = "user.events";
     public static final String USER_CREATED_QUEUE = "user.created.queue";
     public static final String USER_CREATED_ROUTING_KEY = "user.created";
-    
+
+    // Planning events
+    public static final String PLANNING_EXCHANGE = "planning.events";
+    public static final String PLANNING_PUBLISHED_QUEUE = "planning.published.queue";
+    public static final String PLANNING_PUBLISHED_ROUTING_KEY = "planning.published";
+    public static final String PLANNING_CONFLICT_QUEUE = "planning.conflict.queue";
+    public static final String PLANNING_CONFLICT_ROUTING_KEY = "planning.conflict.detected";
+
     @Bean
     public TopicExchange exchange() {
         return new TopicExchange(EXCHANGE);
@@ -33,25 +40,50 @@ public class RabbitMQConfig {
     public TopicExchange userExchange() {
         return new TopicExchange(USER_EXCHANGE);
     }
-    
+
+    @Bean
+    public TopicExchange planningExchange() {
+        return new TopicExchange(PLANNING_EXCHANGE);
+    }
+
     @Bean
     public Queue passwordResetQueue() {
         return new Queue(PASSWORD_RESET_QUEUE, true);
     }
-    
+
     @Bean
     public Queue userCreatedQueue() {
         return new Queue(USER_CREATED_QUEUE, true);
     }
-    
+
+    @Bean
+    public Queue planningPublishedQueue() {
+        return new Queue(PLANNING_PUBLISHED_QUEUE, true);
+    }
+
+    @Bean
+    public Queue planningConflictQueue() {
+        return new Queue(PLANNING_CONFLICT_QUEUE, true);
+    }
+
     @Bean
     public Binding passwordResetBinding(Queue passwordResetQueue, TopicExchange exchange) {
         return BindingBuilder.bind(passwordResetQueue).to(exchange).with(PASSWORD_RESET_ROUTING_KEY);
     }
-    
+
     @Bean
     public Binding userCreatedBinding(Queue userCreatedQueue, TopicExchange userExchange) {
         return BindingBuilder.bind(userCreatedQueue).to(userExchange).with(USER_CREATED_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding planningPublishedBinding(Queue planningPublishedQueue, TopicExchange planningExchange) {
+        return BindingBuilder.bind(planningPublishedQueue).to(planningExchange).with(PLANNING_PUBLISHED_ROUTING_KEY);
+    }
+
+    @Bean
+    public Binding planningConflictBinding(Queue planningConflictQueue, TopicExchange planningExchange) {
+        return BindingBuilder.bind(planningConflictQueue).to(planningExchange).with(PLANNING_CONFLICT_ROUTING_KEY);
     }
     
     @Bean
