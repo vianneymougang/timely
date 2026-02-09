@@ -1,4 +1,4 @@
-package com.timely.agora_ervice;
+package com.timely.agora_service;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

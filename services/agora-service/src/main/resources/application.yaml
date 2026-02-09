@@ -25,6 +25,13 @@ spring:
     baseline-on-migrate: true
     locations: classpath:db/migration
 
+  # RabbitMQ Configuration
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: admin
+    password: password
+
 # Server Configuration
 server:
   port: ${PORT:8097}
@@ -80,3 +87,15 @@ logging:
   level:
     root: INFO
     com.timely.agoraservice: DEBUG
+
+# JWT Configuration
+jwt:
+  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+
+# Agora API Configuration
+agora:
+  api:
+    url: ${AGORA_API_URL:https://api.agora.example.com}
+    username: ${AGORA_USERNAME:admin}
+    password: ${AGORA_PASSWORD:password}
+    timeout: 30000
