@@ -3,16 +3,15 @@ package com.timely.agoraservice.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.stereotype.Component;
-
-import javax.crypto.SecretKey;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import javax.crypto.SecretKey;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.stereotype.Component;
 
 @Component
 public class JwtUtil {
@@ -28,7 +27,9 @@ public class JwtUtil {
         return extractAllClaims(token).getSubject();
     }
 
-    public Collection<? extends GrantedAuthority> extractAuthorities(String token) {
+    public Collection<? extends GrantedAuthority> extractAuthorities(
+        String token
+    ) {
         Claims claims = extractAllClaims(token);
         List<String> roles = claims.get("roles", List.class);
 
@@ -36,9 +37,7 @@ public class JwtUtil {
             return new ArrayList<>();
         }
 
-        return roles.stream()
-                .map(SimpleGrantedAuthority::new)
-                .toList();
+        return roles.stream().map(SimpleGrantedAuthority::new).toList();
     }
 
     public boolean validateToken(String token) {
@@ -52,9 +51,9 @@ public class JwtUtil {
 
     private Claims extractAllClaims(String token) {
         return Jwts.parser()
-                .verifyWith(getSigningKey())
-                .build()
-                .parseSignedClaims(token)
-                .getPayload();
+            .verifyWith(getSigningKey())
+            .build()
+            .parseSignedClaims(token)
+            .getPayload();
     }
 }

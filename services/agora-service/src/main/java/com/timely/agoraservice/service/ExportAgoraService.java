@@ -9,14 +9,13 @@ import com.timely.agoraservice.exception.ResourceNotFoundException;
 import com.timely.agoraservice.mapper.ExportAgoraMapper;
 import com.timely.agoraservice.repository.ExportAgoraRepository;
 import com.timely.agoraservice.repository.LogIntegrationRepository;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -30,17 +29,31 @@ public class ExportAgoraService {
 
     @Transactional
     public ExportAgoraResponse createExport(ExportRequest request) {
-        log.info("Creation d'un nouvel export pour l'emploi du temps: {}", request.getEmploiDuTempsId());
+        log.info(
+            "Creation d'un nouvel export pour l'emploi du temps: {}",
+            request.getEmploiDuTempsId()
+        );
 
         // Verifier que l'emploi du temps existe via le client Feign
         try {
-            Object emploiDuTemps = planningServiceClient.getEmploiDuTemps(request.getEmploiDuTempsId());
+            Object emploiDuTemps = planningServiceClient.getEmploiDuTemps(
+                request.getEmploiDuTempsId()
+            );
             if (emploiDuTemps == null) {
-                throw new ResourceNotFoundException("Emploi du temps non trouve: " + request.getEmploiDuTempsId());
+                throw new ResourceNotFoundException(
+                    "Emploi du temps non trouve: " +
+                        request.getEmploiDuTempsId()
+                );
             }
         } catch (Exception e) {
-            log.error("Erreur lors de la verification de l'emploi du temps: {}", e.getMessage());
-            throw new ResourceNotFoundException("Impossible de verifier l'emploi du temps: " + request.getEmploiDuTempsId());
+            log.error(
+                "Erreur lors de la verification de l'emploi du temps: {}",
+                e.getMessage()
+            );
+            throw new ResourceNotFoundException(
+                "Impossible de verifier l'emploi du temps: " +
+                    request.getEmploiDuTempsId()
+            );
         }
 
         // Creer l'export avec statut EN_ATTENTE
@@ -60,8 +73,11 @@ public class ExportAgoraService {
     @Transactional(readOnly = true)
     public ExportAgoraResponse getExportById(UUID id) {
         log.info("Recuperation de l'export: {}", id);
-        ExportAgora exportAgora = exportAgoraRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Export non trouve: " + id));
+        ExportAgora exportAgora = exportAgoraRepository
+            .findById(id)
+            .orElseThrow(() ->
+                new ResourceNotFoundException("Export non trouve: " + id)
+            );
         return exportAgoraMapper.toResponse(exportAgora);
     }
 
@@ -73,24 +89,40 @@ public class ExportAgoraService {
     }
 
     @Transactional(readOnly = true)
-    public List<ExportAgoraResponse> getExportsByStatut(StatutExportAgora statut) {
+    public List<ExportAgoraResponse> getExportsByStatut(
+        StatutExportAgora statut
+    ) {
         log.info("Recuperation des exports avec le statut: {}", statut);
         List<ExportAgora> exports = exportAgoraRepository.findByStatut(statut);
         return exportAgoraMapper.toResponseList(exports);
     }
 
     @Transactional(readOnly = true)
-    public List<ExportAgoraResponse> getExportsByEmploiDuTempsId(UUID emploiDuTempsId) {
-        log.info("Recuperation des exports pour l'emploi du temps: {}", emploiDuTempsId);
-        List<ExportAgora> exports = exportAgoraRepository.findByEmploiDuTempsId(emploiDuTempsId);
+    public List<ExportAgoraResponse> getExportsByEmploiDuTempsId(
+        UUID emploiDuTempsId
+    ) {
+        log.info(
+            "Recuperation des exports pour l'emploi du temps: {}",
+            emploiDuTempsId
+        );
+        List<ExportAgora> exports = exportAgoraRepository.findByEmploiDuTempsId(
+            emploiDuTempsId
+        );
         return exportAgoraMapper.toResponseList(exports);
     }
 
     @Transactional
-    public ExportAgoraResponse updateExportStatut(UUID id, StatutExportAgora statut, String messageErreur) {
+    public ExportAgoraResponse updateExportStatut(
+        UUID id,
+        StatutExportAgora statut,
+        String messageErreur
+    ) {
         log.info("Mise a jour du statut de l'export {} vers {}", id, statut);
-        ExportAgora exportAgora = exportAgoraRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Export non trouve: " + id));
+        ExportAgora exportAgora = exportAgoraRepository
+            .findById(id)
+            .orElseThrow(() ->
+                new ResourceNotFoundException("Export non trouve: " + id)
+            );
 
         exportAgora.setStatut(statut);
         exportAgora.setMessageErreur(messageErreur);
@@ -105,14 +137,20 @@ public class ExportAgoraService {
     @Transactional
     public ExportAgoraResponse incrementTentative(UUID id) {
         log.info("Incrementation du numero de tentative pour l'export: {}", id);
-        ExportAgora exportAgora = exportAgoraRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Export non trouve: " + id));
+        ExportAgora exportAgora = exportAgoraRepository
+            .findById(id)
+            .orElseThrow(() ->
+                new ResourceNotFoundException("Export non trouve: " + id)
+            );
 
         exportAgora.setNumeroTentative(exportAgora.getNumeroTentative() + 1);
         exportAgora.setDateDerniereTentative(LocalDateTime.now());
 
         ExportAgora updated = exportAgoraRepository.save(exportAgora);
-        log.info("Numero de tentative incremente: {}", updated.getNumeroTentative());
+        log.info(
+            "Numero de tentative incremente: {}",
+            updated.getNumeroTentative()
+        );
 
         return exportAgoraMapper.toResponse(updated);
     }
