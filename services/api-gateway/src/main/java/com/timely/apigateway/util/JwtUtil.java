@@ -38,6 +38,14 @@ public class JwtUtil {
     }
 
     /**
+     * Extract user ID from token
+     */
+    public String extractUserId(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims.get("userId", String.class);
+    }
+
+    /**
      * Extract authorities from token
      */
     @SuppressWarnings("unchecked")

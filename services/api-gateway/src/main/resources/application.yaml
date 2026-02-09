@@ -2,6 +2,13 @@ spring:
   application:
     name: api-gateway
 
+  # Redis Configuration for rate limiting
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      timeout: 2000ms
+
 # Server Configuration
 server:
   port: ${PORT:8090}
@@ -22,7 +29,62 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics
+        include: health,info,metrics,circuitbreakers
   endpoint:
     health:
       show-details: when-authorized
+  health:
+    circuitbreakers:
+      enabled: true
+
+# Resilience4j Circuit Breaker Configuration
+resilience4j:
+  circuitbreaker:
+    configs:
+      default:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 30s
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        recordExceptions:
+          - org.springframework.web.client.HttpServerErrorException
+          - java.util.concurrent.TimeoutException
+          - java.io.IOException
+    instances:
+      authService:
+        baseConfig: default
+      userService:
+        baseConfig: default
+      bookingService:
+        baseConfig: default
+      planningService:
+        baseConfig: default
+      notificationService:
+        baseConfig: default
+      reportService:
+        baseConfig: default
+      agoraService:
+        baseConfig: default
+
+  timelimiter:
+    configs:
+      default:
+        timeoutDuration: 5s
+    instances:
+      authService:
+        baseConfig: default
+      userService:
+        baseConfig: default
+      bookingService:
+        baseConfig: default
+      planningService:
+        baseConfig: default
+      notificationService:
+        baseConfig: default
+      reportService:
+        baseConfig: default
+      agoraService:
+        baseConfig: default

@@ -25,6 +25,7 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenService refreshTokenService;
     private final CustomUserDetailsService userDetailsService;
+    private final TokenBlacklistService tokenBlacklistService;
 
     /**
      * Authenticate user and generate tokens
@@ -93,13 +94,42 @@ public class AuthService {
     }
 
     /**
-     * Logout user by invalidating refresh token
+     * Logout user by invalidating refresh token and blacklisting access token
+     * @param refreshTokenStr The refresh token to invalidate
+     * @param accessToken The access token to blacklist (optional)
      */
     @Transactional
-    public void logout(String refreshTokenStr) {
+    public void logout(String refreshTokenStr, String accessToken) {
+        // Delete refresh token from database
         RefreshToken refreshToken = refreshTokenService.findByToken(refreshTokenStr)
                 .orElseThrow(() -> new RuntimeException("Refresh token not found"));
-        
+
         refreshTokenService.deleteToken(refreshToken);
+
+        // Add access token to blacklist if provided
+        if (accessToken != null && !accessToken.isEmpty()) {
+            try {
+                tokenBlacklistService.blacklistToken(accessToken);
+            } catch (Exception e) {
+                // Log error but don't fail logout if blacklist fails
+                // User is still logged out via refresh token deletion
+                throw new RuntimeException("Logout completed but failed to blacklist token: " + e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Validate token (check if not blacklisted and still valid)
+     * @param token The JWT token to validate
+     * @return true if token is valid and not blacklisted
+     */
+    public boolean validateToken(String token) {
+        // First check if token is blacklisted
+        if (tokenBlacklistService.isTokenBlacklisted(token)) {
+            return false;
+        }
+
+        // Then validate token signature and expiration
+        return jwtUtil.validateToken(token);
     }
 }

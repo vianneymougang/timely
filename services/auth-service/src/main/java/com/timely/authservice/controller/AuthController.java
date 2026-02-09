@@ -48,11 +48,22 @@ public class AuthController {
 
     /**
      * Logout endpoint
+     * Invalidates refresh token and blacklists access token
      */
     @PostMapping("/logout")
-    public ResponseEntity<Map<String, String>> logout(@Valid @RequestBody RefreshTokenRequest request) {
-        authService.logout(request.getRefreshToken());
-        
+    public ResponseEntity<Map<String, String>> logout(
+            @Valid @RequestBody RefreshTokenRequest request,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        // Extract access token from Authorization header if present
+        String accessToken = null;
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            accessToken = authHeader.substring(7);
+        }
+
+        // Logout (delete refresh token and blacklist access token)
+        authService.logout(request.getRefreshToken(), accessToken);
+
         Map<String, String> response = new HashMap<>();
         response.put("message", "Logout successful");
         return ResponseEntity.ok(response);
@@ -60,14 +71,17 @@ public class AuthController {
 
     /**
      * Validate token endpoint (for other microservices)
+     * Checks if token is valid and not blacklisted
      */
     @GetMapping("/validate")
     public ResponseEntity<Map<String, Object>> validateToken(@RequestHeader("Authorization") String authHeader) {
         try {
             String token = authHeader.substring(7); // Remove "Bearer " prefix
-            String email = jwtUtil.extractUsername(token);
-            
-            if (jwtUtil.validateToken(token)) {
+
+            // Use AuthService.validateToken which checks blacklist
+            if (authService.validateToken(token)) {
+                String email = jwtUtil.extractUsername(token);
+
                 Map<String, Object> response = new HashMap<>();
                 response.put("valid", true);
                 response.put("email", email);
@@ -77,9 +91,10 @@ public class AuthController {
         } catch (Exception e) {
             // Token is invalid
         }
-        
+
         Map<String, Object> response = new HashMap<>();
         response.put("valid", false);
+        response.put("message", "Token is invalid or has been revoked");
         return ResponseEntity.status(401).body(response);
     }
 }
