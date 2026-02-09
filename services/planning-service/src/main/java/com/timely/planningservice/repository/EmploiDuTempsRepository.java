@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -13,7 +14,7 @@ import com.timely.planningservice.entity.EmploiDuTemps;
 import com.timely.planningservice.entity.enums.StatutEmploi;
 
 @Repository
-public interface EmploiDuTempsRepository extends JpaRepository<EmploiDuTemps, UUID> {
+public interface EmploiDuTempsRepository extends JpaRepository<EmploiDuTemps, UUID>, JpaSpecificationExecutor<EmploiDuTemps> {
 
     List<EmploiDuTemps> findByEcoleId(UUID ecoleId);
 

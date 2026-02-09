@@ -19,6 +19,7 @@ public class CoursResponse {
     private UUID classeId;
     private String classeCode;
     private UUID enseignantId;
+    private UUID ecoleId;
     private String intitule;
     private TypeCours typeCours;
     private Integer volumeHoraire;

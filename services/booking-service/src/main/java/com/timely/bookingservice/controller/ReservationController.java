@@ -8,9 +8,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import com.timely.bookingservice.dto.request.AutoAssignSalleRequest;
 import com.timely.bookingservice.dto.request.ReservationRequest;
 import com.timely.bookingservice.dto.response.ReservationResponse;
+import com.timely.bookingservice.dto.response.SalleResponse;
 import com.timely.bookingservice.service.ReservationService;
+import com.timely.bookingservice.service.SalleAssignmentService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class ReservationController {
 
     private final ReservationService reservationService;
+    private final SalleAssignmentService salleAssignmentService;
 
     @PostMapping("/reservations")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -57,5 +61,16 @@ public class ReservationController {
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         reservationService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Find optimal room using automatic assignment algorithm.
+     * Uses progressive filtering: availability -> type -> capacity -> equipment.
+     */
+    @PostMapping("/reservations/auto-assign")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<SalleResponse> autoAssignSalle(@Valid @RequestBody AutoAssignSalleRequest request) {
+        SalleResponse optimalSalle = salleAssignmentService.findOptimalSalle(request);
+        return ResponseEntity.ok(optimalSalle);
     }
 }

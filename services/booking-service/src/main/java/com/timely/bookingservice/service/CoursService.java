@@ -70,6 +70,13 @@ public class CoursService {
                 .collect(Collectors.toList());
     }
 
+    @Transactional(readOnly = true)
+    public List<CoursResponse> getByEnseignantId(UUID enseignantId) {
+        return coursRepository.findByEnseignantId(enseignantId).stream()
+                .map(coursMapper::toResponse)
+                .collect(Collectors.toList());
+    }
+
     @Transactional
     public CoursResponse update(UUID id, CoursRequest request) {
         Cours cours = coursRepository.findById(id)

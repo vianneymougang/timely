@@ -9,8 +9,11 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import com.timely.bookingservice.dto.request.CoursRequest;
+import com.timely.bookingservice.dto.request.GenerateGroupesRequest;
 import com.timely.bookingservice.dto.response.CoursResponse;
+import com.timely.bookingservice.dto.response.GenerateGroupesResponse;
 import com.timely.bookingservice.service.CoursService;
+import com.timely.bookingservice.service.GroupeEtudiantService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -21,6 +24,7 @@ import lombok.RequiredArgsConstructor;
 public class CoursController {
 
     private final CoursService coursService;
+    private final GroupeEtudiantService groupeEtudiantService;
 
     @PostMapping("/cours")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
@@ -52,6 +56,12 @@ public class CoursController {
         return ResponseEntity.ok(coursService.getByClasseId(classeId));
     }
 
+    @GetMapping("/cours/enseignant/{enseignantId}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
+    public ResponseEntity<List<CoursResponse>> getByEnseignantId(@PathVariable UUID enseignantId) {
+        return ResponseEntity.ok(coursService.getByEnseignantId(enseignantId));
+    }
+
     @PutMapping("/cours/{id}")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
     public ResponseEntity<CoursResponse> update(@PathVariable UUID id, @Valid @RequestBody CoursRequest request) {
@@ -63,5 +73,22 @@ public class CoursController {
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         coursService.delete(id);
         return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Generate student groups automatically for a course.
+     * Distributes students evenly based on course type:
+     * - CM: 1 group (entire class)
+     * - TD: 2 groups
+     * - TP: 3 groups (or custom via request)
+     */
+    @PostMapping("/cours/{id}/groupes/generate")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<GenerateGroupesResponse> generateGroupes(
+            @PathVariable UUID id,
+            @RequestBody(required = false) GenerateGroupesRequest request) {
+        GenerateGroupesRequest finalRequest = request != null ? request : new GenerateGroupesRequest();
+        GenerateGroupesResponse response = groupeEtudiantService.generateGroupes(id, finalRequest);
+        return ResponseEntity.ok(response);
     }
 }

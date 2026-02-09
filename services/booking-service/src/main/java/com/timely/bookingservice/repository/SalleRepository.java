@@ -17,6 +17,8 @@ public interface SalleRepository extends JpaRepository<Salle, UUID> {
 
     List<Salle> findByStatut(StatutSalle statut);
 
+    List<Salle> findByEcoleIdAndStatut(UUID ecoleId, StatutSalle statut);
+
     @Query("SELECT s FROM Salle s WHERE s.statut = 'ACTIVE' AND s.capacite >= :capaciteMin AND (:typeSalle IS NULL OR s.typeSalle = :typeSalle)")
     List<Salle> findSallesDisponibles(@Param("capaciteMin") Integer capaciteMin, @Param("typeSalle") TypeSalle typeSalle);
 }

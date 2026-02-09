@@ -16,13 +16,19 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.timely.userservice.dto.AdminDto;
+import com.timely.userservice.dto.AssignTeacherRequest;
 import com.timely.userservice.dto.BulkUserActionRequest;
 import com.timely.userservice.dto.BulkUserActionResponse;
+import com.timely.userservice.dto.ChargeHoraireResponse;
 import com.timely.userservice.dto.CreateAdminRequest;
 import com.timely.userservice.dto.CreateTeacherRequest;
+import com.timely.userservice.dto.EnseignerDto;
+import com.timely.userservice.dto.IntervenirEcoleDto;
 import com.timely.userservice.dto.TeacherDto;
 import com.timely.userservice.dto.UpdateUserRequest;
 import com.timely.userservice.dto.UserDto;
+import com.timely.userservice.service.AffectationService;
+import com.timely.userservice.service.ChargeHoraireService;
 import com.timely.userservice.service.UserService;
 
 import jakarta.validation.Valid;
@@ -34,6 +40,8 @@ import lombok.RequiredArgsConstructor;
 public class UserController {
 
     private final UserService userService;
+    private final AffectationService affectationService;
+    private final ChargeHoraireService chargeHoraireService;
 
     /**
      * Create a new teacher (Admin-only)
@@ -140,5 +148,89 @@ public class UserController {
     public ResponseEntity<Void> deleteUser(@PathVariable UUID id) {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // ============= Teacher-School Assignment Endpoints =============
+
+    /**
+     * Assign a teacher to a school
+     */
+    @PostMapping("/{enseignantId}/ecoles/{ecoleId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<IntervenirEcoleDto> assignTeacherToEcole(
+            @PathVariable UUID enseignantId,
+            @PathVariable UUID ecoleId,
+            @Valid @RequestBody AssignTeacherRequest request) {
+        IntervenirEcoleDto assignment = affectationService.assignTeacherToEcole(enseignantId, ecoleId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(assignment);
+    }
+
+    /**
+     * Remove a teacher from a school
+     */
+    @DeleteMapping("/{enseignantId}/ecoles/{ecoleId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> removeTeacherFromEcole(
+            @PathVariable UUID enseignantId,
+            @PathVariable UUID ecoleId) {
+        affectationService.removeTeacherFromEcole(enseignantId, ecoleId);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Get all schools assigned to a teacher
+     */
+    @GetMapping("/{enseignantId}/ecoles")
+    public ResponseEntity<List<IntervenirEcoleDto>> getTeacherEcoles(@PathVariable UUID enseignantId) {
+        List<IntervenirEcoleDto> ecoles = affectationService.getTeacherEcoles(enseignantId);
+        return ResponseEntity.ok(ecoles);
+    }
+
+    // ============= Teacher-Course Assignment Endpoints =============
+
+    /**
+     * Assign a teacher to a course
+     */
+    @PostMapping("/{enseignantId}/cours/{coursId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<EnseignerDto> assignTeacherToCours(
+            @PathVariable UUID enseignantId,
+            @PathVariable UUID coursId,
+            @Valid @RequestBody AssignTeacherRequest request) {
+        EnseignerDto assignment = affectationService.assignTeacherToCours(enseignantId, coursId, request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(assignment);
+    }
+
+    /**
+     * Remove a teacher from a course
+     */
+    @DeleteMapping("/{enseignantId}/cours/{coursId}")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<Void> removeTeacherFromCours(
+            @PathVariable UUID enseignantId,
+            @PathVariable UUID coursId) {
+        affectationService.removeTeacherFromCours(enseignantId, coursId);
+        return ResponseEntity.noContent().build();
+    }
+
+    /**
+     * Get all courses assigned to a teacher
+     */
+    @GetMapping("/{enseignantId}/cours")
+    public ResponseEntity<List<EnseignerDto>> getTeacherCours(@PathVariable UUID enseignantId) {
+        List<EnseignerDto> cours = affectationService.getTeacherCours(enseignantId);
+        return ResponseEntity.ok(cours);
+    }
+
+    // ============= Teacher Workload Calculation =============
+
+    /**
+     * Calculate total workload (charge horaire) for a teacher.
+     * Aggregates hours from all assigned courses with breakdown by type and school.
+     */
+    @GetMapping("/{enseignantId}/charge-horaire")
+    public ResponseEntity<ChargeHoraireResponse> getChargeHoraire(@PathVariable UUID enseignantId) {
+        ChargeHoraireResponse chargeHoraire = chargeHoraireService.calculateChargeHoraire(enseignantId);
+        return ResponseEntity.ok(chargeHoraire);
     }
 }

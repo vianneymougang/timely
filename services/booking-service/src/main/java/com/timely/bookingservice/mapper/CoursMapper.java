@@ -18,6 +18,7 @@ public interface CoursMapper {
     @Mapping(source = "ue.intitule", target = "ueIntitule")
     @Mapping(source = "classe.id", target = "classeId")
     @Mapping(source = "classe.code", target = "classeCode")
+    @Mapping(source = "ue.filiere.ecole.id", target = "ecoleId")
     CoursResponse toResponse(Cours cours);
 
     @Mapping(target = "ue", ignore = true)

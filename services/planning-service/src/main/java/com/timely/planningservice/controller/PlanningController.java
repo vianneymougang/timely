@@ -5,12 +5,14 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.format.annotation.DateTimeFormat;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -21,11 +23,20 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.timely.planningservice.dto.request.CreneauRequestDTO;
 import com.timely.planningservice.dto.request.EmploiDuTempsRequestDTO;
+import com.timely.planningservice.dto.request.GeneratePlanningRequest;
+import com.timely.planningservice.dto.request.SearchPlanningRequest;
 import com.timely.planningservice.dto.response.CreneauResponseDTO;
 import com.timely.planningservice.dto.response.EmploiDuTempsResponseDTO;
+import com.timely.planningservice.dto.response.GeneratePlanningResponse;
 import com.timely.planningservice.entity.enums.StatutEmploi;
 import com.timely.planningservice.service.CreneauService;
 import com.timely.planningservice.service.EmploiDuTempsService;
+import com.timely.planningservice.service.ICalExportService;
+import com.timely.planningservice.service.PdfExportService;
+import com.timely.planningservice.service.PlanningGenerationService;
+
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +48,9 @@ public class PlanningController {
 
     private final EmploiDuTempsService emploiDuTempsService;
     private final CreneauService creneauService;
+    private final ICalExportService iCalExportService;
+    private final PdfExportService pdfExportService;
+    private final PlanningGenerationService planningGenerationService;
 
     // ==================== EmploiDuTemps Endpoints ====================
 
@@ -65,15 +79,10 @@ public class PlanningController {
 
     @GetMapping("/search")
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
-    public ResponseEntity<List<EmploiDuTempsResponseDTO>> searchEmplois(
-            @RequestParam(required = false) UUID ecoleId,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateDebut,
-            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFin,
-            @RequestParam(required = false) StatutEmploi statut
+    public ResponseEntity<Page<EmploiDuTempsResponseDTO>> searchAdvanced(
+            @Valid @ModelAttribute SearchPlanningRequest request
     ) {
-        List<EmploiDuTempsResponseDTO> response = emploiDuTempsService.searchEmplois(
-                ecoleId, dateDebut, dateFin, statut
-        );
+        Page<EmploiDuTempsResponseDTO> response = emploiDuTempsService.searchAdvanced(request);
         return ResponseEntity.ok(response);
     }
 
@@ -114,6 +123,42 @@ public class PlanningController {
         String publisherEmail = authentication.getName();
         EmploiDuTempsResponseDTO response = emploiDuTempsService.publishEmploi(id, publisherEmail);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}/export/ical")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    public ResponseEntity<byte[]> exportICal(@PathVariable UUID id) {
+        byte[] icalData = iCalExportService.exportToICal(id);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(new MediaType("text", "calendar"));
+        headers.setContentDispositionFormData("attachment", "planning-" + id + ".ics");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(icalData);
+    }
+
+    @GetMapping("/{id}/export/pdf")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    public ResponseEntity<byte[]> exportPdf(@PathVariable UUID id) {
+        byte[] pdfData = pdfExportService.exportToPdf(id);
+
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.APPLICATION_PDF);
+        headers.setContentDispositionFormData("attachment", "planning-" + id + ".pdf");
+
+        return ResponseEntity.ok()
+                .headers(headers)
+                .body(pdfData);
+    }
+
+    @PostMapping("/generate")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<GeneratePlanningResponse> generatePlanning(
+            @Valid @RequestBody GeneratePlanningRequest request) {
+        GeneratePlanningResponse response = planningGenerationService.generate(request);
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     // ==================== Creneau Endpoints ====================

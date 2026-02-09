@@ -6,11 +6,17 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.timely.planningservice.config.RabbitMQConfig;
 import com.timely.planningservice.dto.request.EmploiDuTempsRequestDTO;
+import com.timely.planningservice.dto.request.SearchPlanningRequest;
 import com.timely.planningservice.dto.response.EmploiDuTempsResponseDTO;
 import com.timely.planningservice.entity.EmploiDuTemps;
 import com.timely.planningservice.entity.enums.StatutEmploi;
@@ -18,6 +24,7 @@ import com.timely.planningservice.event.EmploiDuTempsPublieEvent;
 import com.timely.planningservice.exception.ResourceNotFoundException;
 import com.timely.planningservice.mapper.EmploiDuTempsMapper;
 import com.timely.planningservice.repository.EmploiDuTempsRepository;
+import com.timely.planningservice.repository.specification.EmploiDuTempsSpecification;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -183,5 +190,40 @@ public class EmploiDuTempsService {
 
         log.info("EmploiDuTemps published successfully and event sent to queue");
         return emploiDuTempsMapper.toResponseDTO(publishedEmploi);
+    }
+
+    @Transactional(readOnly = true)
+    public Page<EmploiDuTempsResponseDTO> searchAdvanced(SearchPlanningRequest request) {
+        log.info("Advanced search with filters - ecole: {}, enseignant: {}, salle: {}, groupe: {}, statut: {}",
+                request.getEcoleId(), request.getEnseignantId(), request.getSalleId(),
+                request.getGroupeId(), request.getStatut());
+
+        // Build specification from filters
+        Specification<EmploiDuTemps> spec = EmploiDuTempsSpecification.buildSearchSpecification(
+                request.getEcoleId(),
+                request.getEnseignantId(),
+                request.getSalleId(),
+                request.getGroupeId(),
+                request.getSemaine(),
+                request.getStatut()
+        );
+
+        // Build pageable with sort
+        Sort.Direction direction = "DESC".equalsIgnoreCase(request.getSortDirection())
+                ? Sort.Direction.DESC
+                : Sort.Direction.ASC;
+        Sort sort = Sort.by(direction, request.getSortBy());
+        Pageable pageable = PageRequest.of(request.getPage(), request.getSize(), sort);
+
+        // Execute query
+        Page<EmploiDuTemps> emploisPage = emploiDuTempsRepository.findAll(spec, pageable);
+
+        // Map to DTOs
+        Page<EmploiDuTempsResponseDTO> responsePage = emploisPage.map(emploiDuTempsMapper::toResponseDTO);
+
+        log.info("Advanced search returned {} results out of {} total",
+                responsePage.getNumberOfElements(), responsePage.getTotalElements());
+
+        return responsePage;
     }
 }

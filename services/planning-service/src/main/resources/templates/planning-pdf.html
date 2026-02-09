@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <title>Emploi du Temps</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 1cm;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 9px;
+            margin: 0;
+            padding: 0;
+        }
+
+        h1 {
+            text-align: center;
+            font-size: 16px;
+            margin: 10px 0;
+            color: #333;
+        }
+
+        .header-info {
+            text-align: center;
+            font-size: 10px;
+            margin-bottom: 15px;
+            color: #666;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            table-layout: fixed;
+        }
+
+        th, td {
+            border: 1px solid #333;
+            padding: 4px;
+            text-align: center;
+            vertical-align: middle;
+            overflow: hidden;
+        }
+
+        th {
+            background-color: #2c3e50;
+            color: white;
+            font-weight: bold;
+            font-size: 10px;
+        }
+
+        th.time-col {
+            width: 8%;
+        }
+
+        th.day-col {
+            width: 15.3%;
+        }
+
+        td.time-cell {
+            background-color: #ecf0f1;
+            font-weight: bold;
+            font-size: 9px;
+        }
+
+        td.empty-cell {
+            background-color: #ffffff;
+        }
+
+        /* Color coding by course type */
+        .cm {
+            background-color: #d1e7ff;
+            border-left: 3px solid #007bff;
+        }
+
+        .td {
+            background-color: #d4edda;
+            border-left: 3px solid #28a745;
+        }
+
+        .tp {
+            background-color: #fff3cd;
+            border-left: 3px solid #ffc107;
+        }
+
+        .course-cell {
+            font-size: 8px;
+            line-height: 1.3;
+            padding: 3px;
+        }
+
+        .course-title {
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .course-teacher {
+            color: #555;
+            font-style: italic;
+        }
+
+        .course-room {
+            color: #666;
+            font-size: 7px;
+        }
+
+        .footer {
+            margin-top: 15px;
+            text-align: center;
+            font-size: 8px;
+            color: #999;
+        }
+
+        .legend {
+            margin-top: 10px;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            font-size: 9px;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .legend-box {
+            width: 20px;
+            height: 12px;
+            border: 1px solid #333;
+        }
+    </style>
+</head>
+<body>
+<h1 th:text="'Emploi du Temps - ' + ${periode}">Emploi du Temps</h1>
+<div class="header-info">
+    <span th:text="'Du ' + ${#temporals.format(dateDebut, 'dd/MM/yyyy')} + ' au ' + ${#temporals.format(dateFin, 'dd/MM/yyyy')}"></span>
+    <br/>
+    <span th:if="${ecoleNom}" th:text="'École : ' + ${ecoleNom}"></span>
+</div>
+
+<table>
+    <thead>
+    <tr>
+        <th class="time-col">Horaire</th>
+        <th class="day-col">Lundi</th>
+        <th class="day-col">Mardi</th>
+        <th class="day-col">Mercredi</th>
+        <th class="day-col">Jeudi</th>
+        <th class="day-col">Vendredi</th>
+        <th class="day-col">Samedi</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="slot : ${timeSlots}">
+        <td class="time-cell" th:text="${slot.time}">08:00 - 09:30</td>
+        <td th:each="day, dayStat : ${days}"
+            th:with="creneau=${slot.getCreneauForDay(day)}"
+            th:class="${creneau != null ? 'course-cell ' + creneau.typeCours : 'empty-cell'}">
+            <div th:if="${creneau != null}">
+                <div class="course-title" th:text="${creneau.coursIntitule}">Mathématiques</div>
+                <div class="course-teacher" th:if="${creneau.enseignantNom}"
+                     th:text="${creneau.enseignantNom}">Prof. Dupont
+                </div>
+                <div class="course-room" th:if="${creneau.salleNumero}"
+                     th:text="'Salle ' + ${creneau.salleNumero}">Salle A101
+                </div>
+            </div>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+<div class="legend">
+    <div class="legend-item">
+        <div class="legend-box cm"></div>
+        <span>CM - Cours Magistral</span>
+    </div>
+    <div class="legend-item">
+        <div class="legend-box td"></div>
+        <span>TD - Travaux Dirigés</span>
+    </div>
+    <div class="legend-item">
+        <div class="legend-box tp"></div>
+        <span>TP - Travaux Pratiques</span>
+    </div>
+</div>
+
+<div class="footer">
+    <p>Généré le <span th:text="${#temporals.format(#temporals.createNow(), 'dd/MM/yyyy HH:mm')}"></span></p>
+    <p>Système de gestion d'emplois du temps - IUSJC Timely</p>
+</div>
+</body>
+</html>
