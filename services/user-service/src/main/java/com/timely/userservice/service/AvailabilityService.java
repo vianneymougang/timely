@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import com.timely.userservice.dto.AvailabilityRequestDto;
 import com.timely.userservice.dto.AvailabilityResponseDto;
+import com.timely.userservice.dto.AvailabilitySlotDto;
 import com.timely.userservice.dto.TeacherAvailabilitySummaryDto;
 
 /**
@@ -39,8 +40,16 @@ public interface AvailabilityService {
 
     /**
      * Get all teachers' availability summaries (admin only)
-     * 
+     *
      * @return list of availability summaries for all teachers
      */
     List<TeacherAvailabilitySummaryDto> getAllTeacherAvailabilities();
+
+    /**
+     * Get availability slots for a teacher (for inter-service communication)
+     *
+     * @param teacherId ID of the teacher
+     * @return list of individual availability slots
+     */
+    List<AvailabilitySlotDto> getAvailabilityByTeacherId(UUID teacherId);
 }

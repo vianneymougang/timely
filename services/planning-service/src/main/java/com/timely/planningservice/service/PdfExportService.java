@@ -43,7 +43,7 @@ public class PdfExportService {
                 .orElseThrow(() -> new ResourceNotFoundException("EmploiDuTemps not found with id: " + emploiId));
 
         // 2. Enrich data via Feign
-        Map<UUID, PlanningDataEnricher.EnrichedCreneau> enrichedData = dataEnricher.enrichEmploiDuTemps(emploi);
+        PlanningDataEnricher.EnrichedPlanningData enrichedData = dataEnricher.enrichEmploiDuTemps(emploi);
 
         // 3. Organize into grid (time slots x days)
         GridData gridData = organizeIntoGrid(emploi, enrichedData);
@@ -70,22 +70,20 @@ public class PdfExportService {
         }
     }
 
-    private GridData organizeIntoGrid(EmploiDuTemps emploi, Map<UUID, PlanningDataEnricher.EnrichedCreneau> enrichedData) {
+    private GridData organizeIntoGrid(EmploiDuTemps emploi, PlanningDataEnricher.EnrichedPlanningData enrichedData) {
         GridData grid = new GridData();
 
-        // Get all active creneaux
-        List<Creneau> activeCreneaux = emploi.getCreneaux().stream()
-                .filter(c -> c.getStatutCreneau() == StatutCreneau.ACTIF)
-                .collect(Collectors.toList());
+        // Get enriched creneaux
+        List<PlanningDataEnricher.EnrichedCreneau> enrichedCreneaux = enrichedData.creneaux();
 
-        if (activeCreneaux.isEmpty()) {
-            log.warn("No active creneaux found for emploi: {}", emploi.getId());
+        if (enrichedCreneaux.isEmpty()) {
+            log.warn("No creneaux found for emploi: {}", emploi.getId());
             return grid;
         }
 
         // Extract unique time slots
-        Set<TimeSlotKey> timeSlots = activeCreneaux.stream()
-                .map(c -> new TimeSlotKey(c.getHeureDebut(), c.getHeureFin()))
+        Set<TimeSlotKey> timeSlots = enrichedCreneaux.stream()
+                .map(c -> new TimeSlotKey(c.heureDebut(), c.heureFin()))
                 .collect(Collectors.toCollection(TreeSet::new));
 
         // Build grid rows
@@ -99,21 +97,20 @@ public class PdfExportService {
             for (DayOfWeek day : Arrays.asList(DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
                     DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY)) {
 
-                Optional<Creneau> matchingCreneau = activeCreneaux.stream()
-                        .filter(c -> c.getJourSemaine() == day &&
-                                c.getHeureDebut().equals(timeSlot.heureDebut) &&
-                                c.getHeureFin().equals(timeSlot.heureFin))
+                Optional<PlanningDataEnricher.EnrichedCreneau> matchingCreneau = enrichedCreneaux.stream()
+                        .filter(c -> c.jourSemaine() == day &&
+                                c.heureDebut().equals(timeSlot.heureDebut) &&
+                                c.heureFin().equals(timeSlot.heureFin))
                         .findFirst();
 
                 if (matchingCreneau.isPresent()) {
-                    Creneau creneau = matchingCreneau.get();
-                    PlanningDataEnricher.EnrichedCreneau enriched = enrichedData.get(creneau.getId());
+                    PlanningDataEnricher.EnrichedCreneau enriched = matchingCreneau.get();
 
                     GridCell cell = new GridCell();
-                    cell.coursIntitule = enriched != null ? enriched.getCoursIntitule() : "Cours";
-                    cell.enseignantNom = enriched != null ? enriched.getEnseignantNom() : null;
-                    cell.salleNumero = enriched != null ? enriched.getSalleNumero() : null;
-                    cell.typeCours = enriched != null ? enriched.getTypeCours().toLowerCase() : "cours";
+                    cell.coursIntitule = enriched.nomCours();
+                    cell.enseignantNom = enriched.nomEnseignant();
+                    cell.salleNumero = enriched.numeroSalle();
+                    cell.typeCours = enriched.typeCours().toLowerCase();
 
                     row.creneauxByDay.put(day, cell);
                 } else {

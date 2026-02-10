@@ -14,9 +14,11 @@ import com.timely.authservice.model.RefreshToken;
 import com.timely.authservice.repository.RefreshTokenRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class RefreshTokenService {
 
     private final RefreshTokenRepository refreshTokenRepository;
@@ -80,6 +82,6 @@ public class RefreshTokenService {
     @Transactional
     public void deleteExpiredTokens() {
         int deletedCount = refreshTokenRepository.deleteByExpiryDateBefore(LocalDateTime.now());
-        System.out.println("Deleted " + deletedCount + " expired refresh tokens");
+        log.info("Deleted {} expired refresh tokens", deletedCount);
     }
 }

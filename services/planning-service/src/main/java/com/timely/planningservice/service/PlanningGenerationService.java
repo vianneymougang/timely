@@ -243,8 +243,8 @@ public class PlanningGenerationService {
                 ? request.getHeureDebutJournee()
                 : config.getHeureDebutDefaut();
 
-        LocalTime heureFin = request.getHeureFinDefaut() != null
-                ? request.getHeureFinDefaut()
+        LocalTime heureFin = request.getHeureFinJournee() != null
+                ? request.getHeureFinJournee()
                 : config.getHeureFinDefaut();
 
         int dureeMinutes = request.getDureeCreneauMinutes() != null
@@ -368,6 +368,10 @@ public class PlanningGenerationService {
         double constraintScore;
         boolean isSchedulable = true;
         String nonSchedulableReason;
+
+        public double getConstraintScore() {
+            return constraintScore;
+        }
     }
 
     private static class TimeSlot {

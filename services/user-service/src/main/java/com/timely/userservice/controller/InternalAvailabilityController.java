@@ -1,5 +1,6 @@
 package com.timely.userservice.controller;
 
+import java.time.DayOfWeek;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
@@ -53,10 +54,14 @@ public class InternalAvailabilityController {
         // Get all availabilities for the teacher
         List<AvailabilitySlotDto> availabilities = availabilityService.getAvailabilityByTeacherId(enseignantId);
 
+        // Convert French day name to DayOfWeek enum
+        DayOfWeek requestedDay = convertFrenchDayToDayOfWeek(jourSemaine);
+
         // Check if any slot matches the requested time
+        // A slot is available if it covers the entire requested time range
         boolean isAvailable = availabilities.stream()
                 .anyMatch(slot ->
-                    slot.getDayOfWeek().name().equals(jourSemaine.toUpperCase()) &&
+                    slot.getDayOfWeek().equals(requestedDay) &&
                     !slot.getStartTime().isAfter(startTime) &&
                     !slot.getEndTime().isBefore(endTime)
                 );
@@ -105,4 +110,20 @@ public class InternalAvailabilityController {
         String heureFin,
         boolean estDisponible
     ) {}
+
+    /**
+     * Helper method to convert French day names to DayOfWeek enum
+     */
+    private DayOfWeek convertFrenchDayToDayOfWeek(String frenchDay) {
+        return switch (frenchDay.toLowerCase()) {
+            case "lundi" -> DayOfWeek.MONDAY;
+            case "mardi" -> DayOfWeek.TUESDAY;
+            case "mercredi" -> DayOfWeek.WEDNESDAY;
+            case "jeudi" -> DayOfWeek.THURSDAY;
+            case "vendredi" -> DayOfWeek.FRIDAY;
+            case "samedi" -> DayOfWeek.SATURDAY;
+            case "dimanche" -> DayOfWeek.SUNDAY;
+            default -> throw new IllegalArgumentException("Invalid French day name: " + frenchDay);
+        };
+    }
 }

@@ -1,6 +1,8 @@
 package com.timely.userservice.service;
 
+import java.time.DayOfWeek;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -11,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.timely.userservice.dto.AvailabilityRequestDto;
 import com.timely.userservice.dto.AvailabilityResponseDto;
+import com.timely.userservice.dto.AvailabilitySlotDto;
 import com.timely.userservice.dto.TeacherAvailabilitySummaryDto;
 import com.timely.userservice.exception.ResourceNotFoundException;
 import com.timely.userservice.mapper.AvailabilityMapper;
@@ -137,5 +140,53 @@ public class AvailabilityServiceImpl implements AvailabilityService {
         }
 
         return summaries;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AvailabilitySlotDto> getAvailabilityByTeacherId(UUID teacherId) {
+        // Find availability for the teacher
+        Optional<TeacherAvailability> availabilityOpt = availabilityRepository.findByTeacherId(teacherId);
+
+        if (availabilityOpt.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        TeacherAvailability availability = availabilityOpt.get();
+        List<AvailabilitySlotDto> slots = new ArrayList<>();
+
+        // Convert each AvailabilityTimeSlot to AvailabilitySlotDto
+        for (AvailabilityTimeSlot timeSlot : availability.getTimeSlots()) {
+            AvailabilitySlotDto dto = new AvailabilitySlotDto();
+            dto.setId(timeSlot.getId());
+            dto.setTeacherId(teacherId);
+
+            // Convert String day to DayOfWeek enum
+            dto.setDayOfWeek(convertToDayOfWeek(timeSlot.getDayOfWeek()));
+
+            // Convert Integer hours to LocalTime
+            dto.setStartTime(LocalTime.of(timeSlot.getHourStart(), 0));
+            dto.setEndTime(LocalTime.of(timeSlot.getHourEnd(), 0));
+
+            slots.add(dto);
+        }
+
+        return slots;
+    }
+
+    /**
+     * Helper method to convert French day names to DayOfWeek enum
+     */
+    private DayOfWeek convertToDayOfWeek(String dayName) {
+        return switch (dayName.toLowerCase()) {
+            case "lundi" -> DayOfWeek.MONDAY;
+            case "mardi" -> DayOfWeek.TUESDAY;
+            case "mercredi" -> DayOfWeek.WEDNESDAY;
+            case "jeudi" -> DayOfWeek.THURSDAY;
+            case "vendredi" -> DayOfWeek.FRIDAY;
+            case "samedi" -> DayOfWeek.SATURDAY;
+            case "dimanche" -> DayOfWeek.SUNDAY;
+            default -> throw new IllegalArgumentException("Invalid day name: " + dayName);
+        };
     }
 }

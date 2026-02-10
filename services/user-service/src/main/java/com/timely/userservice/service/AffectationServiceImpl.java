@@ -11,14 +11,13 @@ import com.timely.userservice.model.Teacher;
 import com.timely.userservice.repository.EnseignerRepository;
 import com.timely.userservice.repository.IntervenirEcoleRepository;
 import com.timely.userservice.repository.UserRepository;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 /**
  * Service implementation for managing teacher assignments.
@@ -34,19 +33,37 @@ public class AffectationServiceImpl implements AffectationService {
 
     @Override
     @Transactional
-    public IntervenirEcoleDto assignTeacherToEcole(UUID enseignantId, UUID ecoleId, AssignTeacherRequest request) {
+    public IntervenirEcoleDto assignTeacherToEcole(
+        UUID enseignantId,
+        UUID ecoleId,
+        AssignTeacherRequest request
+    ) {
         log.info("Assigning teacher {} to school {}", enseignantId, ecoleId);
 
         // Validate teacher exists
-        Teacher teacher = userRepository.findById(enseignantId)
+        Teacher teacher = userRepository
+            .findById(enseignantId)
             .filter(user -> user instanceof Teacher)
             .map(user -> (Teacher) user)
-            .orElseThrow(() -> new UserNotFoundException("Teacher not found with id: " + enseignantId));
+            .orElseThrow(() ->
+                new UserNotFoundException(
+                    "Teacher not found with id: " + enseignantId
+                )
+            );
 
         // Check if assignment already exists
-        if (intervenirEcoleRepository.existsByEnseignantIdAndEcoleId(enseignantId, ecoleId)) {
+        if (
+            intervenirEcoleRepository.existsByEnseignantIdAndEcoleId(
+                enseignantId,
+                ecoleId
+            )
+        ) {
             throw new IllegalStateException(
-                String.format("Teacher %s is already assigned to school %s", enseignantId, ecoleId)
+                String.format(
+                    "Teacher %s is already assigned to school %s",
+                    enseignantId,
+                    ecoleId
+                )
             );
         }
 
@@ -59,7 +76,11 @@ public class AffectationServiceImpl implements AffectationService {
             .build();
 
         IntervenirEcole saved = intervenirEcoleRepository.save(intervenirEcole);
-        log.info("Successfully assigned teacher {} to school {}", enseignantId, ecoleId);
+        log.info(
+            "Successfully assigned teacher {} to school {}",
+            enseignantId,
+            ecoleId
+        );
 
         return mapToIntervenirEcoleDto(saved);
     }
@@ -71,12 +92,22 @@ public class AffectationServiceImpl implements AffectationService {
 
         IntervenirEcole intervenirEcole = intervenirEcoleRepository
             .findByEnseignantIdAndEcoleId(enseignantId, ecoleId)
-            .orElseThrow(() -> new ResourceNotFoundException(
-                String.format("Assignment not found for teacher %s and school %s", enseignantId, ecoleId)
-            ));
+            .orElseThrow(() ->
+                new ResourceNotFoundException(
+                    String.format(
+                        "Assignment not found for teacher %s and school %s",
+                        enseignantId,
+                        ecoleId
+                    )
+                )
+            );
 
         intervenirEcoleRepository.delete(intervenirEcole);
-        log.info("Successfully removed teacher {} from school {}", enseignantId, ecoleId);
+        log.info(
+            "Successfully removed teacher {} from school {}",
+            enseignantId,
+            ecoleId
+        );
     }
 
     @Override
@@ -86,30 +117,48 @@ public class AffectationServiceImpl implements AffectationService {
 
         // Validate teacher exists
         if (!userRepository.existsById(enseignantId)) {
-            throw new UserNotFoundException("Teacher not found with id: " + enseignantId);
+            throw new UserNotFoundException(
+                "Teacher not found with id: " + enseignantId
+            );
         }
 
-        List<IntervenirEcole> assignments = intervenirEcoleRepository.findByEnseignantId(enseignantId);
-        return assignments.stream()
+        List<IntervenirEcole> assignments =
+            intervenirEcoleRepository.findByEnseignantId(enseignantId);
+        return assignments
+            .stream()
             .map(this::mapToIntervenirEcoleDto)
             .collect(Collectors.toList());
     }
 
     @Override
     @Transactional
-    public EnseignerDto assignTeacherToCours(UUID enseignantId, UUID coursId, AssignTeacherRequest request) {
+    public EnseignerDto assignTeacherToCours(
+        UUID enseignantId,
+        UUID coursId,
+        AssignTeacherRequest request
+    ) {
         log.info("Assigning teacher {} to course {}", enseignantId, coursId);
 
         // Validate teacher exists
-        Teacher teacher = userRepository.findById(enseignantId)
-            .filter(user -> user instanceof Teacher)
-            .map(user -> (Teacher) user)
-            .orElseThrow(() -> new UserNotFoundException("Teacher not found with id: " + enseignantId));
+        if (!userRepository.existsById(enseignantId)) {
+            throw new UserNotFoundException(
+                "Teacher not found with id: " + enseignantId
+            );
+        }
 
         // Check if assignment already exists
-        if (enseignerRepository.existsByEnseignantIdAndCoursId(enseignantId, coursId)) {
+        if (
+            enseignerRepository.existsByEnseignantIdAndCoursId(
+                enseignantId,
+                coursId
+            )
+        ) {
             throw new IllegalStateException(
-                String.format("Teacher %s is already assigned to course %s", enseignantId, coursId)
+                String.format(
+                    "Teacher %s is already assigned to course %s",
+                    enseignantId,
+                    coursId
+                )
             );
         }
 
@@ -122,7 +171,11 @@ public class AffectationServiceImpl implements AffectationService {
             .build();
 
         Enseigner saved = enseignerRepository.save(enseigner);
-        log.info("Successfully assigned teacher {} to course {}", enseignantId, coursId);
+        log.info(
+            "Successfully assigned teacher {} to course {}",
+            enseignantId,
+            coursId
+        );
 
         return mapToEnseignerDto(saved);
     }
@@ -134,12 +187,22 @@ public class AffectationServiceImpl implements AffectationService {
 
         Enseigner enseigner = enseignerRepository
             .findByEnseignantIdAndCoursId(enseignantId, coursId)
-            .orElseThrow(() -> new ResourceNotFoundException(
-                String.format("Assignment not found for teacher %s and course %s", enseignantId, coursId)
-            ));
+            .orElseThrow(() ->
+                new ResourceNotFoundException(
+                    String.format(
+                        "Assignment not found for teacher %s and course %s",
+                        enseignantId,
+                        coursId
+                    )
+                )
+            );
 
         enseignerRepository.delete(enseigner);
-        log.info("Successfully removed teacher {} from course {}", enseignantId, coursId);
+        log.info(
+            "Successfully removed teacher {} from course {}",
+            enseignantId,
+            coursId
+        );
     }
 
     @Override
@@ -149,11 +212,16 @@ public class AffectationServiceImpl implements AffectationService {
 
         // Validate teacher exists
         if (!userRepository.existsById(enseignantId)) {
-            throw new UserNotFoundException("Teacher not found with id: " + enseignantId);
+            throw new UserNotFoundException(
+                "Teacher not found with id: " + enseignantId
+            );
         }
 
-        List<Enseigner> assignments = enseignerRepository.findByEnseignantId(enseignantId);
-        return assignments.stream()
+        List<Enseigner> assignments = enseignerRepository.findByEnseignantId(
+            enseignantId
+        );
+        return assignments
+            .stream()
             .map(this::mapToEnseignerDto)
             .collect(Collectors.toList());
     }
