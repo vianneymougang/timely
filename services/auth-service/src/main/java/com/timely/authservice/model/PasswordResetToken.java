@@ -35,6 +35,59 @@ public class PasswordResetToken {
     @Column(nullable = false)
     private boolean used = false;
     
+    // Constructeur vide - explicite
+    public PasswordResetToken() {
+    }
+
+    // Constructeurs avec paramètres
+    public PasswordResetToken(String token, UUID userId, LocalDateTime expiryDate, boolean used) {
+        this.token = token;
+        this.userId = userId;
+        this.expiryDate = expiryDate;
+        this.used = used;
+    }
+
+    // Getters et Setters explicites
+    public UUID getId() {
+        return id;
+    }
+
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public UUID getUserId() {
+        return userId;
+    }
+
+    public void setUserId(UUID userId) {
+        this.userId = userId;
+    }
+
+    public LocalDateTime getExpiryDate() {
+        return expiryDate;
+    }
+
+    public void setExpiryDate(LocalDateTime expiryDate) {
+        this.expiryDate = expiryDate;
+    }
+
+    public boolean isUsed() {
+        return used;
+    }
+
+    public void setUsed(boolean used) {
+        this.used = used;
+    }
+    
     public boolean isExpired() {
         return LocalDateTime.now().isAfter(expiryDate);
     }

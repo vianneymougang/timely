@@ -14,10 +14,7 @@ import com.timely.authservice.dto.LoginRequest;
 import com.timely.authservice.model.RefreshToken;
 import com.timely.authservice.util.JwtUtil;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 public class AuthService {
 
     private final UserServiceClient userServiceClient;
@@ -25,6 +22,19 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     private final RefreshTokenService refreshTokenService;
     private final CustomUserDetailsService userDetailsService;
+
+    // Constructeur manuel (remplace @RequiredArgsConstructor)
+    public AuthService(UserServiceClient userServiceClient,
+                       JwtUtil jwtUtil,
+                       AuthenticationManager authenticationManager,
+                       RefreshTokenService refreshTokenService,
+                       CustomUserDetailsService userDetailsService) {
+        this.userServiceClient = userServiceClient;
+        this.jwtUtil = jwtUtil;
+        this.authenticationManager = authenticationManager;
+        this.refreshTokenService = refreshTokenService;
+        this.userDetailsService = userDetailsService;
+    }
 
     /**
      * Authenticate user and generate tokens
@@ -38,7 +48,7 @@ public class AuthService {
 
         // Load user details
         UserDetails userDetails = (UserDetails) authentication.getPrincipal();
-        
+
         // Find user from user-service
         InternalUserDto user = userServiceClient.findByEmail(request.getEmail());
 
@@ -46,16 +56,17 @@ public class AuthService {
         String accessToken = jwtUtil.generateAccessToken(userDetails);
         RefreshToken refreshToken = refreshTokenService.createRefreshToken(user.getId());
 
-        // Build response
-        return AuthResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken.getToken())
-                .userId(user.getId())
-                .email(user.getEmail())
-                .role(user.getRole())
-                .name(user.getName() + " " + user.getSurname())
-                .status(user.getStatus())
-                .build();
+        // Build response (sans builder)
+        AuthResponse response = new AuthResponse();
+        response.setAccessToken(accessToken);
+        response.setRefreshToken(refreshToken.getToken());
+        response.setUserId(user.getId());
+        response.setEmail(user.getEmail());
+        response.setRole(user.getRole());
+        response.setName(user.getName() + " " + user.getSurname());
+        response.setStatus(user.getStatus());
+
+        return response;
     }
 
     /**
@@ -80,16 +91,17 @@ public class AuthService {
         refreshTokenService.deleteToken(refreshToken);
         RefreshToken newRefreshToken = refreshTokenService.createRefreshToken(user.getId());
 
-        // Build response
-        return AuthResponse.builder()
-                .accessToken(newAccessToken)
-                .refreshToken(newRefreshToken.getToken())
-                .userId(user.getId())
-                .email(user.getEmail())
-                .role(user.getRole())
-                .name(user.getName() + " " + user.getSurname())
-                .status(user.getStatus())
-                .build();
+        // Build response (sans builder)
+        AuthResponse response = new AuthResponse();
+        response.setAccessToken(newAccessToken);
+        response.setRefreshToken(newRefreshToken.getToken());
+        response.setUserId(user.getId());
+        response.setEmail(user.getEmail());
+        response.setRole(user.getRole());
+        response.setName(user.getName() + " " + user.getSurname());
+        response.setStatus(user.getStatus());
+
+        return response;
     }
 
     /**
@@ -99,7 +111,7 @@ public class AuthService {
     public void logout(String refreshTokenStr) {
         RefreshToken refreshToken = refreshTokenService.findByToken(refreshTokenStr)
                 .orElseThrow(() -> new RuntimeException("Refresh token not found"));
-        
+
         refreshTokenService.deleteToken(refreshToken);
     }
 }

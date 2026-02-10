@@ -8,7 +8,6 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.timely.userservice.config.RabbitMQConfig;
 import com.timely.userservice.dto.AdminDto;
 import com.timely.userservice.dto.CreateAdminRequest;
 import com.timely.userservice.dto.CreateTeacherRequest;
@@ -16,251 +15,192 @@ import com.timely.userservice.dto.InternalUserDto;
 import com.timely.userservice.dto.TeacherDto;
 import com.timely.userservice.dto.UpdateUserRequest;
 import com.timely.userservice.dto.UserDto;
-import com.timely.userservice.event.UserCreatedEvent;
-import com.timely.userservice.exception.EmailAlreadyExistsException;
-import com.timely.userservice.exception.MatriculeAlreadyExistsException;
-import com.timely.userservice.exception.UserNotFoundException;
+import com.timely.userservice.exception.ResourceNotFoundException;
 import com.timely.userservice.mapper.UserMapper;
 import com.timely.userservice.model.Admin;
-import com.timely.userservice.model.Role;
 import com.timely.userservice.model.Teacher;
 import com.timely.userservice.model.User;
-import com.timely.userservice.model.UserStatus;
 import com.timely.userservice.repository.TeacherRepository;
 import com.timely.userservice.repository.UserRepository;
-import com.timely.userservice.util.PasswordGenerator;
-import org.springframework.amqp.rabbit.core.RabbitTemplate;
-
-import lombok.RequiredArgsConstructor;
 
 @Service
-@RequiredArgsConstructor
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
     private final TeacherRepository teacherRepository;
-    private final UserMapper userMapper;
     private final PasswordEncoder passwordEncoder;
-    private final UserCodeGeneratorService userCodeGeneratorService;
-    private final RabbitTemplate rabbitTemplate;
+    private final UserMapper userMapper;
+
+    // Constructeur
+    public UserServiceImpl(UserRepository userRepository, TeacherRepository teacherRepository, 
+                         PasswordEncoder passwordEncoder, UserMapper userMapper) {
+        this.userRepository = userRepository;
+        this.teacherRepository = teacherRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.userMapper = userMapper;
+    }
 
     @Override
-    @Transactional
     public TeacherDto createTeacher(CreateTeacherRequest request) {
-        // Check if email already exists
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new EmailAlreadyExistsException("Email already exists: " + request.getEmail());
-        }
-
-        // Generate secure random password
-        String temporaryPassword = PasswordGenerator.generatePassword(12);
-
-        // Create teacher entity
         Teacher teacher = userMapper.toTeacherEntity(request);
+        // Générer un mot de passe par défaut ou en attendre un du request
+        // Pour maintenant, générer un mot de passe temporaire
+        String temporaryPassword = UUID.randomUUID().toString().substring(0, 12);
         teacher.setPassword(passwordEncoder.encode(temporaryPassword));
-        teacher.setRole(Role.ROLE_TEACHER);
-        
-        // Auto-generate matricule
-        teacher.setMatricule(userCodeGeneratorService.generateTeacherCode());
-
-        // Save teacher
-        Teacher savedTeacher = teacherRepository.save(teacher);
-
-        // Publish event to RabbitMQ for email notification
-        UserCreatedEvent event = new UserCreatedEvent(
-            savedTeacher.getEmail(),
-            temporaryPassword,
-            savedTeacher.getName(),
-            savedTeacher.getSurname(),
-            "TEACHER"
-        );
-        rabbitTemplate.convertAndSend(
-            RabbitMQConfig.USER_EXCHANGE,
-            RabbitMQConfig.USER_CREATED_ROUTING_KEY,
-            event
-        );
-
-        return userMapper.toTeacherDto(savedTeacher);
+        teacher.setIsActive(true);
+        teacherRepository.save(teacher);
+        return userMapper.toTeacherDto(teacher);
     }
 
     @Override
-    @Transactional
     public AdminDto createAdmin(CreateAdminRequest request) {
-        // Check if email already exists
-        if (userRepository.existsByEmail(request.getEmail())) {
-            throw new EmailAlreadyExistsException("Email already exists: " + request.getEmail());
-        }
-
-        // Generate secure random password
-        String temporaryPassword = PasswordGenerator.generatePassword(12);
-
-        // Create admin entity
         Admin admin = userMapper.toAdminEntity(request);
+        // Générer un mot de passe par défaut ou en attendre un du request
+        String temporaryPassword = UUID.randomUUID().toString().substring(0, 12);
         admin.setPassword(passwordEncoder.encode(temporaryPassword));
-        admin.setRole(Role.ROLE_ADMIN);
-
-        // Save admin
-        Admin savedAdmin = (Admin) userRepository.save(admin);
-
-        // Publish event to RabbitMQ for email notification
-        UserCreatedEvent event = new UserCreatedEvent(
-            savedAdmin.getEmail(),
-            temporaryPassword,
-            savedAdmin.getName(),
-            savedAdmin.getSurname(),
-            "ADMIN"
-        );
-        rabbitTemplate.convertAndSend(
-            RabbitMQConfig.USER_EXCHANGE,
-            RabbitMQConfig.USER_CREATED_ROUTING_KEY,
-            event
-        );
-
-        return userMapper.toAdminDto(savedAdmin);
+        admin.setIsActive(true);
+        userRepository.save(admin);
+        return userMapper.toAdminDto(admin);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public UserDto getUserById(UUID id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
-
-        if (user instanceof Teacher) {
-            return userMapper.toTeacherDto((Teacher) user);
-        } else if (user instanceof Admin) {
-            return userMapper.toAdminDto((Admin) user);
-        }
-        return userMapper.toDto(user);
+    public UserDto getUserById(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+        return convertToDto(user);
     }
 
     @Override
-    @Transactional(readOnly = true)
+    public UserDto getUserByEmail(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+        return convertToDto(user);
+    }
+
+    @Override
     public InternalUserDto getInternalUserByEmail(String email) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new UserNotFoundException("User not found with email: " + email));
-        return userMapper.toInternalDto(user);
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with email: " + email));
+        return convertToInternalDto(user);
     }
 
     @Override
-    @Transactional(readOnly = true)
-    public InternalUserDto getInternalUserById(UUID id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
-        return userMapper.toInternalDto(user);
+    public InternalUserDto getInternalUserById(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+        return convertToInternalDto(user);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<UserDto> getAllUsers() {
-        return userRepository.findAll().stream()
-                .map(user -> {
-                    if (user instanceof Teacher) {
-                        return userMapper.toTeacherDto((Teacher) user);
-                    } else if (user instanceof Admin) {
-                        return userMapper.toAdminDto((Admin) user);
-                    }
-                    return userMapper.toDto(user);
-                })
+        return userRepository.findAll()
+                .stream()
+                .map(this::convertToDto)
                 .collect(Collectors.toList());
     }
 
     @Override
-    @Transactional(readOnly = true)
     public List<TeacherDto> getAllTeachers() {
-        return userRepository.findAllByRole(Role.ROLE_TEACHER).stream()
-                .map(user -> userMapper.toTeacherDto((Teacher) user))
+        return teacherRepository.findAll()
+                .stream()
+                .map(userMapper::toTeacherDto)
                 .collect(Collectors.toList());
     }
 
     @Override
     @Transactional
-    public UserDto updateUser(UUID id, UpdateUserRequest request) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
-
-        // Check email uniqueness if email is being updated
-        if (request.getEmail() != null && !request.getEmail().equals(user.getEmail())) {
-            if (userRepository.existsByEmail(request.getEmail())) {
-                throw new EmailAlreadyExistsException("Email already exists: " + request.getEmail());
-            }
+    public UserDto updateUser(UUID userId, UpdateUserRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+        
+        if (request.getName() != null) {
+            user.setFirstName(request.getName());
         }
-
-        // Update based on user type
-        if (user instanceof Teacher teacher) {
-            // Check matricule uniqueness if matricule is being updated
-            if (request.getMatricule() != null && !request.getMatricule().equals(teacher.getMatricule())) {
-                if (teacherRepository.existsByMatricule(request.getMatricule())) {
-                    throw new MatriculeAlreadyExistsException("Matricule already exists: " + request.getMatricule());
-                }
-            }
-            userMapper.updateTeacherFromDto(request, teacher);
-            Teacher updated = teacherRepository.save(teacher);
-            return userMapper.toTeacherDto(updated);
-        } else if (user instanceof Admin admin) {
-            userMapper.updateAdminFromDto(request, admin);
-            Admin updated = (Admin) userRepository.save(admin);
-            return userMapper.toAdminDto(updated);
-        } else {
-            userMapper.updateUserFromDto(request, user);
-            User updated = userRepository.save(user);
-            return userMapper.toDto(updated);
+        if (request.getSurname() != null) {
+            user.setLastName(request.getSurname());
         }
+        // telephoneNumber not present on current User model; skip if provided
+        
+        userRepository.save(user);
+        return convertToDto(user);
     }
 
     @Override
     @Transactional
-    public void deleteUser(UUID id) {
-        // Soft delete by blocking the user instead of physical deletion
-        blockUser(id);
-    }
-    
-    @Override
-    @Transactional
-    public UserDto blockUser(UUID id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
-        
-        user.setStatus(UserStatus.BLOCKED);
-        User blockedUser = userRepository.save(user);
-        
-        if (blockedUser instanceof Teacher) {
-            return userMapper.toTeacherDto((Teacher) blockedUser);
-        } else if (blockedUser instanceof Admin) {
-            return userMapper.toAdminDto((Admin) blockedUser);
-        }
-        return userMapper.toDto(blockedUser);
-    }
-    
-    @Override
-    @Transactional
-    public UserDto unblockUser(UUID id) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
-        
-        user.setStatus(UserStatus.ACTIVE);
-        User unblockedUser = userRepository.save(user);
-        
-        if (unblockedUser instanceof Teacher) {
-            return userMapper.toTeacherDto((Teacher) unblockedUser);
-        } else if (unblockedUser instanceof Admin) {
-            return userMapper.toAdminDto((Admin) unblockedUser);
-        }
-        return userMapper.toDto(unblockedUser);
+    public void deleteUser(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+        // Soft delete: mark inactive
+        user.setIsActive(false);
+        userRepository.save(user);
     }
 
     @Override
     @Transactional
-    public void updatePassword(UUID id, String newPassword) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
-        
+    public UserDto blockUser(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+        user.setIsActive(false);
+        userRepository.save(user);
+        return convertToDto(user);
+    }
+
+    @Override
+    @Transactional
+    public UserDto unblockUser(UUID userId) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+        user.setIsActive(true);
+        userRepository.save(user);
+        return convertToDto(user);
+    }
+
+    @Override
+    @Transactional
+    public void updatePassword(UUID userId, String currentPassword, String newPassword) {
+        // Récupérer l'utilisateur
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResourceNotFoundException("User not found with id: " + userId));
+
+        // ✅ Vérifier que le mot de passe actuel est correct
+        if (!passwordEncoder.matches(currentPassword, user.getPassword())) {
+            throw new IllegalArgumentException("Current password is incorrect");
+        }
+
+        // ✅ Hasher et sauvegarder le nouveau mot de passe
         user.setPassword(passwordEncoder.encode(newPassword));
         userRepository.save(user);
     }
 
     @Override
-    @Transactional(readOnly = true)
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
+    }
+
+    // Méthode utilitaire pour convertir User en UserDto
+    private UserDto convertToDto(User user) {
+        UserDto dto = new UserDto();
+        dto.setId(user.getId());
+        dto.setEmail(user.getEmail());
+        dto.setFirstName(user.getFirstName());
+        dto.setLastName(user.getLastName());
+        dto.setRole(user.getRole());
+        // Ne jamais renvoyer le mot de passe !
+        return dto;
+    }
+
+    // Méthode utilitaire pour convertir User en InternalUserDto
+    // Méthode utilitaire pour convertir User en InternalUserDto
+    private InternalUserDto convertToInternalDto(User user) {
+        InternalUserDto dto = new InternalUserDto();
+        dto.setId(user.getId());
+        dto.setEmail(user.getEmail());
+        dto.setName(user.getFirstName());
+        dto.setSurname(user.getLastName());
+        dto.setPassword(user.getPassword());  // Inclut le mot de passe hashé pour usage interne
+        dto.setRole(user.getRole());
+        dto.setStatus(user.getIsActive());
+        dto.setCreationDate(user.getCreatedAt());
+        return dto;
     }
 }

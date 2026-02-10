@@ -1,24 +1,25 @@
 package com.timely.notificationservice.listener;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.timely.notificationservice.event.UserCreatedEvent;
 import com.timely.notificationservice.service.EmailService;
-
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
 /**
  * Listener for user creation events
  * Consumes UserCreatedEvent from RabbitMQ and sends welcome email
  */
 @Component
-@RequiredArgsConstructor
-@Slf4j
 public class UserCreatedEventListener {
     
-    private final EmailService emailService;
+    private static final Logger log = LoggerFactory.getLogger(UserCreatedEventListener.class);
+    
+    @Autowired
+    private EmailService emailService;
     
     @RabbitListener(queues = "user.created.queue")
     public void handleUserCreated(UserCreatedEvent event) {

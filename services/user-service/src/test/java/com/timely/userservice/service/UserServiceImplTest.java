@@ -24,7 +24,7 @@ import com.timely.userservice.exception.EmailAlreadyExistsException;
 import com.timely.userservice.exception.UserNotFoundException;
 import com.timely.userservice.mapper.UserMapper;
 import com.timely.userservice.model.Admin;
-import com.timely.userservice.model.Role;
+import com.timely.userservice.model.UserRole;
 import com.timely.userservice.model.Teacher;
 import com.timely.userservice.repository.TeacherRepository;
 import com.timely.userservice.repository.UserRepository;
@@ -65,7 +65,7 @@ class UserServiceImplTest {
         Teacher teacher = new Teacher();
         teacher.setId(UUID.randomUUID());
         teacher.setEmail(request.getEmail());
-        teacher.setRole(Role.ROLE_TEACHER);
+        teacher.setRole(UserRole.ROLE_TEACHER);
         
         TeacherDto expectedDto = new TeacherDto();
         expectedDto.setId(teacher.getId());
@@ -121,7 +121,7 @@ class UserServiceImplTest {
         Admin admin = new Admin();
         admin.setId(UUID.randomUUID());
         admin.setEmail(request.getEmail());
-        admin.setRole(Role.ROLE_ADMIN);
+        admin.setRole(UserRole.ROLE_ADMIN);
         
         AdminDto expectedDto = new AdminDto();
         expectedDto.setId(admin.getId());

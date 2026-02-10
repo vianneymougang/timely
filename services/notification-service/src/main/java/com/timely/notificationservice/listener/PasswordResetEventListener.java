@@ -3,20 +3,20 @@ package com.timely.notificationservice.listener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.annotation.RabbitListener;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import com.timely.notificationservice.config.RabbitMQConfig;
 import com.timely.notificationservice.event.PasswordResetEvent;
 import com.timely.notificationservice.service.EmailService;
 
-import lombok.RequiredArgsConstructor;
-
 @Component
-@RequiredArgsConstructor
 public class PasswordResetEventListener {
     
     private static final Logger logger = LoggerFactory.getLogger(PasswordResetEventListener.class);
-    private final EmailService emailService;
+    
+    @Autowired
+    private EmailService emailService;
     
     @RabbitListener(queues = RabbitMQConfig.PASSWORD_RESET_QUEUE)
     public void handlePasswordResetEvent(PasswordResetEvent event) {

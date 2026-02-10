@@ -22,18 +22,23 @@ import com.timely.userservice.repository.UserRepository;
 import com.timely.userservice.service.AvailabilityService;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 
 /**
  * REST controller for teacher availability management
  */
 @RestController
 @RequestMapping("/api/availability")
-@RequiredArgsConstructor
 public class AvailabilityController {
 
     private final AvailabilityService availabilityService;
     private final UserRepository userRepository;
+
+    // Constructeur pour l'injection de dépendances (remplace @RequiredArgsConstructor)
+    public AvailabilityController(AvailabilityService availabilityService,
+                                  UserRepository userRepository) {
+        this.availabilityService = availabilityService;
+        this.userRepository = userRepository;
+    }
 
     /**
      * Save or update teacher's own availability
@@ -44,12 +49,12 @@ public class AvailabilityController {
     public ResponseEntity<AvailabilityResponseDto> saveMyAvailability(
             @Valid @RequestBody AvailabilityRequestDto request,
             Authentication authentication) {
-        
+
         // Extract teacher email from JWT principal and find user
         String email = authentication.getName();
         User teacher = userRepository.findByEmail(email)
-            .orElseThrow(() -> new ResourceNotFoundException("Teacher not found with email: " + email));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("Teacher not found with email: " + email));
+
         AvailabilityResponseDto response = availabilityService.saveOrUpdateAvailability(teacher.getId(), request);
         return ResponseEntity.ok(response);
     }
@@ -64,8 +69,8 @@ public class AvailabilityController {
         // Extract teacher email from JWT principal and find user
         String email = authentication.getName();
         User teacher = userRepository.findByEmail(email)
-            .orElseThrow(() -> new ResourceNotFoundException("Teacher not found with email: " + email));
-        
+                .orElseThrow(() -> new ResourceNotFoundException("Teacher not found with email: " + email));
+
         AvailabilityResponseDto response = availabilityService.getMyAvailability(teacher.getId());
         return ResponseEntity.ok(response);
     }

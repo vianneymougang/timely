@@ -1,14 +1,27 @@
 package com.timely.authservice.dto;
 
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class RefreshTokenRequest {
+
     @NotBlank(message = "Refresh token is required")
-    private String refreshToken;
+    private String token;
+
+    // Constructeurs
+    public RefreshTokenRequest() {
+    }
+
+    public RefreshTokenRequest(String token) {
+        this.token = token;
+    }
+
+    // Getter
+    public String getToken() {
+        return token;
+    }
+
+    // Setter
+    public void setToken(String token) {
+        this.token = token;
+    }
 }

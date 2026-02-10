@@ -1,5 +1,6 @@
 package com.timely.authservice.controller;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,14 +16,13 @@ import com.timely.authservice.dto.ValidateTokenResponse;
 import com.timely.authservice.service.PasswordResetService;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/auth")
-@RequiredArgsConstructor
 public class PasswordResetController {
     
-    private final PasswordResetService passwordResetService;
+    @Autowired
+    private PasswordResetService passwordResetService;
     
     /**
      * Request password reset - sends email with reset link

@@ -1,19 +1,22 @@
 package com.timely.userservice.repository;
 
+import com.timely.userservice.model.User;
+import com.timely.userservice.model.UserRole;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
-
-import com.timely.userservice.model.Role;
-import com.timely.userservice.model.User;
-
 @Repository
 public interface UserRepository extends JpaRepository<User, UUID> {
-    Optional<User> findByEmail(String email);
-    boolean existsByEmail(String email);
-    List<User> findAllByRole(Role role);
 
+    Optional<User> findByEmail(String email);
+
+    List<User> findByRole(UserRole role);
+
+    List<User> findByIsActive(Boolean isActive);
+
+    boolean existsByEmail(String email);
 }

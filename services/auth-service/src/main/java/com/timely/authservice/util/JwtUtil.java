@@ -1,18 +1,21 @@
 package com.timely.authservice.util;
 
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
+import java.nio.charset.StandardCharsets;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
+
+import javax.crypto.SecretKey;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Component;
 
-import javax.crypto.SecretKey;
-import java.nio.charset.StandardCharsets;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.function.Function;
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jwts;
+import io.jsonwebtoken.security.Keys;
 
 @Component
 public class JwtUtil {
@@ -74,6 +77,29 @@ public class JwtUtil {
     }
 
     /**
+     * Extract role from token
+     */
+    public String extractRole(String token) {
+        Claims claims = extractAllClaims(token);
+        Object authorities = claims.get("authorities");
+        
+        if (authorities instanceof List<?>) {
+            List<?> authList = (List<?>) authorities;
+            if (!authList.isEmpty()) {
+                Object firstAuth = authList.get(0);
+                if (firstAuth instanceof Map) {
+                    Object authority = ((Map<String, Object>) firstAuth).get("authority");
+                    if (authority instanceof String) {
+                        return (String) authority;
+                    }
+                }
+            }
+        }
+        
+        return null;
+    }
+
+    /**
      * Extract specific claim from token
      */
     public <T> T extractClaim(String token, Function<Claims, T> claimsResolver) {
@@ -126,4 +152,5 @@ public class JwtUtil {
         byte[] keyBytes = secret.getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
     }
+
 }

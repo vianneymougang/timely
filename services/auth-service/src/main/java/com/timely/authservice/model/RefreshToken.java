@@ -1,25 +1,13 @@
 package com.timely.authservice.model;
 
-import java.time.LocalDateTime;
+import jakarta.persistence.*;
+import java.time.Instant;
 import java.util.UUID;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.PrePersist;
-import jakarta.persistence.Table;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
 
 @Entity
 @Table(name = "refresh_tokens")
-@Getter
-@Setter
-@NoArgsConstructor
 public class RefreshToken {
+
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private UUID id;
@@ -27,17 +15,78 @@ public class RefreshToken {
     @Column(nullable = false, unique = true)
     private String token;
 
-    @Column(name = "user_id", nullable = false)
-    private UUID userId;  // Changed from User entity to UUID
+    @Column(nullable = false)
+    private UUID userId;
 
-    @Column(name = "expiry_date", nullable = false)
-    private LocalDateTime expiryDate;
+    @Column(nullable = false)
+    private Instant expiryDate;
 
-    @Column(name = "created_date", nullable = false)
-    private LocalDateTime createdDate;
+    @Column(nullable = false, updatable = false)
+    private Instant createdAt;
+
+    // Constructeurs
+    public RefreshToken() {
+        this.createdAt = Instant.now();
+    }
+
+    public RefreshToken(String token, UUID userId, Instant expiryDate) {
+        this();
+        this.token = token;
+        this.userId = userId;
+        this.expiryDate = expiryDate;
+    }
+
+    // Getters
+    public UUID getId() {
+        return id;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public UUID getUserId() {
+        return userId;
+    }
+
+    public Instant getExpiryDate() {
+        return expiryDate;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    // Setters
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
+    }
+
+    public void setUserId(UUID userId) {
+        this.userId = userId;
+    }
+
+    public void setExpiryDate(Instant expiryDate) {
+        this.expiryDate = expiryDate;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    // Méthode utilitaire
+    public boolean isExpired() {
+        return Instant.now().isAfter(this.expiryDate);
+    }
 
     @PrePersist
-    protected void onCreate() {
-        createdDate = LocalDateTime.now();
+    public void prePersist() {
+        if (createdAt == null) {
+            createdAt = Instant.now();
+        }
     }
 }

@@ -1,6 +1,6 @@
 package com.timely.userservice.model;
 
-public enum Role {
+public enum UserRole {
     ROLE_ADMIN,
     ROLE_TEACHER
 }

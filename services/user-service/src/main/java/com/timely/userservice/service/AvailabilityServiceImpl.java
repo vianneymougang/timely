@@ -15,38 +15,45 @@ import com.timely.userservice.dto.TeacherAvailabilitySummaryDto;
 import com.timely.userservice.exception.ResourceNotFoundException;
 import com.timely.userservice.mapper.AvailabilityMapper;
 import com.timely.userservice.model.AvailabilityTimeSlot;
-import com.timely.userservice.model.Role;
 import com.timely.userservice.model.TeacherAvailability;
 import com.timely.userservice.model.User;
+import com.timely.userservice.model.UserRole;
 import com.timely.userservice.repository.TeacherAvailabilityRepository;
 import com.timely.userservice.repository.UserRepository;
-
-import lombok.RequiredArgsConstructor;
 
 /**
  * Implementation of AvailabilityService
  */
 @Service
-@RequiredArgsConstructor
 public class AvailabilityServiceImpl implements AvailabilityService {
 
     private final TeacherAvailabilityRepository availabilityRepository;
     private final UserRepository userRepository;
+    private final AvailabilityMapper availabilityMapper;
+
+    // ✅ Constructeur manuel (remplace @RequiredArgsConstructor)
+    public AvailabilityServiceImpl(TeacherAvailabilityRepository availabilityRepository,
+                                   UserRepository userRepository,
+                                   AvailabilityMapper availabilityMapper) {
+        this.availabilityRepository = availabilityRepository;
+        this.userRepository = userRepository;
+        this.availabilityMapper = availabilityMapper;
+    }
 
     @Override
     @Transactional
     public AvailabilityResponseDto saveOrUpdateAvailability(UUID teacherId, AvailabilityRequestDto request) {
         // Verify teacher exists
         User teacher = userRepository.findById(teacherId)
-            .orElseThrow(() -> new ResourceNotFoundException("Teacher not found with id: " + teacherId));
+                .orElseThrow(() -> new ResourceNotFoundException("Teacher not found with id: " + teacherId));
 
         // Verify user is a teacher
-        if (!"ROLE_TEACHER".equals(teacher.getRole().name())) {
+        if (!UserRole.ROLE_TEACHER.equals(teacher.getRole())) {
             throw new IllegalArgumentException("User is not a teacher");
         }
 
-        // Convert DTO to entities
-        List<AvailabilityTimeSlot> newTimeSlots = AvailabilityMapper.toTimeSlotEntities(request.getTimeSlots());
+        // Convert DTO to entity
+        TeacherAvailability newAvailability = availabilityMapper.toEntity(request, teacherId);
 
         // Check if availability already exists
         Optional<TeacherAvailability> existingOpt = availabilityRepository.findByTeacherId(teacherId);
@@ -58,29 +65,25 @@ public class AvailabilityServiceImpl implements AvailabilityService {
             availability.setLastUpdated(LocalDateTime.now());
 
             // Clear old time slots
-            availability.clearTimeSlots();
-            // Force flush to ensure deletes are executed before inserts to avoid unique constraint violation
-            availabilityRepository.saveAndFlush(availability);
-        } else {
-            // Create new availability
-            availability = new TeacherAvailability();
-            availability.setTeacherId(teacherId);
-            availability.setLastUpdated(LocalDateTime.now());
-        }
+            availability.getTimeSlots().clear();
 
-        // Add new time slots
-        for (AvailabilityTimeSlot slot : newTimeSlots) {
-            availability.addTimeSlot(slot);
+            // Force flush to ensure deletes are executed before inserts
+            availabilityRepository.saveAndFlush(availability);
+
+            // Add new time slots
+            for (AvailabilityTimeSlot slot : newAvailability.getTimeSlots()) {
+                availability.addTimeSlot(slot);
+            }
+        } else {
+            // Use the new availability created by mapper
+            availability = newAvailability;
         }
 
         // Save
         availability = availabilityRepository.save(availability);
 
-        // Build teacher name
-        String teacherName = teacher.getName() + " " + teacher.getSurname();
-
         // Convert to response DTO
-        return AvailabilityMapper.toResponseDto(availability, teacherName);
+        return availabilityMapper.toResponseDto(availability, teacher);
     }
 
     @Override
@@ -94,18 +97,16 @@ public class AvailabilityServiceImpl implements AvailabilityService {
     public AvailabilityResponseDto getTeacherAvailability(UUID teacherId) {
         // Verify teacher exists
         User teacher = userRepository.findById(teacherId)
-            .orElseThrow(() -> new ResourceNotFoundException("Teacher not found with id: " + teacherId));
-
-        String teacherName = teacher.getName() + " " + teacher.getSurname();
+                .orElseThrow(() -> new ResourceNotFoundException("Teacher not found with id: " + teacherId));
 
         // Find availability
         Optional<TeacherAvailability> availabilityOpt = availabilityRepository.findByTeacherId(teacherId);
 
         if (availabilityOpt.isPresent()) {
-            return AvailabilityMapper.toResponseDto(availabilityOpt.get(), teacherName);
+            return availabilityMapper.toResponseDto(availabilityOpt.get(), teacher);
         } else {
             // Return empty grid
-            return AvailabilityMapper.createEmptyResponse(teacherId.toString(), teacherName);
+            return availabilityMapper.createEmptyResponseDto(teacher);
         }
     }
 
@@ -113,7 +114,7 @@ public class AvailabilityServiceImpl implements AvailabilityService {
     @Transactional(readOnly = true)
     public List<TeacherAvailabilitySummaryDto> getAllTeacherAvailabilities() {
         // Get all teachers
-        List<User> teachers = userRepository.findAllByRole(Role.ROLE_TEACHER);
+        List<User> teachers = userRepository.findByRole(UserRole.ROLE_TEACHER);
 
         List<TeacherAvailabilitySummaryDto> summaries = new ArrayList<>();
 
@@ -121,15 +122,16 @@ public class AvailabilityServiceImpl implements AvailabilityService {
             Optional<TeacherAvailability> availabilityOpt = availabilityRepository.findByTeacherId(teacher.getId());
 
             TeacherAvailabilitySummaryDto summary = new TeacherAvailabilitySummaryDto();
-            summary.setTeacherId(teacher.getId().toString());
-            summary.setTeacherName(teacher.getName() + " " + teacher.getSurname());
+            summary.setUserId(teacher.getId());
+            summary.setTeacherName(teacher.getFirstName() + " " + teacher.getLastName());
+            summary.setTeacherEmail(teacher.getEmail());
 
             if (availabilityOpt.isPresent()) {
                 TeacherAvailability availability = availabilityOpt.get();
-                summary.setTotalSlotsAvailable(availability.getTimeSlots().size());
+                summary.setHasAvailability(!availability.getTimeSlots().isEmpty());
                 summary.setLastUpdated(availability.getLastUpdated());
             } else {
-                summary.setTotalSlotsAvailable(0);
+                summary.setHasAvailability(false);
                 summary.setLastUpdated(null);
             }
 

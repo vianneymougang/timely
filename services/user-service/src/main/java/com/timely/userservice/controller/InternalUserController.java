@@ -1,65 +1,55 @@
 package com.timely.userservice.controller;
 
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
-import com.timely.userservice.dto.InternalUserDto;
 import com.timely.userservice.dto.UpdatePasswordRequest;
+import com.timely.userservice.dto.UserDto;
 import com.timely.userservice.service.UserService;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/internal/users")
-@RequiredArgsConstructor
 public class InternalUserController {
 
     private final UserService userService;
 
-    /**
-     * Get user by email with password (for auth-service)
-     */
+    public InternalUserController(UserService userService) {
+        this.userService = userService;
+    }
+
+    @GetMapping("/{userId}")
+    public ResponseEntity<UserDto> getUserById(@PathVariable UUID userId) {
+        UserDto user = userService.getUserById(userId);
+        return ResponseEntity.ok(user);
+    }
+
     @GetMapping("/email/{email}")
-    public ResponseEntity<InternalUserDto> getUserByEmail(@PathVariable String email) {
-        InternalUserDto user = userService.getInternalUserByEmail(email);
+    public ResponseEntity<UserDto> getUserByEmail(@PathVariable String email) {
+        UserDto user = userService.getUserByEmail(email);
         return ResponseEntity.ok(user);
     }
 
-    /**
-     * Get user by ID (for auth-service)
-     */
-    @GetMapping("/{id}")
-    public ResponseEntity<InternalUserDto> getUserById(@PathVariable UUID id) {
-        InternalUserDto user = userService.getInternalUserById(id);
-        return ResponseEntity.ok(user);
-    }
-
-    /**
-     * Check if email exists (for auth-service)
-     */
-    @GetMapping("/exists-by-email")
-    public ResponseEntity<Boolean> existsByEmail(@RequestParam String email) {
-        boolean exists = userService.existsByEmail(email);
-        return ResponseEntity.ok(exists);
-    }
-    
-    /**
-     * Update user password (for auth-service password reset)
-     */
-    @PutMapping("/{id}/password")
+    @PostMapping("/{userId}/password")
     public ResponseEntity<Void> updatePassword(
-            @PathVariable UUID id, 
+            @PathVariable UUID userId,
             @Valid @RequestBody UpdatePasswordRequest request) {
-        userService.updatePassword(id, request.getNewPassword());
+
+        if (!request.getNewPassword().equals(request.getConfirmPassword())) {
+            throw new IllegalArgumentException("New password and confirmation do not match");
+        }
+
+        userService.updatePassword(userId, request.getCurrentPassword(), request.getNewPassword());
         return ResponseEntity.ok().build();
+    }
+
+    @GetMapping
+    public ResponseEntity<List<UserDto>> getAllUsers() {
+        List<UserDto> users = userService.getAllUsers();
+        return ResponseEntity.ok(users);
     }
 }

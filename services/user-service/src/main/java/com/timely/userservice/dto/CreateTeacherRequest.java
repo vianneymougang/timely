@@ -2,32 +2,80 @@ package com.timely.userservice.dto;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
 
-@Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class CreateTeacherRequest {
-    @NotBlank(message = "Name is required")
-    private String name;
-
-    @NotBlank(message = "Surname is required")
-    private String surname;
 
     @NotBlank(message = "Email is required")
     @Email(message = "Email should be valid")
     private String email;
 
-    private Long telephoneNumber;
+    @NotBlank(message = "First name is required")
+    private String firstName;
 
-    @NotBlank(message = "Grade is required")
-    private String grade;
+    @NotBlank(message = "Last name is required")
+    private String lastName;
 
-    @NotBlank(message = "Rank is required")
-    private String rank;
+    private String department;
+    private String specialization;
+    private String phoneNumber;
 
-    @NotBlank(message = "Hourly rate is required")
-    private String hourlyRate;
+    // Constructeurs
+    public CreateTeacherRequest() {
+    }
+
+    public CreateTeacherRequest(String email, String firstName, String lastName) {
+        this.email = email;
+        this.firstName = firstName;
+        this.lastName = lastName;
+    }
+
+    // Getters
+    public String getEmail() {
+        return email;
+    }
+
+    public String getFirstName() {
+        return firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public String getDepartment() {
+        return department;
+    }
+
+    public String getSpecialization() {
+        return specialization;
+    }
+
+    public String getPhoneNumber() {
+        return phoneNumber;
+    }
+
+    // Setters
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    public void setDepartment(String department) {
+        this.department = department;
+    }
+
+    public void setSpecialization(String specialization) {
+        this.specialization = specialization;
+    }
+
+    public void setPhoneNumber(String phoneNumber) {
+        this.phoneNumber = phoneNumber;
+    }
 }

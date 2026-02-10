@@ -4,6 +4,7 @@ services:
     image: postgres
     environment:
       POSTGRES_USER: admin
+      POSTGRES_DB: auth-service-db
       POSTGRES_PASSWORD: password
       PGDATA: /var/lib/postgresql/data
     volumes:
@@ -24,6 +25,7 @@ services:
     image: postgres
     environment:
       POSTGRES_USER: admin
+      POSTGRES_DB: user-service-db
       POSTGRES_PASSWORD: password
       PGDATA: /var/lib/postgresql/data
     volumes:
@@ -121,9 +123,10 @@ services:
       - timely-microservices
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
     restart: unless-stopped
 
   discovery-server:
@@ -136,9 +139,10 @@ services:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
     networks:
       - timely-microservices
     environment:
@@ -157,9 +161,10 @@ services:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8090/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
     networks:
       - timely-microservices
     environment:
@@ -186,13 +191,12 @@ services:
         condition: service_healthy
       config-server:
         condition: service_healthy
-      api-gateway:
-        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8091/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
     networks:
       - timely-microservices
     environment:
@@ -206,7 +210,7 @@ services:
       - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
       - EUREKA_INSTANCE_HOSTNAME=auth-service
       - EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
-    restart: unless-stopped
+    restart: on-failure
 
   user-service:
     container_name: timely-user-service
@@ -220,13 +224,12 @@ services:
         condition: service_healthy
       config-server:
         condition: service_healthy
-      api-gateway:
-        condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8092/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
     networks:
       - timely-microservices
     environment:
@@ -236,7 +239,7 @@ services:
       - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
       - EUREKA_INSTANCE_HOSTNAME=user-service
       - EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
-    restart: unless-stopped
+    restart: on-failure
 
   notification-service:
     container_name: timely-notification-service
@@ -254,9 +257,10 @@ services:
         condition: service_healthy
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8093/actuator/health"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+      interval: 30s
+      timeout: 10s
+      retries: 10
+      start_period: 60s
     networks:
       - timely-microservices
     environment:

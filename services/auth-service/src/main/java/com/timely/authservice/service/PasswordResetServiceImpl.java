@@ -6,6 +6,7 @@ import java.util.UUID;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,22 +18,22 @@ import com.timely.authservice.exception.InvalidTokenException;
 import com.timely.authservice.model.PasswordResetToken;
 import com.timely.authservice.repository.PasswordResetTokenRepository;
 
-import lombok.RequiredArgsConstructor;
-
 @Service
-@RequiredArgsConstructor
 public class PasswordResetServiceImpl implements PasswordResetService {
     
     private static final Logger logger = LoggerFactory.getLogger(PasswordResetServiceImpl.class);
     private static final int TOKEN_EXPIRATION_HOURS = 24;
     
-    private final PasswordResetTokenRepository tokenRepository;
-    private final UserServiceClient userServiceClient;
-    private final RabbitTemplate rabbitTemplate;
+    @Autowired
+    private PasswordResetTokenRepository tokenRepository;
+    @Autowired
+    private UserServiceClient userServiceClient;
+    @Autowired
+    private RabbitTemplate rabbitTemplate;
     
     private static final String EXCHANGE = "timely.notifications";
     private static final String ROUTING_KEY = "password.reset";
-    
+
     @Override
     @Transactional
     public void requestPasswordReset(String email) {

@@ -1,33 +1,11 @@
 package com.timely.userservice.model;
 
+import jakarta.persistence.*;
+import java.time.LocalTime;
 import java.util.UUID;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
-import jakarta.validation.constraints.Max;
-import jakarta.validation.constraints.Min;
-import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-
-/**
- * Entity representing a single time slot in a teacher's availability
- */
 @Entity
 @Table(name = "availability_time_slots")
-@Getter
-@Setter
-@NoArgsConstructor
-@AllArgsConstructor
 public class AvailabilityTimeSlot {
 
     @Id
@@ -38,28 +16,64 @@ public class AvailabilityTimeSlot {
     @JoinColumn(name = "availability_id", nullable = false)
     private TeacherAvailability availability;
 
-    @Column(name = "day_of_week", nullable = false, length = 20)
-    @NotNull
-    private String dayOfWeek;
+    @Column(nullable = false)
+    private String dayOfWeek;  // "MONDAY", "TUESDAY", etc.
 
-    @Column(name = "hour_start", nullable = false)
-    @NotNull
-    @Min(8)
-    @Max(16)
-    private Integer hourStart;
+    @Column(nullable = false)
+    private LocalTime hourStart;
 
-    @Column(name = "hour_end", nullable = false)
-    @NotNull
-    @Min(9)
-    @Max(17)
-    private Integer hourEnd;
+    @Column(nullable = false)
+    private LocalTime hourEnd;
 
-    /**
-     * Constructor without ID for creating new slots
-     */
-    public AvailabilityTimeSlot(String dayOfWeek, Integer hourStart, Integer hourEnd) {
+    // Constructeurs
+    public AvailabilityTimeSlot() {
+    }
+
+    public AvailabilityTimeSlot(String dayOfWeek, LocalTime hourStart, LocalTime hourEnd) {
         this.dayOfWeek = dayOfWeek;
         this.hourStart = hourStart;
+        this.hourEnd = hourEnd;
+    }
+
+    // Getters
+    public UUID getId() {
+        return id;
+    }
+
+    public TeacherAvailability getAvailability() {
+        return availability;
+    }
+
+    public String getDayOfWeek() {
+        return dayOfWeek;
+    }
+
+    public LocalTime getHourStart() {
+        return hourStart;
+    }
+
+    public LocalTime getHourEnd() {
+        return hourEnd;
+    }
+
+    // Setters
+    public void setId(UUID id) {
+        this.id = id;
+    }
+
+    public void setAvailability(TeacherAvailability availability) {
+        this.availability = availability;
+    }
+
+    public void setDayOfWeek(String dayOfWeek) {
+        this.dayOfWeek = dayOfWeek;
+    }
+
+    public void setHourStart(LocalTime hourStart) {
+        this.hourStart = hourStart;
+    }
+
+    public void setHourEnd(LocalTime hourEnd) {
         this.hourEnd = hourEnd;
     }
 }

@@ -18,15 +18,19 @@ import com.timely.authservice.service.AuthService;
 import com.timely.authservice.util.JwtUtil;
 
 import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/auth")
-@RequiredArgsConstructor
 public class AuthController {
 
     private final AuthService authService;
     private final JwtUtil jwtUtil;
+
+    // Constructeur (injection de dépendances)
+    public AuthController(AuthService authService, JwtUtil jwtUtil) {
+        this.authService = authService;
+        this.jwtUtil = jwtUtil;
+    }
 
     /**
      * Login endpoint
@@ -42,7 +46,7 @@ public class AuthController {
      */
     @PostMapping("/refresh")
     public ResponseEntity<AuthResponse> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
-        AuthResponse response = authService.refreshToken(request.getRefreshToken());
+        AuthResponse response = authService.refreshToken(request.getToken());
         return ResponseEntity.ok(response);
     }
 
@@ -51,8 +55,8 @@ public class AuthController {
      */
     @PostMapping("/logout")
     public ResponseEntity<Map<String, String>> logout(@Valid @RequestBody RefreshTokenRequest request) {
-        authService.logout(request.getRefreshToken());
-        
+        authService.logout(request.getToken());
+
         Map<String, String> response = new HashMap<>();
         response.put("message", "Logout successful");
         return ResponseEntity.ok(response);
@@ -63,23 +67,36 @@ public class AuthController {
      */
     @GetMapping("/validate")
     public ResponseEntity<Map<String, Object>> validateToken(@RequestHeader("Authorization") String authHeader) {
+        Map<String, Object> response = new HashMap<>();
+
         try {
+            // Vérifier que l'en-tête commence par "Bearer "
+            if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+                response.put("valid", false);
+                response.put("message", "Invalid authorization header format");
+                return ResponseEntity.status(401).body(response);
+            }
+
             String token = authHeader.substring(7); // Remove "Bearer " prefix
-            String email = jwtUtil.extractUsername(token);
-            
+
             if (jwtUtil.validateToken(token)) {
-                Map<String, Object> response = new HashMap<>();
+                String email = jwtUtil.extractUsername(token);
+                String role = jwtUtil.extractRole(token);
+
                 response.put("valid", true);
                 response.put("email", email);
+                response.put("role", role);
 
                 return ResponseEntity.ok(response);
+            } else {
+                response.put("valid", false);
+                response.put("message", "Token is invalid or expired");
+                return ResponseEntity.status(401).body(response);
             }
         } catch (Exception e) {
-            // Token is invalid
+            response.put("valid", false);
+            response.put("message", "Token validation failed: " + e.getMessage());
+            return ResponseEntity.status(401).body(response);
         }
-        
-        Map<String, Object> response = new HashMap<>();
-        response.put("valid", false);
-        return ResponseEntity.status(401).body(response);
     }
 }
