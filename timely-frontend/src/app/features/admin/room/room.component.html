@@ -1,0 +1,503 @@
+<div class="p-8 max-w-7xl mx-auto">
+  <!-- En-tête -->
+  <div class="mb-8">
+    <h1 class="text-3xl font-bold text-slate-800 mb-2">Gestion des Salles</h1>
+    <p class="text-slate-600">Gérez les salles et leurs équipements</p>
+  </div>
+
+  <!-- Filtres et recherche -->
+  <div class="mb-6 space-y-4">
+    <!-- Ligne 1 : Recherche -->
+    <div class="flex gap-4">
+      <div class="flex-1">
+        <input
+          type="text"
+          [value]="searchTerm()"
+          (input)="searchTerm.set($any($event.target).value)"
+          class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+          placeholder="Rechercher par numéro, type ou bâtiment..."
+        />
+      </div>
+      <button
+        (click)="openSalleModal()"
+        class="bg-teal-600 hover:bg-teal-700 text-white px-6 py-2 rounded-lg flex items-center gap-2 transition-colors whitespace-nowrap"
+      >
+        <span class="material-icons">add</span>
+        Nouvelle salle
+      </button>
+    </div>
+
+    <!-- Ligne 2 : Filtres -->
+    <div class="flex flex-wrap gap-3">
+      <!-- Filtre type -->
+      <select
+        [value]="typeFilter()"
+        (change)="typeFilter.set($any($event.target).value)"
+        class="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white"
+      >
+        <option value="">Tous les types</option>
+        @for (type of typesSalle; track type) {
+          <option [value]="type">{{ type }}</option>
+        }
+      </select>
+
+      <!-- Filtre bâtiment -->
+      <select
+        [value]="batimentFilter()"
+        (change)="batimentFilter.set($any($event.target).value)"
+        class="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white"
+      >
+        <option value="">Tous les bâtiments</option>
+        @for (batiment of batiments(); track batiment) {
+          <option [value]="batiment">{{ batiment }}</option>
+        }
+      </select>
+
+      <!-- Filtre disponibilité -->
+      <select
+        [value]="disponibleFilter()"
+        (change)="disponibleFilter.set($any($event.target).value)"
+        class="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white"
+      >
+        <option value="">Toutes les salles</option>
+        <option value="true">Disponibles</option>
+        <option value="false">Non disponibles</option>
+      </select>
+
+      <!-- Filtre équipement -->
+      <select
+        [value]="equipeeFilter()"
+        (change)="equipeeFilter.set($any($event.target).value)"
+        class="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white"
+      >
+        <option value="">Toutes</option>
+        <option value="true">Équipées</option>
+        <option value="false">Non équipées</option>
+      </select>
+
+      <!-- Compteur de résultats -->
+      <div class="flex items-center px-4 py-2 bg-slate-100 rounded-lg text-sm">
+        <span class="font-medium text-slate-700">{{ sallesFiltered().length }}</span>
+        <span class="text-slate-500 ml-1">salle(s)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Grille de cartes -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    @for (salle of sallesFiltered(); track salle.id) {
+      <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow border border-slate-200">
+        <!-- En-tête de la carte -->
+        <div class="p-6 border-b border-slate-100">
+          <div class="flex justify-between items-start mb-3">
+            <div class="flex-1">
+              <div class="flex items-center gap-2 mb-2">
+                <h3 class="text-xl font-bold text-slate-800">{{ salle.numeroSalle }}</h3>
+                @if (salle.disponible) {
+                  <span class="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-semibold rounded-full">
+                    Disponible
+                  </span>
+                } @else {
+                  <span class="px-2 py-0.5 bg-red-100 text-red-700 text-xs font-semibold rounded-full">
+                    Occupée
+                  </span>
+                }
+              </div>
+              <span
+                [class]="getTypeBadgeClass(salle.type)"
+                class="px-2 py-1 rounded text-xs font-semibold inline-block"
+              >
+                {{ salle.type }}
+              </span>
+            </div>
+            @if (isSalleEquipee(salle)) {
+              <div class="bg-teal-100 rounded-full p-2">
+                <span class="material-icons text-teal-600 text-xl">check_circle</span>
+              </div>
+            }
+          </div>
+
+          <!-- Informations principales -->
+          <div class="space-y-2 text-sm">
+            <div class="flex items-center gap-2 text-slate-600">
+              <span class="material-icons text-lg">domain</span>
+              <span>{{ salle.batiment }} - Étage {{ salle.etage }}</span>
+            </div>
+            <div class="flex items-center gap-2 text-slate-600">
+              <span class="material-icons text-lg">people</span>
+              <span>Capacité: {{ salle.capacite }} places</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Équipements -->
+        <div class="p-4 bg-slate-50">
+          @if (isSalleEquipee(salle)) {
+            <div class="space-y-3">
+              <!-- Matériels -->
+              @if (salle.materielAffecte && salle.materielAffecte.length > 0) {
+                <div>
+                  <h4 class="text-xs font-semibold text-slate-700 mb-2 flex items-center gap-1">
+                    <span class="material-icons text-sm">inventory</span>
+                    Matériels ({{ getSalleEquipmentInfo(salle).totalMateriels }})
+                  </h4>
+                  <div class="space-y-1">
+                    @for (ma of salle.materielAffecte; track ma.materielId) {
+                      <div class="flex items-center justify-between text-xs bg-white rounded px-2 py-1.5 border border-slate-200">
+                        <span class="text-slate-600">{{ getMaterielName(ma.materielId) }}</span>
+                        <span class="font-semibold text-teal-700">×{{ ma.quantiteAffectee }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+
+              <!-- Équipements -->
+              @if (salle.equipementAffecte && salle.equipementAffecte.length > 0) {
+                <div>
+                  <h4 class="text-xs font-semibold text-slate-700 mb-2 flex items-center gap-1">
+                    <span class="material-icons text-sm">devices</span>
+                    Équipements ({{ getSalleEquipmentInfo(salle).totalEquipements }})
+                  </h4>
+                  <div class="space-y-1">
+                    @for (ea of salle.equipementAffecte; track ea.equipementId) {
+                      <div class="flex items-center gap-2 text-xs bg-white rounded px-2 py-1.5 border border-slate-200">
+                        <span class="material-icons text-xs text-blue-600">check</span>
+                        <span class="text-slate-600">{{ getEquipementName(ea.equipementId) }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              }
+            </div>
+          } @else {
+            <div class="text-center py-4">
+              <span class="material-icons text-slate-300 text-3xl mb-1">inventory_2</span>
+              <p class="text-xs text-slate-400">Aucun équipement affecté</p>
+            </div>
+          }
+        </div>
+
+        <!-- Actions -->
+        <div class="flex gap-2 p-4 border-t border-slate-200">
+          <button
+            (click)="toggleDisponibilite(salle)"
+            class="flex-shrink-0 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1"
+            [class.bg-green-100]="!salle.disponible"
+            [class.text-green-700]="!salle.disponible"
+            [class.hover:bg-green-200]="!salle.disponible"
+            [class.bg-slate-100]="salle.disponible"
+            [class.text-slate-700]="salle.disponible"
+            [class.hover:bg-slate-200]="salle.disponible"
+          >
+            <span class="material-icons text-sm">
+              {{ salle.disponible ? 'lock' : 'lock_open' }}
+            </span>
+          </button>
+          <button
+            (click)="openSalleModal(salle)"
+            class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1"
+          >
+            <span class="material-icons text-sm">edit</span>
+            Modifier
+          </button>
+          <button
+            (click)="deleteSalle(salle.id!)"
+            class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center"
+          >
+            <span class="material-icons text-sm">delete</span>
+          </button>
+        </div>
+      </div>
+    } @empty {
+      <div class="col-span-3 text-center py-12">
+        <span class="material-icons text-6xl text-slate-300 mb-4">meeting_room</span>
+        <p class="text-slate-500">Aucune salle pour le moment</p>
+        <button
+          (click)="openSalleModal()"
+          class="mt-4 text-teal-600 hover:text-teal-700 font-medium"
+        >
+          Ajouter votre première salle
+        </button>
+      </div>
+    }
+  </div>
+  <!-- Modal Salle -->
+  @if (showSalleModal()) {
+    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+      <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
+        <!-- En-tête du modal -->
+        <div class="flex justify-between items-center p-6 border-b border-slate-200">
+          <h2 class="text-2xl font-bold text-slate-800">
+            {{ editingSalle() ? 'Modifier la salle' : 'Nouvelle salle' }}
+          </h2>
+          <button
+            (click)="closeSalleModal()"
+            class="text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            <span class="material-icons">close</span>
+          </button>
+        </div>
+
+        <!-- Formulaire -->
+        <form [formGroup]="salleForm" (ngSubmit)="saveSalle()" class="p-6">
+          <!-- Informations de base -->
+          <div class="mb-6">
+            <h3 class="text-lg font-semibold text-slate-800 mb-4">Informations générales</h3>
+            <div class="space-y-4">
+              <!-- Numéro et Type -->
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">
+                    Numéro de salle *
+                  </label>
+                  <input
+                    type="text"
+                    formControlName="numeroSalle"
+                    class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    placeholder="Ex: A101"
+                  />
+                  @if (salleForm.get('numeroSalle')?.invalid && salleForm.get('numeroSalle')?.touched) {
+                    <p class="text-red-600 text-sm mt-1">Le numéro est requis (min. 2 caractères)</p>
+                  }
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">
+                    Type *
+                  </label>
+                  <select
+                    formControlName="type"
+                    class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                  >
+                    @for (type of typesSalle; track type) {
+                      <option [value]="type">{{ type }}</option>
+                    }
+                  </select>
+                </div>
+              </div>
+
+              <!-- Bâtiment, Étage et Capacité -->
+              <div class="grid grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">
+                    Bâtiment *
+                  </label>
+                  <input
+                    type="text"
+                    formControlName="batiment"
+                    class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    placeholder="Ex: Bâtiment A"
+                  />
+                  @if (salleForm.get('batiment')?.invalid && salleForm.get('batiment')?.touched) {
+                    <p class="text-red-600 text-sm mt-1">Le bâtiment est requis</p>
+                  }
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">
+                    Étage *
+                  </label>
+                  <input
+                    type="number"
+                    formControlName="etage"
+                    class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    min="0"
+                  />
+                </div>
+
+                <div>
+                  <label class="block text-sm font-medium text-slate-700 mb-1">
+                    Capacité *
+                  </label>
+                  <input
+                    type="number"
+                    formControlName="capacite"
+                    class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                    placeholder="Ex: 30"
+                    min="1"
+                  />
+                  @if (salleForm.get('capacite')?.invalid && salleForm.get('capacite')?.touched) {
+                    <p class="text-red-600 text-sm mt-1">La capacité doit être au minimum 1</p>
+                  }
+                </div>
+              </div>
+
+              <!-- Disponibilité -->
+              <div class="flex items-center gap-3 p-4 bg-slate-50 rounded-lg">
+                <input
+                  type="checkbox"
+                  formControlName="disponible"
+                  id="disponible"
+                  class="w-4 h-4 text-teal-600 rounded focus:ring-teal-500"
+                />
+                <label for="disponible" class="flex-1 cursor-pointer">
+                  <div class="font-medium text-slate-800">Salle disponible</div>
+                  <div class="text-xs text-slate-500">La salle peut être utilisée pour des cours</div>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Matériels affectés -->
+          <div class="mb-6">
+            <div class="flex justify-between items-center mb-3">
+              <h3 class="text-lg font-semibold text-slate-800">Matériels affectés</h3>
+              <button
+                type="button"
+                (click)="addMaterielAffecte()"
+                class="text-teal-600 hover:text-teal-700 text-sm font-medium flex items-center gap-1"
+              >
+                <span class="material-icons text-sm">add_circle</span>
+                Ajouter un matériel
+              </button>
+            </div>
+
+            @if (materielAffecteArray.length === 0) {
+              <div class="text-center py-6 bg-slate-50 rounded-lg border-2 border-dashed border-slate-200">
+                <span class="material-icons text-slate-300 text-4xl mb-2">inventory_2</span>
+                <p class="text-sm text-slate-500">Aucun matériel affecté</p>
+                <p class="text-xs text-slate-400 mt-1">Cliquez sur "Ajouter un matériel" pour commencer</p>
+              </div>
+            } @else {
+              <div class="space-y-3" formArrayName="materielAffecte">
+                @for (materielControl of materielAffecteArray.controls; track i; let i = $index) {
+                  <div [formGroupName]="i" class="flex gap-3 items-start bg-slate-50 p-3 rounded-lg">
+                    <!-- Sélection matériel -->
+                    <div class="flex-1">
+                      <select
+                        formControlName="materielId"
+                        class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                      >
+                        <option value="">Sélectionnez un matériel</option>
+                        @for (materiel of materiels(); track materiel.id) {
+                          <option [value]="materiel.id">
+                            {{ materiel.nom }} - Dispo: {{ getQuantiteDisponible(materiel.id!) }}
+                          </option>
+                        }
+                      </select>
+                    </div>
+
+                    <!-- Quantité -->
+                    <div class="w-24">
+                      <input
+                        type="number"
+                        formControlName="quantiteAffectee"
+                        class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                        placeholder="Qté"
+                        min="1"
+                      />
+                    </div>
+
+                    <!-- Date -->
+                    <div class="w-36">
+                      <input
+                        type="date"
+                        formControlName="dateAffectation"
+                        class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                      />
+                    </div>
+
+                    <!-- Bouton supprimer -->
+                    <button
+                      type="button"
+                      (click)="removeMaterielAffecte(i)"
+                      class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                      <span class="material-icons text-sm">delete</span>
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Équipements affectés -->
+          <div class="mb-6">
+            <div class="flex justify-between items-center mb-3">
+              <h3 class="text-lg font-semibold text-slate-800">Équipements affectés</h3>
+              <button
+                type="button"
+                (click)="addEquipementAffecte()"
+                class="text-teal-600 hover:text-teal-700 text-sm font-medium flex items-center gap-1"
+              >
+                <span class="material-icons text-sm">add_circle</span>
+                Ajouter un équipement
+              </button>
+            </div>
+
+            @if (equipementAffecteArray.length === 0) {
+              <div class="text-center py-6 bg-slate-50 rounded-lg border-2 border-dashed border-slate-200">
+                <span class="material-icons text-slate-300 text-4xl mb-2">devices</span>
+                <p class="text-sm text-slate-500">Aucun équipement affecté</p>
+                <p class="text-xs text-slate-400 mt-1">Cliquez sur "Ajouter un équipement" pour commencer</p>
+              </div>
+            } @else {
+              <div class="space-y-3" formArrayName="equipementAffecte">
+                @for (equipementControl of equipementAffecteArray.controls; track i; let i = $index) {
+                  <div [formGroupName]="i" class="flex gap-3 items-start bg-slate-50 p-3 rounded-lg">
+                    <!-- Sélection équipement -->
+                    <div class="flex-1">
+                      <select
+                        formControlName="equipementId"
+                        class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                      >
+                        <option value="">Sélectionnez un équipement</option>
+                        @for (equipement of equipements(); track equipement.id) {
+                          <option [value]="equipement.id">
+                            {{ equipement.nom }}
+                            @if (!isEquipementDisponible(equipement.id!)) {
+                              (Déjà affecté)
+                            }
+                          </option>
+                        }
+                      </select>
+                    </div>
+
+                    <!-- Date -->
+                    <div class="w-36">
+                      <input
+                        type="date"
+                        formControlName="dateAffectation"
+                        class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+                      />
+                    </div>
+
+                    <!-- Bouton supprimer -->
+                    <button
+                      type="button"
+                      (click)="removeEquipementAffecte(i)"
+                      class="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    >
+                      <span class="material-icons text-sm">delete</span>
+                    </button>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+
+          <!-- Actions -->
+          <div class="flex gap-3 pt-6 border-t border-slate-200">
+            <button
+              type="button"
+              (click)="closeSalleModal()"
+              class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors"
+            >
+              Annuler
+            </button>
+            <button
+              type="submit"
+              [disabled]="salleForm.invalid"
+              [class.opacity-50]="salleForm.invalid"
+              [class.cursor-not-allowed]="salleForm.invalid"
+              class="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors disabled:hover:bg-teal-600"
+            >
+              {{ editingSalle() ? 'Enregistrer' : 'Créer' }}
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+</div>
