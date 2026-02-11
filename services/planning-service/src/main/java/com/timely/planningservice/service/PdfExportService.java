@@ -155,6 +155,10 @@ public class PdfExportService {
         String time;
         Map<DayOfWeek, GridCell> creneauxByDay = new HashMap<>();
 
+        public String getTime() {
+            return time;
+        }
+
         public GridCell getCreneauForDay(String dayName) {
             DayOfWeek day = DayOfWeek.valueOf(dayName);
             return creneauxByDay.get(day);

@@ -139,7 +139,6 @@ public class ReportSchedulerService {
 
     /**
      * Tâche planifiée exécutée toutes les 5 minutes pour vérifier et exécuter les rapports dus.
-     * Expression cron : "0 */5 * * * ?" = toutes les 5 minutes
      */
     @Scheduled(cron = "0 */5 * * * ?")
     @Transactional
