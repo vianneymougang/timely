@@ -1,13 +1,16 @@
 package com.timely.agoraservice.controller;
 
 import com.timely.agoraservice.dto.request.ExportRequest;
+import com.timely.agoraservice.dto.request.ImportEtudiantsRequest;
 import com.timely.agoraservice.dto.request.MappingRequest;
 import com.timely.agoraservice.dto.response.ExportAgoraResponse;
+import com.timely.agoraservice.dto.response.ImportEtudiantsResponse;
 import com.timely.agoraservice.dto.response.LogResponse;
 import com.timely.agoraservice.dto.response.MappingResponse;
 import com.timely.agoraservice.entity.enums.StatutExportAgora;
 import com.timely.agoraservice.entity.enums.TypeLog;
 import com.timely.agoraservice.service.AgoraExportService;
+import com.timely.agoraservice.service.AgoraImportService;
 import com.timely.agoraservice.service.ExportAgoraService;
 import com.timely.agoraservice.service.LogIntegrationService;
 import com.timely.agoraservice.service.MappingService;
@@ -41,6 +44,7 @@ public class AgoraController {
     private final LogIntegrationService logIntegrationService;
     private final MappingService mappingService;
     private final AgoraExportService agoraExportService;
+    private final AgoraImportService agoraImportService;
 
     @PostMapping("/export/emploi-du-temps")
     @PreAuthorize("hasRole('ADMIN')")
@@ -203,5 +207,26 @@ public class AgoraController {
                 "service", "agora-service",
                 "timestamp", java.time.LocalDateTime.now().toString()
         ));
+    }
+
+    // ==================== PHASE 4 - Import Étudiants ====================
+
+    /**
+     * Importe les étudiants depuis la plateforme Agora externe.
+     */
+    @PostMapping("/import/etudiants")
+    @PreAuthorize("hasRole('ADMIN')")
+    public ResponseEntity<ImportEtudiantsResponse> importEtudiants(@Valid @RequestBody ImportEtudiantsRequest request) {
+        log.info("Requête d'import d'étudiants depuis Agora: ecoleId={}, classeId={}",
+                request.getEcoleId(), request.getClasseId());
+
+        ImportEtudiantsResponse response = agoraImportService.importEtudiants(request);
+
+        // Retourner 200 pour succès partiel ou complet, 500 pour échec total
+        if ("FAILED".equals(response.getStatut())) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
+        }
+
+        return ResponseEntity.ok(response);
     }
 }

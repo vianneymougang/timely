@@ -11,7 +11,7 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitMQConfig {
 
     public static final String QUEUE_NAME = "agora.planning.published.queue";
-    public static final String EXCHANGE_NAME = "planning.exchange";
+    public static final String EXCHANGE_NAME = "planning.events";
     public static final String ROUTING_KEY = "planning.published";
 
     @Bean

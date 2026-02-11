@@ -7,8 +7,10 @@ import java.util.List;
 import java.util.UUID;
 
 import com.timely.reportservice.dto.request.GenerateReportRequest;
+import com.timely.reportservice.dto.request.ScheduleReportRequest;
 import com.timely.reportservice.dto.response.DashboardResponse;
 import com.timely.reportservice.dto.response.RapportResponse;
+import com.timely.reportservice.dto.response.ScheduledReportResponse;
 import com.timely.reportservice.dto.response.StatistiquesCoursResponse;
 import com.timely.reportservice.dto.response.StatistiquesEnseignantsResponse;
 import com.timely.reportservice.dto.response.StatistiquesSallesResponse;
@@ -16,6 +18,7 @@ import com.timely.reportservice.entity.enums.TypeRapport;
 import com.timely.reportservice.service.FileGenerationService;
 import com.timely.reportservice.service.KPIService;
 import com.timely.reportservice.service.ReportService;
+import com.timely.reportservice.service.ReportSchedulerService;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -46,6 +49,7 @@ public class ReportController {
     private final ReportService reportService;
     private final KPIService kpiService;
     private final FileGenerationService fileGenerationService;
+    private final ReportSchedulerService reportSchedulerService;
 
     @PostMapping
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
@@ -180,5 +184,80 @@ public class ReportController {
             return MediaType.parseMediaType("text/csv");
         }
         return MediaType.APPLICATION_OCTET_STREAM;
+    }
+
+    // ==================== PHASE 4 - Scheduled Reports ====================
+
+    /**
+     * Planifie un nouveau rapport automatique récurrent.
+     */
+    @PostMapping("/schedule")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
+    public ResponseEntity<ScheduledReportResponse> scheduleReport(
+            @Valid @RequestBody ScheduleReportRequest request,
+            Authentication authentication) {
+        log.info("Planification d'un nouveau rapport: type={}, cron={}", request.getTypeRapport(), request.getCronExpression());
+        String utilisateur = authentication.getName();
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(reportSchedulerService.scheduleReport(request, utilisateur));
+    }
+
+    /**
+     * Récupère un rapport planifié par ID.
+     */
+    @GetMapping("/schedule/{id}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
+    public ResponseEntity<ScheduledReportResponse> getScheduledReportById(@PathVariable UUID id) {
+        log.debug("Récupération du rapport planifié: id={}", id);
+        return ResponseEntity.ok(reportSchedulerService.getScheduledReportById(id));
+    }
+
+    /**
+     * Récupère tous les rapports planifiés.
+     */
+    @GetMapping("/schedule")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
+    public ResponseEntity<List<ScheduledReportResponse>> getAllScheduledReports(
+            @RequestParam(required = false) Boolean activeOnly) {
+        log.debug("Récupération des rapports planifiés: activeOnly={}", activeOnly);
+
+        List<ScheduledReportResponse> reports = (activeOnly != null && activeOnly)
+                ? reportSchedulerService.getActiveScheduledReports()
+                : reportSchedulerService.getAllScheduledReports();
+
+        return ResponseEntity.ok(reports);
+    }
+
+    /**
+     * Récupère les rapports planifiés pour une école.
+     */
+    @GetMapping("/schedule/ecole/{ecoleId}")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
+    public ResponseEntity<List<ScheduledReportResponse>> getScheduledReportsByEcoleId(@PathVariable UUID ecoleId) {
+        log.debug("Récupération des rapports planifiés pour l'école: id={}", ecoleId);
+        return ResponseEntity.ok(reportSchedulerService.getScheduledReportsByEcoleId(ecoleId));
+    }
+
+    /**
+     * Active ou désactive un rapport planifié.
+     */
+    @PostMapping("/schedule/{id}/toggle")
+    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
+    public ResponseEntity<ScheduledReportResponse> toggleScheduledReport(
+            @PathVariable UUID id,
+            @RequestParam Boolean actif) {
+        log.info("Modification du statut du rapport planifié: id={}, actif={}", id, actif);
+        return ResponseEntity.ok(reportSchedulerService.toggleScheduledReport(id, actif));
+    }
+
+    /**
+     * Supprime un rapport planifié.
+     */
+    @DeleteMapping("/schedule/{id}")
+    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    public ResponseEntity<Void> deleteScheduledReport(@PathVariable UUID id) {
+        log.info("Suppression du rapport planifié: id={}", id);
+        reportSchedulerService.deleteScheduledReport(id);
+        return ResponseEntity.noContent().build();
     }
 }

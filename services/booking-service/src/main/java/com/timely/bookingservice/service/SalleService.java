@@ -6,6 +6,9 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -33,6 +36,10 @@ public class SalleService {
     private final SalleMapper salleMapper;
 
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "salles:disponibles", allEntries = true),
+        @CacheEvict(value = "salles:ecole", allEntries = true)
+    })
     public SalleResponse create(SalleRequest request) {
         Ecole ecole = ecoleRepository.findById(request.getEcoleId())
                 .orElseThrow(() -> new ResourceNotFoundException("École non trouvée avec l'id: " + request.getEcoleId()));
@@ -49,6 +56,7 @@ public class SalleService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "salles:details", key = "#id")
     public SalleResponse getById(UUID id) {
         Salle salle = salleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Salle non trouvée avec l'id: " + id));
@@ -63,6 +71,7 @@ public class SalleService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "salles:ecole", key = "#ecoleId")
     public List<SalleResponse> getByEcoleId(UUID ecoleId) {
         return salleRepository.findByEcoleId(ecoleId).stream()
                 .map(salleMapper::toResponse)
@@ -70,6 +79,7 @@ public class SalleService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "salles:disponibles", key = "#capaciteMin + '-' + #typeSalle")
     public List<SalleResponse> getDisponibles(Integer capaciteMin, TypeSalle typeSalle) {
         return salleRepository.findSallesDisponibles(capaciteMin, typeSalle).stream()
                 .map(salleMapper::toResponse)
@@ -77,6 +87,11 @@ public class SalleService {
     }
 
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "salles:details", key = "#id"),
+        @CacheEvict(value = "salles:disponibles", allEntries = true),
+        @CacheEvict(value = "salles:ecole", allEntries = true)
+    })
     public SalleResponse update(UUID id, SalleRequest request) {
         Salle salle = salleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Salle non trouvée avec l'id: " + id));
@@ -97,6 +112,11 @@ public class SalleService {
     }
 
     @Transactional
+    @Caching(evict = {
+        @CacheEvict(value = "salles:details", key = "#id"),
+        @CacheEvict(value = "salles:disponibles", allEntries = true),
+        @CacheEvict(value = "salles:ecole", allEntries = true)
+    })
     public void delete(UUID id) {
         if (!salleRepository.existsById(id)) {
             throw new ResourceNotFoundException("Salle non trouvée avec l'id: " + id);
