@@ -1,7 +1,7 @@
 package com.timely.apigateway.config;
 
-import static org.springframework.web.servlet.function.RequestPredicates.*;
-import static org.springframework.web.servlet.function.RouterFunctions.*;
+import static org.springframework.web.servlet.function.RequestPredicates.path;
+import static org.springframework.web.servlet.function.RouterFunctions.route;
 
 import java.io.IOException;
 import java.net.URI;
