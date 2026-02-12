@@ -8,27 +8,33 @@ export const routes: Routes = [
   {
     path: '',
     redirectTo: '/auth/login',
-    pathMatch: 'full'
+    pathMatch: 'full',
   },
   {
     path: 'auth/login',
-    loadComponent: () => import('./features/auth/login/login.component')
-      .then(m => m.LoginComponent)
+    loadComponent: () =>
+      import('./features/auth/login/login.component').then((m) => m.LoginComponent),
   },
   {
     path: 'auth/forgot-password',
-    loadComponent: () => import('./features/auth/forgot-password/forgot-password.component')
-      .then(m => m.ForgotPasswordComponent)
+    loadComponent: () =>
+      import('./features/auth/forgot-password/forgot-password.component').then(
+        (m) => m.ForgotPasswordComponent,
+      ),
   },
   {
     path: 'auth/verify-code',
-    loadComponent: () => import('./features/auth/verify-code/verify-code.component')
-      .then(m => m.VerifyCodeComponent)
+    loadComponent: () =>
+      import('./features/auth/verify-code/verify-code.component').then(
+        (m) => m.VerifyCodeComponent,
+      ),
   },
   {
     path: 'auth/reset-password',
-    loadComponent: () => import('./features/auth/reset-password/reset-password.component')
-      .then(m => m.ResetPasswordComponent)
+    loadComponent: () =>
+      import('./features/auth/reset-password/reset-password.component').then(
+        (m) => m.ResetPasswordComponent,
+      ),
   },
 
   // Routes Admin avec Layout
@@ -39,61 +45,73 @@ export const routes: Routes = [
     children: [
       {
         path: 'dashboard',
-        loadComponent: () => import('./features/admin/dashboard/dashboard.component')
-          .then(m => m.DashboardComponent)
+        loadComponent: () =>
+          import('./features/admin/dashboard/dashboard.component').then(
+            (m) => m.DashboardComponent,
+          ),
       },
       {
         path: 'courses',
-        loadComponent: () => import('./features/admin/courses/courses.component')
-          .then(m => m.CoursesComponent)
+        loadComponent: () =>
+          import('./features/admin/courses/courses.component').then((m) => m.CoursesComponent),
       },
       {
         path: 'academic',
-        loadComponent: () => import('./features/admin/academic/academic.component')
-          .then(m => m.AcademicComponent)
+        loadComponent: () =>
+          import('./features/admin/academic/academic.component').then((m) => m.AcademicComponent),
       },
       {
         path: 'teachers',
-        loadComponent: () => import('./features/admin/teachers/teachers-list/teachers-list.component')
-          .then(m => m.TeachersListComponent)
+        loadComponent: () =>
+          import('./features/admin/teachers/teachers-list/teachers-list.component').then(
+            (m) => m.TeachersListComponent,
+          ),
       },
 
       {
         path: 'schedule',
-        loadComponent: () => import('./features/admin/schedule/schedule.component')
-          .then(m => m.ScheduleComponent)
+        loadComponent: () =>
+          import('./features/admin/schedule/schedule.component').then((m) => m.ScheduleComponent),
       },
       {
         path: 'reservations',
-        loadComponent: () => import('./features/admin/reservations/reservations.component')
-          .then(m => m.ReservationsComponent)
+        loadComponent: () =>
+          import('./features/admin/reservations/reservations.component').then(
+            (m) => m.ReservationsComponent,
+          ),
       },
       {
         path: 'resources',
-        loadComponent: () => import('./features/admin/ressources/ressources.component')
-          .then(m => m.RessourcesComponent)
+        loadComponent: () =>
+          import('./features/admin/ressources/ressources.component').then(
+            (m) => m.RessourcesComponent,
+          ),
       },
       {
         path: 'statistics',
-        loadComponent: () => import('./features/admin/statistics/statistics.component')
-          .then(m => m.StatisticsComponent)
+        loadComponent: () =>
+          import('./features/admin/statistics/statistics.component').then(
+            (m) => m.StatisticsComponent,
+          ),
       },
       {
         path: 'settings',
-        loadComponent: () => import('./features/admin/settings/settings.component')
-          .then(m => m.SettingsComponent)
+        loadComponent: () =>
+          import('./features/admin/settings/settings.component').then((m) => m.SettingsComponent),
       },
       {
         path: 'students',
-        loadComponent: () => import ('./features/admin/etudiants/etudiants.component')
-          .then(m => m.EtudiantsComponent)
+        loadComponent: () =>
+          import('./features/admin/etudiants/etudiants.component').then(
+            (m) => m.EtudiantsComponent,
+          ),
       },
       {
-        path: 'rooms',
-        loadComponent: () => import('./features/admin/room/room.component')
-          .then(m => m.RoomComponent)
-      }
-    ]
+        path: 'room',
+        loadComponent: () =>
+          import('./features/admin/room/room.component').then((m) => m.RoomComponent),
+      },
+    ],
   },
 
   // Routes Teacher avec Layout
@@ -104,34 +122,44 @@ export const routes: Routes = [
     children: [
       {
         path: 'dashboard',
-        loadComponent: () => import('./features/teacher/dashboard/teacher-dashboard.component')
-          .then(m => m.TeacherDashboardComponent)
+        loadComponent: () =>
+          import('./features/teacher/dashboard/teacher-dashboard.component').then(
+            (m) => m.TeacherDashboardComponent,
+          ),
       },
       {
         path: 'schedule',
-        loadComponent: () => import('./features/teacher/schedule/teacher-schedule.component')
-          .then(m => m.TeacherScheduleComponent)
+        loadComponent: () =>
+          import('./features/teacher/schedule/teacher-schedule.component').then(
+            (m) => m.TeacherScheduleComponent,
+          ),
       },
       {
         path: 'availability',
-        loadComponent: () => import('./features/teacher/availability/teacher-availability.component')
-          .then(m => m.TeacherAvailabilityComponent)
+        loadComponent: () =>
+          import('./features/teacher/availability/teacher-availability.component').then(
+            (m) => m.TeacherAvailabilityComponent,
+          ),
       },
       {
         path: 'notifications',
-        loadComponent: () => import('./features/teacher/notifications/teacher-notifications.component')
-          .then(m => m.TeacherNotificationsComponent)
+        loadComponent: () =>
+          import('./features/teacher/notifications/teacher-notifications.component').then(
+            (m) => m.TeacherNotificationsComponent,
+          ),
       },
       {
         path: 'profile',
-        loadComponent: () => import('./features/teacher/profile/teacher-profile.component')
-          .then(m => m.TeacherProfileComponent)
-      }
-    ]
+        loadComponent: () =>
+          import('./features/teacher/profile/teacher-profile.component').then(
+            (m) => m.TeacherProfileComponent,
+          ),
+      },
+    ],
   },
 
   {
     path: '**',
-    redirectTo: '/auth/login'
-  }
+    redirectTo: '/auth/login',
+  },
 ];

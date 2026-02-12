@@ -6,7 +6,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5004/booking-service-db
     username: admin
-    password: password
+    password: ${DB_PASSWORD:changeme}
     driver-class-name: org.postgresql.Driver
 
   # JPA Configuration
@@ -37,7 +37,7 @@ spring:
     host: ${RABBITMQ_HOST:localhost}
     port: ${RABBITMQ_PORT:5672}
     username: ${RABBITMQ_USERNAME:admin}
-    password: ${RABBITMQ_PASSWORD:password}
+    password: ${RABBITMQ_PASSWORD:changeme}
 
 # Server Configuration
 server:

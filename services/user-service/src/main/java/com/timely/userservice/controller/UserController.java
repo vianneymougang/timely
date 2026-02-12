@@ -67,6 +67,7 @@ public class UserController {
      * Get user by ID
      */
     @GetMapping("/{id}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'ENSEIGNANT')")
     public ResponseEntity<UserDto> getUserById(@PathVariable UUID id) {
         UserDto user = userService.getUserById(id);
         return ResponseEntity.ok(user);
@@ -76,6 +77,7 @@ public class UserController {
      * Get all users
      */
     @GetMapping
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<UserDto>> getAllUsers() {
         List<UserDto> users = userService.getAllUsers();
         return ResponseEntity.ok(users);
@@ -95,6 +97,7 @@ public class UserController {
      * Update user
      */
     @PutMapping("/{id}")
+    @PreAuthorize("hasRole('ADMIN') or #id == authentication.principal.id")
     public ResponseEntity<UserDto> updateUser(@PathVariable UUID id, @Valid @RequestBody UpdateUserRequest request) {
         UserDto updated = userService.updateUser(id, request);
         return ResponseEntity.ok(updated);
@@ -181,6 +184,7 @@ public class UserController {
      * Get all schools assigned to a teacher
      */
     @GetMapping("/{enseignantId}/ecoles")
+    @PreAuthorize("hasRole('ADMIN') or #enseignantId == authentication.principal.id")
     public ResponseEntity<List<IntervenirEcoleDto>> getTeacherEcoles(@PathVariable UUID enseignantId) {
         List<IntervenirEcoleDto> ecoles = affectationService.getTeacherEcoles(enseignantId);
         return ResponseEntity.ok(ecoles);
@@ -217,6 +221,7 @@ public class UserController {
      * Get all courses assigned to a teacher
      */
     @GetMapping("/{enseignantId}/cours")
+    @PreAuthorize("hasRole('ADMIN') or #enseignantId == authentication.principal.id")
     public ResponseEntity<List<EnseignerDto>> getTeacherCours(@PathVariable UUID enseignantId) {
         List<EnseignerDto> cours = affectationService.getTeacherCours(enseignantId);
         return ResponseEntity.ok(cours);
@@ -229,6 +234,7 @@ public class UserController {
      * Aggregates hours from all assigned courses with breakdown by type and school.
      */
     @GetMapping("/{enseignantId}/charge-horaire")
+    @PreAuthorize("hasRole('ADMIN') or #enseignantId == authentication.principal.id")
     public ResponseEntity<ChargeHoraireResponse> getChargeHoraire(@PathVariable UUID enseignantId) {
         ChargeHoraireResponse chargeHoraire = chargeHoraireService.calculateChargeHoraire(enseignantId);
         return ResponseEntity.ok(chargeHoraire);

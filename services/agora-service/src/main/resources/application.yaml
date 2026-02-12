@@ -6,7 +6,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5007/agora-service-db
     username: admin
-    password: password
+    password: ${DB_PASSWORD:changeme}
     driver-class-name: org.postgresql.Driver
 
   # JPA Configuration
@@ -30,7 +30,7 @@ spring:
     host: localhost
     port: 5672
     username: admin
-    password: password
+    password: ${RABBITMQ_PASSWORD:changeme}
 
 # Server Configuration
 server:
@@ -90,12 +90,12 @@ logging:
 
 # JWT Configuration
 jwt:
-  secret: ${JWT_SECRET:404E635266556A586E3272357538782F413F4428472B4B6250645367566B5970}
+  secret: ${JWT_SECRET}
 
 # Agora API Configuration
 agora:
   api:
     url: ${AGORA_API_URL:https://api.agora.example.com}
     username: ${AGORA_USERNAME:admin}
-    password: ${AGORA_PASSWORD:password}
+    password: ${AGORA_PASSWORD:changeme}
     timeout: 30000

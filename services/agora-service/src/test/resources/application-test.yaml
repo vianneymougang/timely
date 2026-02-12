@@ -30,7 +30,7 @@ spring:
     host: localhost
     port: 5672
     username: admin
-    password: password
+    password: test
 
 # Server Configuration
 server:
@@ -91,5 +91,5 @@ agora:
   api:
     url: ${AGORA_API_URL:https://api.agora.example.com}
     username: ${AGORA_USERNAME:admin}
-    password: ${AGORA_PASSWORD:password}
+    password: ${AGORA_PASSWORD:test}
     timeout: 30000

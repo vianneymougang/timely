@@ -9,7 +9,7 @@ spring:
   datasource:
     url: jdbc:postgresql://agora-service-db:5432/agora-service-db
     username: admin
-    password: password
+    password: ${DB_PASSWORD:changeme}
     driver-class-name: org.postgresql.Driver
 
   # JPA Configuration
@@ -33,7 +33,7 @@ spring:
     host: rabbitmq
     port: 5672
     username: admin
-    password: password
+    password: ${RABBITMQ_PASSWORD:changeme}
 
 # Server Configuration
 server:

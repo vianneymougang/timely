@@ -10,7 +10,7 @@ spring:
     host: rabbitmq
     port: 5672
     username: admin
-    password: password
+    password: ${RABBITMQ_PASSWORD:changeme}
 
   # Mail Configuration - MailTrap
   mail:
@@ -32,7 +32,7 @@ spring:
       port: 27017
       database: notification-service-db
       username: admin
-      password: password
+      password: ${MONGODB_PASSWORD:changeme}
       authentication-database: admin
     # Redis Configuration - Docker
     redis:

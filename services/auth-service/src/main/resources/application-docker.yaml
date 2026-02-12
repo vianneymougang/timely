@@ -9,7 +9,7 @@ spring:
   datasource:
     url: jdbc:postgresql://auth-service-db:5432/auth-service-db
     username: admin
-    password: password
+    password: ${DB_PASSWORD:changeme}
     driver-class-name: org.postgresql.Driver
 
   # JPA Configuration
@@ -37,7 +37,7 @@ spring:
 
 # JWT Configuration
 jwt:
-  secret: ${JWT_SECRET:mySecretKeyForJWTTokenGenerationThisShouldBeAtLeast256BitsLongForHS256Algorithm}
+  secret: ${JWT_SECRET}
   access-token-expiration: 3600000 # 1 hour
   refresh-token-expiration: 604800000 # 7 days
 

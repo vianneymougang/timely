@@ -8,7 +8,7 @@ spring:
   datasource:
     url: jdbc:postgresql://localhost:5432/auth-service-db
     username: postgres
-    password: postgres
+    password: ${DB_PASSWORD:changeme}
     driver-class-name: org.postgresql.Driver
 
   # JPA Configuration
@@ -39,11 +39,11 @@ spring:
     host: ${RABBITMQ_HOST:localhost}
     port: ${RABBITMQ_PORT:5672}
     username: ${RABBITMQ_USERNAME:admin}
-    password: ${RABBITMQ_PASSWORD:password}
+    password: ${RABBITMQ_PASSWORD:changeme}
 
 # JWT Configuration
 jwt:
-  secret: ${JWT_SECRET:mySecretKeyForJWTTokenGenerationThisShouldBeAtLeast256BitsLongForHS256Algorithm}
+  secret: ${JWT_SECRET}
   access-token-expiration: 3600000 # 1 hour in milliseconds
   refresh-token-expiration: 604800000 # 7 days in milliseconds
 

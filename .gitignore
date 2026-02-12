@@ -43,3 +43,8 @@ Thumbs.db
 
 # Project files
 .angular
+
+# Environment variables
+.env
+.env.local
+.env.*.local
