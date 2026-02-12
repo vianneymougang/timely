@@ -1,6 +1,7 @@
 package com.timely.planningservice.repository;
 
 import java.time.DayOfWeek;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -50,4 +51,21 @@ public interface CreneauRepository extends JpaRepository<Creneau, UUID> {
             @Param("salleId") UUID salleId,
             @Param("jourSemaine") DayOfWeek jourSemaine
     );
+
+    @Query("SELECT c FROM Creneau c " +
+           "LEFT JOIN FETCH c.emploiDuTemps " +
+           "LEFT JOIN FETCH c.salle " +
+           "WHERE c.emploiDuTemps.id = :emploiId")
+    List<Creneau> findByEmploiDuTempsIdWithRelations(@Param("emploiId") UUID emploiId);
+
+    @Query("SELECT c FROM Creneau c " +
+           "LEFT JOIN FETCH c.emploiDuTemps " +
+           "LEFT JOIN FETCH c.salle " +
+           "WHERE c.jourSemaine = :jour " +
+           "AND c.heureDebut >= :heureDebut " +
+           "AND c.heureFin <= :heureFin")
+    List<Creneau> findByJourAndHeuresWithRelations(
+            @Param("jour") DayOfWeek jour,
+            @Param("heureDebut") LocalTime heureDebut,
+            @Param("heureFin") LocalTime heureFin);
 }

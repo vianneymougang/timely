@@ -6,6 +6,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -126,6 +128,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "users:details", key = "#id")
     public UserDto getUserById(UUID id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
@@ -170,6 +173,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
+    @Cacheable(value = "users:teachers", key = "'all-page-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<TeacherDto> getAllTeachers(Pageable pageable) {
         return userRepository.findAllByRole(Role.ROLE_TEACHER, pageable)
                 .map(user -> userMapper.toTeacherDto((Teacher) user));
@@ -177,6 +181,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"users:details", "users:teachers", "users:availability"}, allEntries = true)
     public UserDto updateUser(UUID id, UpdateUserRequest request) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
@@ -212,6 +217,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
+    @CacheEvict(value = {"users:details", "users:teachers", "users:availability"}, allEntries = true)
     public void deleteUser(UUID id) {
         // Soft delete by blocking the user instead of physical deletion
         blockUser(id);
@@ -219,13 +225,14 @@ public class UserServiceImpl implements UserService {
     
     @Override
     @Transactional
+    @CacheEvict(value = {"users:details", "users:teachers", "users:availability"}, allEntries = true)
     public UserDto blockUser(UUID id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
-        
+
         user.setStatus(UserStatus.BLOCKED);
         User blockedUser = userRepository.save(user);
-        
+
         if (blockedUser instanceof Teacher) {
             return userMapper.toTeacherDto((Teacher) blockedUser);
         } else if (blockedUser instanceof Admin) {
@@ -236,13 +243,14 @@ public class UserServiceImpl implements UserService {
     
     @Override
     @Transactional
+    @CacheEvict(value = {"users:details", "users:teachers", "users:availability"}, allEntries = true)
     public UserDto unblockUser(UUID id) {
         User user = userRepository.findById(id)
                 .orElseThrow(() -> new UserNotFoundException("User not found with id: " + id));
-        
+
         user.setStatus(UserStatus.ACTIVE);
         User unblockedUser = userRepository.save(user);
-        
+
         if (unblockedUser instanceof Teacher) {
             return userMapper.toTeacherDto((Teacher) unblockedUser);
         } else if (unblockedUser instanceof Admin) {

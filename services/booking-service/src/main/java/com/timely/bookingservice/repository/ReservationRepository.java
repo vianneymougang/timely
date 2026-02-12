@@ -33,4 +33,20 @@ public interface ReservationRepository extends JpaRepository<Reservation, UUID> 
             @Param("date") LocalDate date,
             @Param("heureDebut") LocalTime heureDebut,
             @Param("heureFin") LocalTime heureFin);
+
+    @Query("SELECT r FROM Reservation r " +
+           "LEFT JOIN FETCH r.salle " +
+           "LEFT JOIN FETCH r.cours " +
+           "WHERE r.dateReservation = :date")
+    List<Reservation> findByDateWithRelations(@Param("date") LocalDate date);
+
+    @Query("SELECT r FROM Reservation r " +
+           "LEFT JOIN FETCH r.salle " +
+           "LEFT JOIN FETCH r.cours " +
+           "WHERE r.salle.id = :salleId " +
+           "AND r.dateReservation BETWEEN :dateDebut AND :dateFin")
+    List<Reservation> findBySalleAndDateRangeWithRelations(
+            @Param("salleId") UUID salleId,
+            @Param("dateDebut") LocalDate dateDebut,
+            @Param("dateFin") LocalDate dateFin);
 }

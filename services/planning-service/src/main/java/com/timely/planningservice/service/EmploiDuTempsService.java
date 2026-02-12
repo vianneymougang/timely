@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -50,6 +52,7 @@ public class EmploiDuTempsService {
     }
 
     @Transactional(readOnly = true)
+    @Cacheable(value = "planning:emploi", key = "#id")
     public EmploiDuTempsResponseDTO getEmploiDuTempsById(UUID id) {
         log.debug("Fetching EmploiDuTemps with ID: {}", id);
 
@@ -111,6 +114,7 @@ public class EmploiDuTempsService {
     }
 
     @Transactional
+    @CacheEvict(value = {"planning:emploi", "planning:creneaux"}, allEntries = true)
     public EmploiDuTempsResponseDTO updateEmploiDuTemps(UUID id, EmploiDuTempsRequestDTO requestDTO) {
         log.info("Updating EmploiDuTemps with ID: {}", id);
 
@@ -125,6 +129,7 @@ public class EmploiDuTempsService {
     }
 
     @Transactional
+    @CacheEvict(value = {"planning:emploi", "planning:creneaux"}, allEntries = true)
     public void deleteEmploiDuTemps(UUID id) {
         log.info("Deleting EmploiDuTemps with ID: {}", id);
 
@@ -137,6 +142,7 @@ public class EmploiDuTempsService {
     }
 
     @Transactional
+    @CacheEvict(value = {"planning:emploi", "planning:creneaux"}, allEntries = true)
     public EmploiDuTempsResponseDTO validateEmploi(UUID id, String validatorEmail) {
         log.info("Validating EmploiDuTemps with ID: {}", id);
 
@@ -153,6 +159,7 @@ public class EmploiDuTempsService {
     }
 
     @Transactional
+    @CacheEvict(value = {"planning:emploi", "planning:creneaux"}, allEntries = true)
     public EmploiDuTempsResponseDTO publishEmploi(UUID id, String publisherEmail) {
         log.info("Publishing EmploiDuTemps with ID: {}", id);
 
