@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { CoursService } from '../../../core/services/cours.service';
@@ -11,7 +11,8 @@ import { Cours, UE, Filiere, CreateCoursDTO, CreateUEDTO } from '../../../core/m
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './courses.component.html',
-  styleUrls: ['./courses.component.scss']
+  styleUrls: ['./courses.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CoursesComponent implements OnInit {
   private coursService = inject(CoursService);
@@ -176,5 +177,14 @@ export class CoursesComponent implements OnInit {
   getFiliereName(filiereId: string): string {
     const filiere = this.filieres().find(f => f.id === filiereId);
     return filiere ? filiere.nom : 'Filière inconnue';
+  }
+
+  // TrackBy functions for *ngFor
+  trackById(index: number, item: any): string | number {
+    return item.id;
+  }
+
+  trackByIndex(index: number): number {
+    return index;
   }
 }

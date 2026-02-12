@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
 import { SalleService } from '../../../core/services/salle.service';
@@ -20,7 +20,8 @@ import { Materiel, Equipement } from '../../../core/models/resource.model';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './room.component.html',
-  styleUrls: ['./room.component.scss']
+  styleUrls: ['./room.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RoomComponent implements OnInit {
   private salleService = inject(SalleService);
@@ -307,5 +308,14 @@ export class RoomComponent implements OnInit {
       salle.equipementAffecte?.some(ea => ea.equipementId === equipementId)
     );
     return !isAffecte;
+  }
+
+  // TrackBy functions for *ngFor
+  trackById(index: number, item: any): string | number {
+    return item.id;
+  }
+
+  trackByIndex(index: number): number {
+    return index;
   }
 }

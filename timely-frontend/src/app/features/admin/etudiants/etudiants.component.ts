@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
 import { EtudiantService } from '../../../core/services/etudiant.service';
@@ -17,7 +17,8 @@ import {
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './etudiants.component.html',
-  styleUrls: ['./etudiants.component.scss']
+  styleUrls: ['./etudiants.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EtudiantsComponent implements OnInit {
   private etudiantService = inject(EtudiantService);
@@ -343,4 +344,13 @@ export class EtudiantsComponent implements OnInit {
   }
 
   protected readonly Math = Math;
+
+  // TrackBy functions for *ngFor
+  trackById(index: number, item: any): string | number {
+    return item.id;
+  }
+
+  trackByIndex(index: number): number {
+    return index;
+  }
 }

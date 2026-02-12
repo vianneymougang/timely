@@ -36,7 +36,7 @@
         class="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white"
       >
         <option value="">Tous les types</option>
-        @for (type of typesSalle; track type) {
+        @for (type of typesSalle; track $index) {
           <option [value]="type">{{ type }}</option>
         }
       </select>
@@ -48,7 +48,7 @@
         class="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent bg-white"
       >
         <option value="">Tous les bâtiments</option>
-        @for (batiment of batiments(); track batiment) {
+        @for (batiment of batiments(); track $index) {
           <option [value]="batiment">{{ batiment }}</option>
         }
       </select>
@@ -142,7 +142,7 @@
                     Matériels ({{ getSalleEquipmentInfo(salle).totalMateriels }})
                   </h4>
                   <div class="space-y-1">
-                    @for (ma of salle.materielAffecte; track ma.materielId) {
+                    @for (ma of salle.materielAffecte; track ma.materielId; let i = $index) {
                       <div class="flex items-center justify-between text-xs bg-white rounded px-2 py-1.5 border border-slate-200">
                         <span class="text-slate-600">{{ getMaterielName(ma.materielId) }}</span>
                         <span class="font-semibold text-teal-700">×{{ ma.quantiteAffectee }}</span>
@@ -160,7 +160,7 @@
                     Équipements ({{ getSalleEquipmentInfo(salle).totalEquipements }})
                   </h4>
                   <div class="space-y-1">
-                    @for (ea of salle.equipementAffecte; track ea.equipementId) {
+                    @for (ea of salle.equipementAffecte; track ea.equipementId; let i = $index) {
                       <div class="flex items-center gap-2 text-xs bg-white rounded px-2 py-1.5 border border-slate-200">
                         <span class="material-icons text-xs text-blue-600">check</span>
                         <span class="text-slate-600">{{ getEquipementName(ea.equipementId) }}</span>
@@ -270,7 +270,7 @@
                     formControlName="type"
                     class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                   >
-                    @for (type of typesSalle; track type) {
+                    @for (type of typesSalle; track $index) {
                       <option [value]="type">{{ type }}</option>
                     }
                   </select>
@@ -370,7 +370,7 @@
                         class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                       >
                         <option value="">Sélectionnez un matériel</option>
-                        @for (materiel of materiels(); track materiel.id) {
+                        @for (materiel of materiels(); track materiel.id; let i = $index) {
                           <option [value]="materiel.id">
                             {{ materiel.nom }} - Dispo: {{ getQuantiteDisponible(materiel.id!) }}
                           </option>
@@ -443,7 +443,7 @@
                         class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm focus:ring-2 focus:ring-teal-500 focus:border-transparent"
                       >
                         <option value="">Sélectionnez un équipement</option>
-                        @for (equipement of equipements(); track equipement.id) {
+                        @for (equipement of equipements(); track equipement.id; let i = $index) {
                           <option [value]="equipement.id">
                             {{ equipement.nom }}
                             @if (!isEquipementDisponible(equipement.id!)) {

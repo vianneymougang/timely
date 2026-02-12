@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { Teacher } from '../../../../core/models/teacher.model';
@@ -16,6 +16,7 @@ import { UserService } from '../../../../core/services/user.service';
   imports: [CommonModule, FormsModule],
   templateUrl: './teachers-list.component.html',
   styleUrls: ['./teachers-list.component.scss'],
+  changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TeachersListComponent implements OnInit {
   private teacherService = inject(TeacherService);
@@ -403,5 +404,18 @@ export class TeachersListComponent implements OnInit {
         },
       });
     }
+  }
+
+  // TrackBy functions for *ngFor
+  trackById(index: number, item: any): string | number {
+    return item.id;
+  }
+
+  trackByDay(index: number, day: string): string {
+    return day;
+  }
+
+  trackByHour(index: number, slot: any): string {
+    return slot.hour;
   }
 }

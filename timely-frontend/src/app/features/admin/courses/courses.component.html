@@ -52,7 +52,7 @@
 
       <!-- Grille de cartes de cours -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        @for (c of cours(); track c.id) {
+        @for (c of cours(); track c.id; let i = $index) {
           <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border border-slate-200">
             <!-- En-tête de la carte -->
             <div class="flex justify-between items-start mb-4">
@@ -137,7 +137,7 @@
 
       <!-- Grille de cartes d'UE -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        @for (ue of ues(); track ue.id) {
+        @for (ue of ues(); track ue.id; let i = $index) {
           <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border border-slate-200">
             <!-- En-tête de la carte -->
             <div class="mb-4">
@@ -291,7 +291,7 @@
                 class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
               >
                 <option value="">Sélectionnez une UE</option>
-                @for (ue of ues(); track ue.id) {
+                @for (ue of ues(); track ue.id; let i = $index) {
                   <option [value]="ue.id">{{ ue.intituleUE }} - S{{ ue.semestre }}</option>
                 }
               </select>
@@ -371,7 +371,7 @@
                 class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
               >
                 <option value="">Sélectionnez une filière</option>
-                @for (filiere of filieres(); track filiere.id) {
+                @for (filiere of filieres(); track filiere.id; let i = $index) {
                   <option [value]="filiere.id">{{ filiere.nom }} ({{ filiere.code }})</option>
                 }
               </select>

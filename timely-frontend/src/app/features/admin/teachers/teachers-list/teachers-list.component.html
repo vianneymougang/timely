@@ -135,7 +135,7 @@
         ></div>
         <p class="text-slate-600 mt-2">Chargement...</p>
       </div>
-      } @else { @for (teacher of filteredTeachers(); track teacher.id) {
+      } @else { @for (teacher of filteredTeachers(); track teacher.id; let i = $index) {
       <div
         (click)="selectTeacher(teacher)"
         [class.ring-2]="selectedTeacher()?.id === teacher.id"
@@ -369,13 +369,13 @@
                 >
                   Heure
                 </th>
-                @for (day of ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']; track day) {
+                @for (day of ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam']; track $index) {
                 <th class="px-1 py-2 text-center font-medium text-slate-500 w-12">{{ day }}</th>
                 }
               </tr>
             </thead>
             <tbody>
-              @for (slot of selectedTeacherAvailability()!.timeSlots; track slot.hour; let hourIndex
+              @for (slot of selectedTeacherAvailability()!.timeSlots; track $index; let hourIndex
               = $index) {
               <tr class="border-b border-slate-100 last:border-0 hover:bg-slate-50">
                 <td
@@ -383,8 +383,7 @@
                 >
                   {{ slot.hour }}
                 </td>
-                @for (day of ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi']; track
-                day) {
+                @for (day of ['lundi', 'mardi', 'mercredi', 'jeudi', 'vendredi', 'samedi']; track $index) {
                 <td class="p-0 border-r border-slate-100 last:border-0 relative h-8">
                   @if (isPauseSlotByIndex(hourIndex)) {
                   <div class="absolute inset-0 bg-slate-100 flex items-center justify-center">
@@ -411,8 +410,7 @@
       <div>
         <h4 class="font-semibold text-slate-800 mb-3">Emploi du temps</h4>
         <div class="grid grid-cols-6 gap-2">
-          @for (day of ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']; track
-          day) {
+          @for (day of ['monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday']; track $index) {
           <div class="text-center">
             <div class="text-xs text-slate-600 mb-1 capitalize">
               {{ day.substring(0, 3) }}
