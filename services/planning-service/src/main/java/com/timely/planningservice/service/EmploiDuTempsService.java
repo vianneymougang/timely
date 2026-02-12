@@ -107,7 +107,7 @@ public class EmploiDuTempsService {
             return getEmploisByEcole(ecoleId);
         }
 
-        return getAllEmploisDuTemps();
+        return getAllEmploisDuTemps(Pageable.unpaged()).getContent();
     }
 
     @Transactional

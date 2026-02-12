@@ -14,6 +14,8 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cache.CacheManager;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.timely.bookingservice.AbstractBookingIntegrationTest;
@@ -286,7 +288,7 @@ class BookingIntegrationTest extends AbstractBookingIntegrationTest {
         createSalle("C302", TypeSalle.LABORATOIRE, 30, StatutSalle.ACTIVE);
 
         // When: First call - loads from DB and caches
-        List<SalleResponse> firstCall = salleService.getDisponibles(20, TypeSalle.LABORATOIRE);
+        List<SalleResponse> firstCall = salleService.getDisponibles(20, TypeSalle.LABORATOIRE, Pageable.unpaged()).getContent();
 
         // Then: Verify cache is populated
         var cache = cacheManager.getCache("salles:disponibles");
@@ -298,7 +300,7 @@ class BookingIntegrationTest extends AbstractBookingIntegrationTest {
         assertThat(cachedValue.get()).isNotNull();
 
         // When: Second call - should be served from cache
-        List<SalleResponse> secondCall = salleService.getDisponibles(20, TypeSalle.LABORATOIRE);
+        List<SalleResponse> secondCall = salleService.getDisponibles(20, TypeSalle.LABORATOIRE, Pageable.unpaged()).getContent();
 
         // Then: Results should be identical (from cache)
         assertThat(secondCall).hasSize(firstCall.size());
@@ -317,7 +319,7 @@ class BookingIntegrationTest extends AbstractBookingIntegrationTest {
         Salle salle = createSalle("D401", TypeSalle.SALLE_COURS, 40, StatutSalle.ACTIVE);
 
         // First call to populate cache
-        List<SalleResponse> beforeUpdate = salleService.getDisponibles(30, TypeSalle.SALLE_COURS);
+        List<SalleResponse> beforeUpdate = salleService.getDisponibles(30, TypeSalle.SALLE_COURS, Pageable.unpaged()).getContent();
         assertThat(beforeUpdate).hasSize(1);
 
         // Verify cache is populated
@@ -336,7 +338,7 @@ class BookingIntegrationTest extends AbstractBookingIntegrationTest {
         assertThat(cache.get(cacheKey)).isNull();
 
         // Next call should reload from DB
-        List<SalleResponse> afterUpdate = salleService.getDisponibles(30, TypeSalle.SALLE_COURS);
+        List<SalleResponse> afterUpdate = salleService.getDisponibles(30, TypeSalle.SALLE_COURS, Pageable.unpaged()).getContent();
         assertThat(afterUpdate).hasSize(1);
         assertThat(afterUpdate.get(0).getCapacite()).isEqualTo(35);
     }
@@ -348,7 +350,7 @@ class BookingIntegrationTest extends AbstractBookingIntegrationTest {
         createSalle("E501", TypeSalle.AMPHITHEATRE, 200, StatutSalle.ACTIVE);
 
         // When: Call service to populate cache
-        List<SalleResponse> result = salleService.getDisponibles(150, TypeSalle.AMPHITHEATRE);
+        List<SalleResponse> result = salleService.getDisponibles(150, TypeSalle.AMPHITHEATRE, Pageable.unpaged()).getContent();
         assertThat(result).hasSize(1);
 
         // Then: Cache should be populated

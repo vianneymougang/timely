@@ -6,6 +6,7 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -57,7 +58,7 @@ public class InternalController {
     @GetMapping("/cours/ecole/{ecoleId}")
     public ResponseEntity<List<CoursResponse>> getCoursByEcole(@PathVariable UUID ecoleId) {
         // Filter by ecoleId from CoursResponse
-        List<CoursResponse> allCours = coursService.getAll();
+        List<CoursResponse> allCours = coursService.getAll(Pageable.unpaged()).getContent();
         List<CoursResponse> filtered = allCours.stream()
                 .filter(c -> ecoleId.equals(c.getEcoleId()))
                 .toList();
@@ -66,12 +67,12 @@ public class InternalController {
 
     @GetMapping("/cours/classe/{classeId}")
     public ResponseEntity<List<CoursResponse>> getCoursByClasse(@PathVariable UUID classeId) {
-        return ResponseEntity.ok(coursService.getByClasseId(classeId));
+        return ResponseEntity.ok(coursService.getByClasseId(classeId, Pageable.unpaged()).getContent());
     }
 
     @GetMapping("/cours/enseignant/{enseignantId}")
     public ResponseEntity<List<CoursResponse>> getCoursByEnseignant(@PathVariable UUID enseignantId) {
-        return ResponseEntity.ok(coursService.getByEnseignantId(enseignantId));
+        return ResponseEntity.ok(coursService.getByEnseignantId(enseignantId, Pageable.unpaged()).getContent());
     }
 
     // ==================== SALLE ENDPOINTS ====================
@@ -83,7 +84,7 @@ public class InternalController {
 
     @GetMapping("/salles/ecole/{ecoleId}")
     public ResponseEntity<List<SalleResponse>> getSallesByEcole(@PathVariable UUID ecoleId) {
-        return ResponseEntity.ok(salleService.getByEcoleId(ecoleId));
+        return ResponseEntity.ok(salleService.getByEcoleId(ecoleId, Pageable.unpaged()).getContent());
     }
 
     @GetMapping("/salles/disponibles")
@@ -96,8 +97,8 @@ public class InternalController {
 
         // Get all salles (or by ecole if specified)
         List<SalleResponse> salles = ecoleId != null
-            ? salleService.getByEcoleId(ecoleId)
-            : salleService.getAll();
+            ? salleService.getByEcoleId(ecoleId, Pageable.unpaged()).getContent()
+            : salleService.getAll(Pageable.unpaged()).getContent();
 
         // Filter by availability (simple implementation - can be optimized)
         return ResponseEntity.ok(salles);
@@ -118,7 +119,7 @@ public class InternalController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateDebut,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate dateFin) {
 
-        List<ReservationResponse> all = reservationService.getAll();
+        List<ReservationResponse> all = reservationService.getAll(Pageable.unpaged()).getContent();
 
         // Apply filters
         return ResponseEntity.ok(all.stream()

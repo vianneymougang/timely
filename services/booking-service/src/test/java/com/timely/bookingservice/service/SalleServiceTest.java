@@ -23,6 +23,9 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 
 import com.timely.bookingservice.dto.request.SalleRequest;
 import com.timely.bookingservice.dto.response.SalleResponse;
@@ -206,12 +209,13 @@ class SalleServiceTest {
         salleResponse2.setCapacite(30);
 
         List<Salle> salles = List.of(salle, salle2);
-        when(salleRepository.findByEcoleId(ecoleId)).thenReturn(salles);
+        Page<Salle> sallePage = new PageImpl<>(salles);
+        when(salleRepository.findByEcoleId(eq(ecoleId), any(Pageable.class))).thenReturn(sallePage);
         when(salleMapper.toResponse(salle)).thenReturn(salleResponse);
         when(salleMapper.toResponse(salle2)).thenReturn(salleResponse2);
 
         // Act
-        List<SalleResponse> result = salleService.getByEcoleId(ecoleId);
+        List<SalleResponse> result = salleService.getByEcoleId(ecoleId, Pageable.unpaged()).getContent();
 
         // Assert
         assertThat(result)
@@ -222,7 +226,7 @@ class SalleServiceTest {
         assertThat(result.get(0).getNumero()).isEqualTo("A101");
         assertThat(result.get(1).getNumero()).isEqualTo("A102");
 
-        verify(salleRepository).findByEcoleId(ecoleId);
+        verify(salleRepository).findByEcoleId(eq(ecoleId), any(Pageable.class));
         verify(salleMapper).toResponse(salle);
         verify(salleMapper).toResponse(salle2);
     }
@@ -251,13 +255,14 @@ class SalleServiceTest {
         salleResponse2.setCapacite(200);
 
         List<Salle> sallesDisponibles = List.of(salle, salle2);
-        when(salleRepository.findSallesDisponibles(capaciteMin, typeSalle))
-                .thenReturn(sallesDisponibles);
+        Page<Salle> sallePage = new PageImpl<>(sallesDisponibles);
+        when(salleRepository.findSallesDisponibles(eq(capaciteMin), eq(typeSalle), any(Pageable.class)))
+                .thenReturn(sallePage);
         when(salleMapper.toResponse(salle)).thenReturn(salleResponse);
         when(salleMapper.toResponse(salle2)).thenReturn(salleResponse2);
 
         // Act
-        List<SalleResponse> result = salleService.getDisponibles(capaciteMin, typeSalle);
+        List<SalleResponse> result = salleService.getDisponibles(capaciteMin, typeSalle, Pageable.unpaged()).getContent();
 
         // Assert
         assertThat(result)
@@ -268,7 +273,7 @@ class SalleServiceTest {
         assertThat(result.get(0).getTypeSalle()).isEqualTo(typeSalle);
         assertThat(result.get(1).getTypeSalle()).isEqualTo(typeSalle);
 
-        verify(salleRepository).findSallesDisponibles(capaciteMin, typeSalle);
+        verify(salleRepository).findSallesDisponibles(eq(capaciteMin), eq(typeSalle), any(Pageable.class));
         verify(salleMapper).toResponse(salle);
         verify(salleMapper).toResponse(salle2);
     }
