@@ -60,13 +60,11 @@ public class EmploiDuTempsService {
     }
 
     @Transactional(readOnly = true)
-    public List<EmploiDuTempsResponseDTO> getAllEmploisDuTemps() {
-        log.debug("Fetching all EmploisDuTemps");
+    public Page<EmploiDuTempsResponseDTO> getAllEmploisDuTemps(Pageable pageable) {
+        log.debug("Fetching all EmploisDuTemps with pagination");
 
-        return emploiDuTempsRepository.findAll()
-                .stream()
-                .map(emploiDuTempsMapper::toResponseDTO)
-                .toList();
+        return emploiDuTempsRepository.findAll(pageable)
+                .map(emploiDuTempsMapper::toResponseDTO);
     }
 
     @Transactional(readOnly = true)

@@ -5,6 +5,8 @@ import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -60,13 +62,11 @@ public class CreneauService {
     }
 
     @Transactional(readOnly = true)
-    public List<CreneauResponseDTO> getCreneauxByEmploi(UUID emploiDuTempsId) {
-        log.debug("Fetching Creneaux for EmploiDuTemps: {}", emploiDuTempsId);
+    public Page<CreneauResponseDTO> getCreneauxByEmploi(UUID emploiDuTempsId, Pageable pageable) {
+        log.debug("Fetching Creneaux for EmploiDuTemps: {} with pagination", emploiDuTempsId);
 
-        return creneauRepository.findByEmploiDuTempsId(emploiDuTempsId)
-                .stream()
-                .map(creneauMapper::toResponseDTO)
-                .toList();
+        return creneauRepository.findByEmploiDuTempsId(emploiDuTempsId, pageable)
+                .map(creneauMapper::toResponseDTO);
     }
 
     @Transactional(readOnly = true)

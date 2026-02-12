@@ -51,8 +51,8 @@ public class AvailabilityServiceImpl implements AvailabilityService {
         // Convert DTO to entities
         List<AvailabilityTimeSlot> newTimeSlots = AvailabilityMapper.toTimeSlotEntities(request.getTimeSlots());
 
-        // Check if availability already exists
-        Optional<TeacherAvailability> existingOpt = availabilityRepository.findByTeacherId(teacherId);
+        // Check if availability already exists (with timeSlots for update)
+        Optional<TeacherAvailability> existingOpt = availabilityRepository.findByTeacherIdWithTimeSlots(teacherId);
 
         TeacherAvailability availability;
         if (existingOpt.isPresent()) {
@@ -101,8 +101,8 @@ public class AvailabilityServiceImpl implements AvailabilityService {
 
         String teacherName = teacher.getName() + " " + teacher.getSurname();
 
-        // Find availability
-        Optional<TeacherAvailability> availabilityOpt = availabilityRepository.findByTeacherId(teacherId);
+        // Find availability with timeSlots
+        Optional<TeacherAvailability> availabilityOpt = availabilityRepository.findByTeacherIdWithTimeSlots(teacherId);
 
         if (availabilityOpt.isPresent()) {
             return AvailabilityMapper.toResponseDto(availabilityOpt.get(), teacherName);
@@ -121,7 +121,7 @@ public class AvailabilityServiceImpl implements AvailabilityService {
         List<TeacherAvailabilitySummaryDto> summaries = new ArrayList<>();
 
         for (User teacher : teachers) {
-            Optional<TeacherAvailability> availabilityOpt = availabilityRepository.findByTeacherId(teacher.getId());
+            Optional<TeacherAvailability> availabilityOpt = availabilityRepository.findByTeacherIdWithTimeSlots(teacher.getId());
 
             TeacherAvailabilitySummaryDto summary = new TeacherAvailabilitySummaryDto();
             summary.setTeacherId(teacher.getId().toString());
@@ -145,8 +145,8 @@ public class AvailabilityServiceImpl implements AvailabilityService {
     @Override
     @Transactional(readOnly = true)
     public List<AvailabilitySlotDto> getAvailabilityByTeacherId(UUID teacherId) {
-        // Find availability for the teacher
-        Optional<TeacherAvailability> availabilityOpt = availabilityRepository.findByTeacherId(teacherId);
+        // Find availability for the teacher with timeSlots
+        Optional<TeacherAvailability> availabilityOpt = availabilityRepository.findByTeacherIdWithTimeSlots(teacherId);
 
         if (availabilityOpt.isEmpty()) {
             return new ArrayList<>();

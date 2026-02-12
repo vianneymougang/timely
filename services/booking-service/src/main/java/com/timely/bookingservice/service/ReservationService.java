@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -67,17 +69,15 @@ public class ReservationService {
     }
 
     @Transactional(readOnly = true)
-    public List<ReservationResponse> getAll() {
-        return reservationRepository.findAll().stream()
-                .map(reservationMapper::toResponse)
-                .collect(Collectors.toList());
+    public Page<ReservationResponse> getAll(Pageable pageable) {
+        return reservationRepository.findAll(pageable)
+                .map(reservationMapper::toResponse);
     }
 
     @Transactional(readOnly = true)
-    public List<ReservationResponse> getBySalleId(UUID salleId) {
-        return reservationRepository.findBySalleId(salleId).stream()
-                .map(reservationMapper::toResponse)
-                .collect(Collectors.toList());
+    public Page<ReservationResponse> getBySalleId(UUID salleId, Pageable pageable) {
+        return reservationRepository.findBySalleId(salleId, pageable)
+                .map(reservationMapper::toResponse);
     }
 
     @Transactional

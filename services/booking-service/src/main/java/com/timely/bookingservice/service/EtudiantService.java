@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -48,17 +50,15 @@ public class EtudiantService {
     }
 
     @Transactional(readOnly = true)
-    public List<EtudiantResponse> getAll() {
-        return etudiantRepository.findAll().stream()
-                .map(etudiantMapper::toResponse)
-                .collect(Collectors.toList());
+    public Page<EtudiantResponse> getAll(Pageable pageable) {
+        return etudiantRepository.findAll(pageable)
+                .map(etudiantMapper::toResponse);
     }
 
     @Transactional(readOnly = true)
-    public List<EtudiantResponse> getByClasseId(UUID classeId) {
-        return etudiantRepository.findByClasseId(classeId).stream()
-                .map(etudiantMapper::toResponse)
-                .collect(Collectors.toList());
+    public Page<EtudiantResponse> getByClasseId(UUID classeId, Pageable pageable) {
+        return etudiantRepository.findByClasseId(classeId, pageable)
+                .map(etudiantMapper::toResponse);
     }
 
     @Transactional

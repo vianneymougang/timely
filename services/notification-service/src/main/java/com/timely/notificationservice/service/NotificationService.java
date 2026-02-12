@@ -16,6 +16,8 @@ import com.timely.notificationservice.repository.HistoriqueEnvoiRepository;
 import com.timely.notificationservice.repository.NotificationRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -177,22 +179,19 @@ public class NotificationService {
     }
 
     @Transactional(readOnly = true)
-    public List<NotificationResponse> getNotificationsByUser(UUID userId) {
-        log.debug("Fetching notifications for user: {}", userId);
-        return notificationRepository.findByDestinataireId(userId).stream()
-                .map(notificationMapper::toResponse)
-                .collect(Collectors.toList());
+    public Page<NotificationResponse> getNotificationsByUser(UUID userId, Pageable pageable) {
+        log.debug("Fetching notifications for user: {} with pagination", userId);
+        return notificationRepository.findByDestinataireId(userId, pageable)
+                .map(notificationMapper::toResponse);
     }
 
     @Transactional(readOnly = true)
-    public List<HistoriqueResponse> getHistorique(LocalDateTime dateDebut, LocalDateTime dateFin) {
-        log.debug("Fetching historique between {} and {}", dateDebut, dateFin);
-        List<HistoriqueEnvoi> historiques = historiqueEnvoiRepository
-                .findByTimestampEnvoiBetween(dateDebut, dateFin);
+    public Page<HistoriqueResponse> getHistorique(LocalDateTime dateDebut, LocalDateTime dateFin, Pageable pageable) {
+        log.debug("Fetching historique between {} and {} with pagination", dateDebut, dateFin);
+        Page<HistoriqueEnvoi> historiques = historiqueEnvoiRepository
+                .findByTimestampEnvoiBetween(dateDebut, dateFin, pageable);
 
-        return historiques.stream()
-                .map(this::toHistoriqueResponse)
-                .collect(Collectors.toList());
+        return historiques.map(this::toHistoriqueResponse);
     }
 
     @Transactional

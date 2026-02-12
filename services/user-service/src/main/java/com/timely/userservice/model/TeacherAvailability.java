@@ -45,7 +45,7 @@ public class TeacherAvailability {
     @Column(name = "version")
     private Long version;
 
-    @OneToMany(mappedBy = "availability", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "availability", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
     private List<AvailabilityTimeSlot> timeSlots = new ArrayList<>();
 
     /**

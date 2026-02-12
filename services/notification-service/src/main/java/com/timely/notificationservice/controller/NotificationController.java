@@ -8,6 +8,8 @@ import com.timely.notificationservice.dto.response.NotificationResponse;
 import com.timely.notificationservice.service.NotificationService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -71,17 +73,22 @@ public class NotificationController {
 
     @GetMapping("/user/{userId}")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<List<NotificationResponse>> getNotificationsByUser(@PathVariable UUID userId) {
-        List<NotificationResponse> responses = notificationService.getNotificationsByUser(userId);
+    public ResponseEntity<Page<NotificationResponse>> getNotificationsByUser(
+            @PathVariable UUID userId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Page<NotificationResponse> responses = notificationService.getNotificationsByUser(userId, PageRequest.of(page, size));
         return ResponseEntity.ok(responses);
     }
 
     @GetMapping("/historique")
     @PreAuthorize("hasAuthority('ADMIN')")
-    public ResponseEntity<List<HistoriqueResponse>> getHistorique(
+    public ResponseEntity<Page<HistoriqueResponse>> getHistorique(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateDebut,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateFin) {
-        List<HistoriqueResponse> responses = notificationService.getHistorique(dateDebut, dateFin);
+            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime dateFin,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Page<HistoriqueResponse> responses = notificationService.getHistorique(dateDebut, dateFin, PageRequest.of(page, size));
         return ResponseEntity.ok(responses);
     }
 

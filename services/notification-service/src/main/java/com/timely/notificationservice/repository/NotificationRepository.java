@@ -2,6 +2,8 @@ package com.timely.notificationservice.repository;
 
 import com.timely.notificationservice.document.Notification;
 import com.timely.notificationservice.document.enums.StatutNotification;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
@@ -12,6 +14,8 @@ import java.util.UUID;
 public interface NotificationRepository extends MongoRepository<Notification, String> {
 
     List<Notification> findByDestinataireId(UUID destinataireId);
+
+    Page<Notification> findByDestinataireId(UUID destinataireId, Pageable pageable);
 
     List<Notification> findByStatut(StatutNotification statut);
 

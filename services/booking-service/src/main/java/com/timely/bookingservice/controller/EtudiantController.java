@@ -3,6 +3,8 @@ package com.timely.bookingservice.controller;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.timely.bookingservice.dto.request.EtudiantRequest;
@@ -37,8 +40,10 @@ public class EtudiantController {
 
     @GetMapping("/etudiants")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<List<EtudiantResponse>> getAll() {
-        return ResponseEntity.ok(etudiantService.getAll());
+    public ResponseEntity<Page<EtudiantResponse>> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(etudiantService.getAll(PageRequest.of(page, size)));
     }
 
     @GetMapping("/etudiants/{id}")
@@ -49,8 +54,11 @@ public class EtudiantController {
 
     @GetMapping("/classes/{classeId}/etudiants")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
-    public ResponseEntity<List<EtudiantResponse>> getByClasseId(@PathVariable UUID classeId) {
-        return ResponseEntity.ok(etudiantService.getByClasseId(classeId));
+    public ResponseEntity<Page<EtudiantResponse>> getByClasseId(
+            @PathVariable UUID classeId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(etudiantService.getByClasseId(classeId, PageRequest.of(page, size)));
     }
 
     @PutMapping("/etudiants/{id}")

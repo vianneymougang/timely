@@ -3,6 +3,8 @@ package com.timely.bookingservice.controller;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.timely.bookingservice.dto.request.CoursRequest;
@@ -41,8 +44,10 @@ public class CoursController {
 
     @GetMapping("/cours")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
-    public ResponseEntity<List<CoursResponse>> getAll() {
-        return ResponseEntity.ok(coursService.getAll());
+    public ResponseEntity<Page<CoursResponse>> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(coursService.getAll(PageRequest.of(page, size)));
     }
 
     @GetMapping("/cours/{id}")
@@ -53,20 +58,29 @@ public class CoursController {
 
     @GetMapping("/ues/{ueId}/cours")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
-    public ResponseEntity<List<CoursResponse>> getByUeId(@PathVariable UUID ueId) {
-        return ResponseEntity.ok(coursService.getByUeId(ueId));
+    public ResponseEntity<Page<CoursResponse>> getByUeId(
+            @PathVariable UUID ueId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(coursService.getByUeId(ueId, PageRequest.of(page, size)));
     }
 
     @GetMapping("/classes/{classeId}/cours")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
-    public ResponseEntity<List<CoursResponse>> getByClasseId(@PathVariable UUID classeId) {
-        return ResponseEntity.ok(coursService.getByClasseId(classeId));
+    public ResponseEntity<Page<CoursResponse>> getByClasseId(
+            @PathVariable UUID classeId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(coursService.getByClasseId(classeId, PageRequest.of(page, size)));
     }
 
     @GetMapping("/cours/enseignant/{enseignantId}")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
-    public ResponseEntity<List<CoursResponse>> getByEnseignantId(@PathVariable UUID enseignantId) {
-        return ResponseEntity.ok(coursService.getByEnseignantId(enseignantId));
+    public ResponseEntity<Page<CoursResponse>> getByEnseignantId(
+            @PathVariable UUID enseignantId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(coursService.getByEnseignantId(enseignantId, PageRequest.of(page, size)));
     }
 
     @PutMapping("/cours/{id}")

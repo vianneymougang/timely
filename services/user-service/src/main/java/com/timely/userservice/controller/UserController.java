@@ -3,6 +3,8 @@ package com.timely.userservice.controller;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.timely.userservice.dto.AdminDto;
@@ -78,8 +81,10 @@ public class UserController {
      */
     @GetMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<UserDto>> getAllUsers() {
-        List<UserDto> users = userService.getAllUsers();
+    public ResponseEntity<Page<UserDto>> getAllUsers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Page<UserDto> users = userService.getAllUsers(PageRequest.of(page, size));
         return ResponseEntity.ok(users);
     }
 
@@ -88,8 +93,10 @@ public class UserController {
      */
     @GetMapping("/teachers")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<List<TeacherDto>> getAllTeachers() {
-        List<TeacherDto> teachers = userService.getAllTeachers();
+    public ResponseEntity<Page<TeacherDto>> getAllTeachers(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Page<TeacherDto> teachers = userService.getAllTeachers(PageRequest.of(page, size));
         return ResponseEntity.ok(teachers);
     }
 

@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,31 +52,27 @@ public class CoursService {
     }
 
     @Transactional(readOnly = true)
-    public List<CoursResponse> getAll() {
-        return coursRepository.findAll().stream()
-                .map(coursMapper::toResponse)
-                .collect(Collectors.toList());
+    public Page<CoursResponse> getAll(Pageable pageable) {
+        return coursRepository.findAll(pageable)
+                .map(coursMapper::toResponse);
     }
 
     @Transactional(readOnly = true)
-    public List<CoursResponse> getByUeId(UUID ueId) {
-        return coursRepository.findByUeId(ueId).stream()
-                .map(coursMapper::toResponse)
-                .collect(Collectors.toList());
+    public Page<CoursResponse> getByUeId(UUID ueId, Pageable pageable) {
+        return coursRepository.findByUeId(ueId, pageable)
+                .map(coursMapper::toResponse);
     }
 
     @Transactional(readOnly = true)
-    public List<CoursResponse> getByClasseId(UUID classeId) {
-        return coursRepository.findByClasseId(classeId).stream()
-                .map(coursMapper::toResponse)
-                .collect(Collectors.toList());
+    public Page<CoursResponse> getByClasseId(UUID classeId, Pageable pageable) {
+        return coursRepository.findByClasseId(classeId, pageable)
+                .map(coursMapper::toResponse);
     }
 
     @Transactional(readOnly = true)
-    public List<CoursResponse> getByEnseignantId(UUID enseignantId) {
-        return coursRepository.findByEnseignantId(enseignantId).stream()
-                .map(coursMapper::toResponse)
-                .collect(Collectors.toList());
+    public Page<CoursResponse> getByEnseignantId(UUID enseignantId, Pageable pageable) {
+        return coursRepository.findByEnseignantId(enseignantId, pageable)
+                .map(coursMapper::toResponse);
     }
 
     @Transactional

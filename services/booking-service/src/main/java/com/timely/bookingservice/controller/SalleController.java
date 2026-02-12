@@ -3,6 +3,8 @@ package com.timely.bookingservice.controller;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -39,8 +41,10 @@ public class SalleController {
 
     @GetMapping("/salles")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
-    public ResponseEntity<List<SalleResponse>> getAll() {
-        return ResponseEntity.ok(salleService.getAll());
+    public ResponseEntity<Page<SalleResponse>> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(salleService.getAll(PageRequest.of(page, size)));
     }
 
     @GetMapping("/salles/{id}")
@@ -51,16 +55,21 @@ public class SalleController {
 
     @GetMapping("/ecoles/{ecoleId}/salles")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
-    public ResponseEntity<List<SalleResponse>> getByEcoleId(@PathVariable UUID ecoleId) {
-        return ResponseEntity.ok(salleService.getByEcoleId(ecoleId));
+    public ResponseEntity<Page<SalleResponse>> getByEcoleId(
+            @PathVariable UUID ecoleId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(salleService.getByEcoleId(ecoleId, PageRequest.of(page, size)));
     }
 
     @GetMapping("/salles/disponibles")
     @PreAuthorize("hasRole('ROLE_ADMIN')")
-    public ResponseEntity<List<SalleResponse>> getDisponibles(
+    public ResponseEntity<Page<SalleResponse>> getDisponibles(
             @RequestParam(defaultValue = "0") Integer capaciteMin,
-            @RequestParam(required = false) TypeSalle typeSalle) {
-        return ResponseEntity.ok(salleService.getDisponibles(capaciteMin, typeSalle));
+            @RequestParam(required = false) TypeSalle typeSalle,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(salleService.getDisponibles(capaciteMin, typeSalle, PageRequest.of(page, size)));
     }
 
     @PutMapping("/salles/{id}")

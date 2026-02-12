@@ -3,6 +3,8 @@ package com.timely.bookingservice.controller;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -13,6 +15,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.timely.bookingservice.dto.request.AutoAssignSalleRequest;
@@ -41,8 +44,10 @@ public class ReservationController {
 
     @GetMapping("/reservations")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
-    public ResponseEntity<List<ReservationResponse>> getAll() {
-        return ResponseEntity.ok(reservationService.getAll());
+    public ResponseEntity<Page<ReservationResponse>> getAll(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(reservationService.getAll(PageRequest.of(page, size)));
     }
 
     @GetMapping("/reservations/{id}")
@@ -53,8 +58,11 @@ public class ReservationController {
 
     @GetMapping("/salles/{salleId}/reservations")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
-    public ResponseEntity<List<ReservationResponse>> getBySalleId(@PathVariable UUID salleId) {
-        return ResponseEntity.ok(reservationService.getBySalleId(salleId));
+    public ResponseEntity<Page<ReservationResponse>> getBySalleId(
+            @PathVariable UUID salleId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        return ResponseEntity.ok(reservationService.getBySalleId(salleId, PageRequest.of(page, size)));
     }
 
     @PutMapping("/reservations/{id}")

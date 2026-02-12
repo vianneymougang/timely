@@ -9,6 +9,8 @@ import java.util.stream.Collectors;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.cache.annotation.Caching;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -64,26 +66,23 @@ public class SalleService {
     }
 
     @Transactional(readOnly = true)
-    public List<SalleResponse> getAll() {
-        return salleRepository.findAll().stream()
-                .map(salleMapper::toResponse)
-                .collect(Collectors.toList());
+    public Page<SalleResponse> getAll(Pageable pageable) {
+        return salleRepository.findAll(pageable)
+                .map(salleMapper::toResponse);
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "salles:ecole", key = "#ecoleId")
-    public List<SalleResponse> getByEcoleId(UUID ecoleId) {
-        return salleRepository.findByEcoleId(ecoleId).stream()
-                .map(salleMapper::toResponse)
-                .collect(Collectors.toList());
+    @Cacheable(value = "salles:ecole", key = "#ecoleId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
+    public Page<SalleResponse> getByEcoleId(UUID ecoleId, Pageable pageable) {
+        return salleRepository.findByEcoleId(ecoleId, pageable)
+                .map(salleMapper::toResponse);
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "salles:disponibles", key = "#capaciteMin + '-' + #typeSalle")
-    public List<SalleResponse> getDisponibles(Integer capaciteMin, TypeSalle typeSalle) {
-        return salleRepository.findSallesDisponibles(capaciteMin, typeSalle).stream()
-                .map(salleMapper::toResponse)
-                .collect(Collectors.toList());
+    @Cacheable(value = "salles:disponibles", key = "#capaciteMin + '-' + #typeSalle + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
+    public Page<SalleResponse> getDisponibles(Integer capaciteMin, TypeSalle typeSalle, Pageable pageable) {
+        return salleRepository.findSallesDisponibles(capaciteMin, typeSalle, pageable)
+                .map(salleMapper::toResponse);
     }
 
     @Transactional

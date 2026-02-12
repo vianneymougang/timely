@@ -6,6 +6,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -154,8 +156,8 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<UserDto> getAllUsers() {
-        return userRepository.findAll().stream()
+    public Page<UserDto> getAllUsers(Pageable pageable) {
+        return userRepository.findAll(pageable)
                 .map(user -> {
                     if (user instanceof Teacher) {
                         return userMapper.toTeacherDto((Teacher) user);
@@ -163,16 +165,14 @@ public class UserServiceImpl implements UserService {
                         return userMapper.toAdminDto((Admin) user);
                     }
                     return userMapper.toDto(user);
-                })
-                .collect(Collectors.toList());
+                });
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<TeacherDto> getAllTeachers() {
-        return userRepository.findAllByRole(Role.ROLE_TEACHER).stream()
-                .map(user -> userMapper.toTeacherDto((Teacher) user))
-                .collect(Collectors.toList());
+    public Page<TeacherDto> getAllTeachers(Pageable pageable) {
+        return userRepository.findAllByRole(Role.ROLE_TEACHER, pageable)
+                .map(user -> userMapper.toTeacherDto((Teacher) user));
     }
 
     @Override

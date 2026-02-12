@@ -72,8 +72,11 @@ public class PlanningController {
 
     @GetMapping
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
-    public ResponseEntity<List<EmploiDuTempsResponseDTO>> getAllEmploisDuTemps() {
-        List<EmploiDuTempsResponseDTO> response = emploiDuTempsService.getAllEmploisDuTemps();
+    public ResponseEntity<Page<EmploiDuTempsResponseDTO>> getAllEmploisDuTemps(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Page<EmploiDuTempsResponseDTO> response = emploiDuTempsService.getAllEmploisDuTemps(
+                org.springframework.data.domain.PageRequest.of(page, size));
         return ResponseEntity.ok(response);
     }
 
@@ -175,8 +178,12 @@ public class PlanningController {
 
     @GetMapping("/{emploiId}/creneaux")
     @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
-    public ResponseEntity<List<CreneauResponseDTO>> getCreneauxByEmploi(@PathVariable UUID emploiId) {
-        List<CreneauResponseDTO> response = creneauService.getCreneauxByEmploi(emploiId);
+    public ResponseEntity<Page<CreneauResponseDTO>> getCreneauxByEmploi(
+            @PathVariable UUID emploiId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size) {
+        Page<CreneauResponseDTO> response = creneauService.getCreneauxByEmploi(emploiId,
+                org.springframework.data.domain.PageRequest.of(page, size));
         return ResponseEntity.ok(response);
     }
 

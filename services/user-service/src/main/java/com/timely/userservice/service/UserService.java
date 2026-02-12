@@ -3,6 +3,9 @@ package com.timely.userservice.service;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import com.timely.userservice.dto.AdminDto;
 import com.timely.userservice.dto.CreateAdminRequest;
 import com.timely.userservice.dto.CreateTeacherRequest;
@@ -22,11 +25,11 @@ public interface UserService {
     InternalUserDto getInternalUserByEmail(String email);
     
     InternalUserDto getInternalUserById(UUID id);
-    
-    List<UserDto> getAllUsers();
-    
-    List<TeacherDto> getAllTeachers();
-    
+
+    Page<UserDto> getAllUsers(Pageable pageable);
+
+    Page<TeacherDto> getAllTeachers(Pageable pageable);
+
     UserDto updateUser(UUID id, UpdateUserRequest request);
     
     void deleteUser(UUID id);

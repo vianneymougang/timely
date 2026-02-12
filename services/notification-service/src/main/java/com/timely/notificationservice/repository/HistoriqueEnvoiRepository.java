@@ -2,6 +2,8 @@ package com.timely.notificationservice.repository;
 
 import com.timely.notificationservice.document.HistoriqueEnvoi;
 import com.timely.notificationservice.document.enums.StatutEnvoi;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.stereotype.Repository;
 
@@ -19,4 +21,6 @@ public interface HistoriqueEnvoiRepository extends MongoRepository<HistoriqueEnv
     List<HistoriqueEnvoi> findByStatut(StatutEnvoi statut);
 
     List<HistoriqueEnvoi> findByTimestampEnvoiBetween(LocalDateTime debut, LocalDateTime fin);
+
+    Page<HistoriqueEnvoi> findByTimestampEnvoiBetween(LocalDateTime debut, LocalDateTime fin, Pageable pageable);
 }
