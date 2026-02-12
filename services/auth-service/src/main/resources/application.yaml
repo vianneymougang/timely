@@ -51,6 +51,10 @@ jwt:
 server:
   port: ${PORT:8091}
 
+# CORS Configuration
+cors:
+  allowed-origins: ${CORS_ORIGINS:http://localhost:4200}
+
 # Eureka Client Configuration
 eureka:
   client:

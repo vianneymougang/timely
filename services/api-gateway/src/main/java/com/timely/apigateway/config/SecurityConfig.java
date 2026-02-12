@@ -30,14 +30,14 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    @Value("${cors.allowed-origins}")
+    @Value("${cors.allowed-origins:http://localhost:4200}")
     private List<String> allowedOrigins;
 
-    @Value("${cors.allowed-methods}")
+    @Value("${cors.allowed-methods:GET,POST,PUT,DELETE,OPTIONS}")
     private List<String> allowedMethods;
 
-    @Value("${cors.allowed-headers}")
-    private String allowedHeaders;
+    @Value("${cors.allowed-headers:Authorization,Content-Type,Accept,X-Requested-With}")
+    private List<String> allowedHeaders;
 
     @Value("${cors.allow-credentials}")
     private boolean allowCredentials;
@@ -72,7 +72,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(allowedOrigins);
         configuration.setAllowedMethods(allowedMethods);
-        configuration.setAllowedHeaders(List.of(allowedHeaders));
+        configuration.setAllowedHeaders(allowedHeaders);
         configuration.setAllowCredentials(allowCredentials);
         configuration.setMaxAge(maxAge);
 
