@@ -6,7 +6,17 @@
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "e2e": "playwright test",
+    "e2e:headed": "playwright test --headed",
+    "e2e:debug": "playwright test --debug",
+    "e2e:ui": "playwright test --ui",
+    "e2e:report": "playwright show-report e2e/playwright-report",
+    "e2e:smoke": "playwright test e2e/tests/smoke.spec.ts",
+    "e2e:auth": "playwright test e2e/tests/auth.spec.ts",
+    "e2e:users": "playwright test e2e/tests/users.spec.ts",
+    "e2e:planning": "playwright test e2e/tests/planning.spec.ts",
+    "e2e:reports": "playwright test e2e/tests/reports.spec.ts"
   },
   "prettier": {
     "printWidth": 100,
@@ -38,6 +48,7 @@
     "@angular/build": "^20.2.2",
     "@angular/cli": "^20.2.2",
     "@angular/compiler-cli": "^20.2.0",
+    "@playwright/test": "^1.58.2",
     "@types/jasmine": "~5.1.0",
     "autoprefixer": "^10.4.22",
     "baseline-browser-mapping": "^2.9.19",
