@@ -10,12 +10,31 @@
           Tableau de Bord
         </h1>
         <p class="text-sm text-slate-500 mt-1">Bienvenue sur votre tableau de bord</p>
+        @if (kpis()?.derniereMiseAJour) {
+          <p class="text-xs text-slate-400 mt-0.5">
+            Dernière mise à jour : {{ kpis()!.derniereMiseAJour | date:'short':'':'fr-FR' }}
+          </p>
+        }
       </div>
 
-      <!-- Icone cloche -->
-      <button class="p-2 bg-white shadow-sm rounded-xl hover:bg-slate-100 transition">
-        <span class="material-icons text-slate-600 text-xl">notifications</span>
-      </button>
+      <!-- Actions -->
+      <div class="flex items-center gap-2">
+        <button
+          (click)="refresh()"
+          class="p-2 bg-white shadow-sm rounded-xl hover:bg-slate-100 transition"
+          title="Actualiser"
+        >
+          <span class="material-icons text-slate-600 text-xl">refresh</span>
+        </button>
+        <button class="p-2 bg-white shadow-sm rounded-xl hover:bg-slate-100 transition">
+          <span class="material-icons text-slate-600 text-xl">notifications</span>
+          @if (alerts().length > 0) {
+            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+              {{ alerts().length }}
+            </span>
+          }
+        </button>
+      </div>
     </div>
 
     <!-- CONTENU PRINCIPAL en 2 colonnes -->
@@ -24,29 +43,51 @@
       <!-- COLONNE GAUCHE (stats + chart + alertes) -->
       <div class="col-span-2 space-y-6">
 
-        <!-- STATS CARDS -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <app-stat-card
-            title="Salles disponibles"
-            [value]="stats().rooms.available + '/' + stats().rooms.total"
-            bgColor="bg-blue-100 text-blue-700 border border-blue-200">
-            <span class="material-icons text-blue-600">meeting_room</span>
-          </app-stat-card>
+        <!-- KPIs CARDS -->
+        @if (isLoading()) {
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            @for (i of [1,2,3,4]; track i) {
+              <div class="bg-white rounded-xl shadow-sm p-6 animate-pulse">
+                <div class="h-4 bg-slate-200 rounded w-3/4 mb-4"></div>
+                <div class="h-8 bg-slate-200 rounded w-1/2"></div>
+              </div>
+            }
+          </div>
+        } @else if (kpis()) {
+          <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <app-kpi-card
+              title="Total Enseignants"
+              [value]="kpis()!.totalEnseignants.toString()"
+              subtitle="Actifs dans le système"
+              bgColor="bg-blue-500">
+              <span class="material-icons">groups</span>
+            </app-kpi-card>
 
-          <app-stat-card
-            title="Alertes actives"
-            [value]="stats().alerts.toString()"
-            bgColor="bg-red-100 text-red-700 border border-red-200">
-            <span class="material-icons text-red-500">warning</span>
-          </app-stat-card>
+            <app-kpi-card
+              title="Total Salles"
+              [value]="kpis()!.totalSalles.toString()"
+              [subtitle]="'Occupation : ' + kpis()!.tauxOccupationGlobal + '%'"
+              bgColor="bg-green-500">
+              <span class="material-icons">meeting_room</span>
+            </app-kpi-card>
 
-          <app-stat-card
-            title="Enseignants actifs"
-            [value]="stats().teachers.toString()"
-            bgColor="bg-emerald-100 text-emerald-700 border border-emerald-200">
-            <span class="material-icons text-emerald-500">groups</span>
-          </app-stat-card>
-        </div>
+            <app-kpi-card
+              title="Total Cours"
+              [value]="kpis()!.totalCours.toString()"
+              [subtitle]="kpis()!.coursNonPlanifies + ' non planifiés'"
+              bgColor="bg-purple-500">
+              <span class="material-icons">school</span>
+            </app-kpi-card>
+
+            <app-kpi-card
+              title="Conflits Actifs"
+              [value]="kpis()!.conflitsActifs.toString()"
+              subtitle="À résoudre"
+              [bgColor]="kpis()!.conflitsActifs > 0 ? 'bg-red-500' : 'bg-emerald-500'">
+              <span class="material-icons">warning</span>
+            </app-kpi-card>
+          </div>
+        }
 
         <!-- CHART CARD -->
         <div class="bg-white rounded-xl shadow-sm p-6 border border-slate-200">
@@ -82,45 +123,13 @@
           </div>
         </div>
 
-        <!-- ALERTES -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <app-alert-card
-            type="warning"
-            title="Conflit détecté"
-            subtitle="Salles 35"
-            time="8h - 10h">
-          </app-alert-card>
-
-          <app-alert-card
-            type="success"
-            title="Nouvelles disponibilités reçues"
-            subtitle="Salles 35"
-            time="8h - 10h">
-          </app-alert-card>
-        </div>
+        <!-- ALERTES SYSTÈME -->
+        <app-alerts-widget [alerts]="alerts()"></app-alerts-widget>
       </div>
 
-      <!-- COLONNE DROITE (réservations à venir) -->
+      <!-- COLONNE DROITE (activités récentes) -->
       <div class="space-y-4">
-        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
-          <h2 class="text-lg font-semibold text-slate-800 mb-4">
-            Réservations à venir
-          </h2>
-
-          <div class="space-y-4">
-            @for (i of [1,2,3,4,5,6]; track $index){
-              <div class="flex justify-between items-center p-3 rounded-lg bg-slate-50 border hover:bg-slate-100 transition">
-                <div>
-                  <p class="font-medium text-slate-700">Wordpress</p>
-                  <p class="text-xs text-slate-500">Salle 19B</p>
-                </div>
-                <span class="text-xs bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md">
-                  10h - 12h
-                </span>
-              </div>
-            }
-          </div>
-        </div>
+        <app-recent-activity [activities]="recentActivities()"></app-recent-activity>
       </div>
     </div>
   </div>
