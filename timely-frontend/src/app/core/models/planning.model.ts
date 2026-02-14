@@ -105,6 +105,7 @@ export interface ConflitResponse {
   description: string;
   severite: Severite;
   suggestionResolution?: string;
+  resolution?: string;
   statutResolution: StatutResolution;
   dateDetection: string;
   dateResolution?: string;

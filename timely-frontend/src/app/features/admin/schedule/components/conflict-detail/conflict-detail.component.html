@@ -1,0 +1,185 @@
+<!-- Modal Backdrop -->
+@if (isOpen()) {
+  <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <!-- Background overlay -->
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" (click)="closeModal()"></div>
+
+    <!-- Modal panel -->
+    <div class="flex min-h-full items-center justify-center p-4">
+      <div class="relative bg-white rounded-lg shadow-xl max-w-2xl w-full transform transition-all" (click)="$event.stopPropagation()">
+        @if (conflit(); as conflict) {
+          <!-- Header -->
+          <div class="bg-gradient-to-r from-blue-600 to-indigo-600 px-6 py-4 rounded-t-lg">
+            <div class="flex items-center justify-between">
+              <h3 class="text-xl font-semibold text-white flex items-center gap-2" id="modal-title">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Détails du conflit
+              </h3>
+              <button
+                (click)="closeModal()"
+                class="text-white hover:text-gray-200 transition-colors"
+                aria-label="Fermer">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          <!-- Content -->
+          <div class="px-6 py-4 max-h-[70vh] overflow-y-auto">
+            <!-- Badges de statut -->
+            <div class="flex flex-wrap gap-2 mb-4">
+              <span class="px-3 py-1 rounded-full text-sm font-medium border" [ngClass]="getSeveriteColor(conflict.severite)">
+                <span class="flex items-center gap-1">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" [attr.d]="getSeveriteIcon(conflict.severite)"/>
+                  </svg>
+                  {{ severiteLabels[conflict.severite] }}
+                </span>
+              </span>
+              <span class="px-3 py-1 rounded-full text-sm font-medium border bg-blue-50 text-blue-800 border-blue-200">
+                {{ typeConflitLabels[conflict.typeConflit] }}
+              </span>
+              <span class="px-3 py-1 rounded-full text-sm font-medium border" [ngClass]="getStatutColor(conflict.statutResolution)">
+                {{ conflict.statutResolution }}
+              </span>
+            </div>
+
+            <!-- Description -->
+            <div class="mb-6">
+              <h4 class="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h7"/>
+                </svg>
+                Description
+              </h4>
+              <p class="text-gray-700 bg-gray-50 rounded-lg p-4 border border-gray-200">
+                {{ conflict.description }}
+              </p>
+            </div>
+
+            <!-- Suggestion de résolution -->
+            @if (conflict.suggestionResolution) {
+              <div class="mb-6">
+                <h4 class="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                  </svg>
+                  Suggestion de résolution
+                </h4>
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4">
+                  <p class="text-green-800">{{ conflict.suggestionResolution }}</p>
+                </div>
+              </div>
+            }
+
+            <!-- Résolution (si existe) -->
+            @if (conflict.resolution) {
+              <div class="mb-6">
+                <h4 class="text-sm font-semibold text-gray-700 mb-2 flex items-center gap-2">
+                  <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                  </svg>
+                  Résolution appliquée
+                </h4>
+                <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
+                  <p class="text-blue-800">{{ conflict.resolution }}</p>
+                  @if (conflict.dateResolution) {
+                    <p class="text-xs text-blue-600 mt-2">
+                      Résolu le: {{ conflict.dateResolution | date:'dd/MM/yyyy à HH:mm' }}
+                    </p>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Timeline -->
+            <div class="mb-6">
+              <h4 class="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                Timeline
+              </h4>
+              <div class="space-y-3">
+                <!-- Détection -->
+                <div class="flex gap-3">
+                  <div class="flex flex-col items-center">
+                    <div class="w-8 h-8 rounded-full bg-red-100 flex items-center justify-center">
+                      <svg class="w-4 h-4 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                      </svg>
+                    </div>
+                    @if (conflict.resolution) {
+                      <div class="w-0.5 h-8 bg-gray-300"></div>
+                    }
+                  </div>
+                  <div class="flex-1 pb-4">
+                    <p class="text-sm font-medium text-gray-900">Conflit détecté</p>
+                    <p class="text-xs text-gray-500">{{ conflict.dateDetection | date:'dd/MM/yyyy à HH:mm' }}</p>
+                  </div>
+                </div>
+
+                <!-- Résolution -->
+                @if (conflict.dateResolution) {
+                  <div class="flex gap-3">
+                    <div class="flex flex-col items-center">
+                      <div class="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center">
+                        <svg class="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                        </svg>
+                      </div>
+                    </div>
+                    <div class="flex-1">
+                      <p class="text-sm font-medium text-gray-900">Conflit résolu</p>
+                      <p class="text-xs text-gray-500">{{ conflict.dateResolution | date:'dd/MM/yyyy à HH:mm' }}</p>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+
+            <!-- Informations complémentaires -->
+            <div class="bg-gray-50 rounded-lg p-4 border border-gray-200">
+              <h4 class="text-sm font-semibold text-gray-700 mb-3">Informations complémentaires</h4>
+              <div class="grid grid-cols-2 gap-4 text-sm">
+                <div>
+                  <p class="text-gray-600">ID du conflit</p>
+                  <p class="font-mono text-xs text-gray-900 break-all">{{ conflict.id }}</p>
+                </div>
+                <div>
+                  <p class="text-gray-600">ID de l'emploi du temps</p>
+                  <p class="font-mono text-xs text-gray-900 break-all">{{ conflict.emploiDuTempsId }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Footer -->
+          <div class="bg-gray-50 px-6 py-4 rounded-b-lg flex items-center justify-end gap-3 border-t">
+            <button
+              (click)="closeModal()"
+              type="button"
+              class="px-4 py-2 bg-white border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium transition-colors">
+              Fermer
+            </button>
+            @if (conflict.statutResolution === 'NON_RESOLU') {
+              <button
+                (click)="resolveConflit()"
+                type="button"
+                class="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors flex items-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                </svg>
+                Résoudre ce conflit
+              </button>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+}
