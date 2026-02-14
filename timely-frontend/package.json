@@ -16,7 +16,10 @@
     "e2e:auth": "playwright test e2e/tests/auth.spec.ts",
     "e2e:users": "playwright test e2e/tests/users.spec.ts",
     "e2e:planning": "playwright test e2e/tests/planning.spec.ts",
-    "e2e:reports": "playwright test e2e/tests/reports.spec.ts"
+    "e2e:reports": "playwright test e2e/tests/reports.spec.ts",
+    "lighthouse": "bash ../performance-benchmarks/lighthouse/scripts/run-lighthouse.sh",
+    "perf:lighthouse": "npm run lighthouse",
+    "perf:all": "bash ../performance-benchmarks/scripts/run-all-benchmarks.sh --frontend-only"
   },
   "prettier": {
     "printWidth": 100,
