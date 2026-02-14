@@ -1,1 +1,49 @@
-<p>schedule.component works!</p>
+<div class="container mx-auto px-4 py-6">
+  <!-- Header -->
+  <div class="mb-6">
+    <h1 class="text-3xl font-bold text-gray-800 mb-2">Gestion des emplois du temps</h1>
+    <p class="text-gray-600">Générez et gérez les emplois du temps de l'établissement</p>
+  </div>
+
+  <!-- Tabs -->
+  <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+    <div class="border-b">
+      <div class="flex">
+        <button
+          (click)="selectTab('generate')"
+          [class.border-b-2]="activeTab() === 'generate'"
+          [class.border-blue-600]="activeTab() === 'generate'"
+          [class.text-blue-600]="activeTab() === 'generate'"
+          class="px-6 py-3 font-medium transition-colors hover:text-blue-600 flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+          </svg>
+          Générer
+        </button>
+        <button
+          (click)="selectTab('list')"
+          [class.border-b-2]="activeTab() === 'list'"
+          [class.border-blue-600]="activeTab() === 'list'"
+          [class.text-blue-600]="activeTab() === 'list'"
+          class="px-6 py-3 font-medium transition-colors hover:text-blue-600 flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 10h16M4 14h16M4 18h16"/>
+          </svg>
+          Liste
+        </button>
+      </div>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="p-6">
+      @if (activeTab() === 'generate') {
+        <app-schedule-generator />
+      }
+
+      @if (activeTab() === 'list') {
+        <app-schedule-list />
+      }
+    </div>
+  </div>
+</div>
+

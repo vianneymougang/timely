@@ -1,0 +1,256 @@
+<div class="container mx-auto px-4 py-6">
+  <!-- Loading State -->
+  @if (isLoading()) {
+    <div class="flex items-center justify-center h-64">
+      <svg class="animate-spin h-12 w-12 text-blue-600" fill="none" viewBox="0 0 24 24">
+        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+      </svg>
+    </div>
+  }
+
+  <!-- Error State -->
+  @if (errorMessage() && !isLoading()) {
+    <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
+      <p>{{ errorMessage() }}</p>
+      <button (click)="goBack()" class="mt-2 text-blue-600 hover:underline">
+        Retour à la liste
+      </button>
+    </div>
+  }
+
+  <!-- Content -->
+  @if (emploiDuTemps() && !isLoading()) {
+    <div>
+      <!-- Header -->
+      <div class="bg-white shadow-lg rounded-lg p-6 mb-6">
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-4">
+            <button
+              (click)="goBack()"
+              class="text-gray-600 hover:text-gray-800 flex items-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+              </svg>
+              Retour
+            </button>
+            <h2 class="text-2xl font-bold text-gray-800">Emploi du temps</h2>
+          </div>
+
+          <span class="px-3 py-1 rounded-full text-sm font-medium" [ngClass]="getStatutColor(emploiDuTemps()!.statut)">
+            {{ statutLabels[emploiDuTemps()!.statut] }}
+          </span>
+        </div>
+
+        <!-- Info -->
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-4">
+          <div>
+            <p class="text-sm text-gray-600">Période</p>
+            <p class="font-medium">{{ emploiDuTemps()!.periode }}</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-600">Date début</p>
+            <p class="font-medium">{{ emploiDuTemps()!.dateDebut }}</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-600">Date fin</p>
+            <p class="font-medium">{{ emploiDuTemps()!.dateFin }}</p>
+          </div>
+          <div>
+            <p class="text-sm text-gray-600">Créneaux</p>
+            <p class="font-medium">{{ emploiDuTemps()!.creneaux?.length || 0 }}</p>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex flex-wrap gap-3 pt-4 border-t">
+          <button
+            (click)="detectConflits()"
+            [disabled]="isLoadingConflits()"
+            class="bg-orange-600 hover:bg-orange-700 disabled:bg-gray-300 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2">
+            @if (isLoadingConflits()) {
+              <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+            } @else {
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+              </svg>
+            }
+            Détecter les conflits
+            @if (conflits().length > 0) {
+              <span class="bg-white text-orange-600 rounded-full px-2 py-0.5 text-xs font-bold">
+                {{ conflits().length }}
+              </span>
+            }
+          </button>
+
+          <button
+            (click)="exportPDF()"
+            class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            Export PDF
+          </button>
+
+          <button
+            (click)="exportICal()"
+            class="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-medium transition-colors flex items-center gap-2">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            Export iCal
+          </button>
+
+          @if (emploiDuTemps()!.statut === 'DRAFT') {
+            <button
+              (click)="validateEmploi()"
+              class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+              Valider
+            </button>
+          }
+
+          @if (emploiDuTemps()!.statut === 'VALIDATED') {
+            <button
+              (click)="publishEmploi()"
+              class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-medium transition-colors">
+              Publier
+            </button>
+          }
+        </div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="bg-white shadow-lg rounded-lg overflow-hidden">
+        <div class="border-b">
+          <div class="flex">
+            <button
+              (click)="selectedTab.set('grid')"
+              [class.border-b-2]="selectedTab() === 'grid'"
+              [class.border-blue-600]="selectedTab() === 'grid'"
+              [class.text-blue-600]="selectedTab() === 'grid'"
+              class="px-6 py-3 font-medium transition-colors hover:text-blue-600">
+              Grille horaire
+            </button>
+            <button
+              (click)="selectedTab.set('conflits')"
+              [class.border-b-2]="selectedTab() === 'conflits'"
+              [class.border-blue-600]="selectedTab() === 'conflits'"
+              [class.text-blue-600]="selectedTab() === 'conflits'"
+              class="px-6 py-3 font-medium transition-colors hover:text-blue-600 flex items-center gap-2">
+              Conflits
+              @if (conflits().length > 0) {
+                <span class="bg-red-500 text-white rounded-full px-2 py-0.5 text-xs">
+                  {{ conflits().length }}
+                </span>
+              }
+            </button>
+          </div>
+        </div>
+
+        <!-- Grid View -->
+        @if (selectedTab() === 'grid') {
+          <div class="p-6 overflow-x-auto">
+            @if (timeSlots().length === 0) {
+              <div class="text-center py-12 text-gray-500">
+                <p>Aucun créneau disponible</p>
+              </div>
+            } @else {
+              <table class="min-w-full border-collapse border border-gray-200">
+                <thead>
+                  <tr class="bg-gray-50">
+                    <th class="border border-gray-200 px-4 py-2 text-left font-semibold">Heure</th>
+                    @for (day of daysOfWeek; track day) {
+                      <th class="border border-gray-200 px-4 py-2 text-center font-semibold">
+                        {{ dayLabels[day] }}
+                      </th>
+                    }
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (slot of timeSlots(); track slot.time) {
+                    <tr>
+                      <td class="border border-gray-200 px-4 py-2 font-medium bg-gray-50">
+                        {{ slot.time }}
+                      </td>
+                      @for (day of daysOfWeek; track day) {
+                        <td class="border border-gray-200 px-2 py-2">
+                          @if (slot.creneaux.get(day); as creneau) {
+                            <div class="bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded p-2 cursor-pointer transition-colors min-h-[60px]">
+                              <p class="text-xs font-medium text-blue-900">
+                                {{ creneau.heureDebut }} - {{ creneau.heureFin }}
+                              </p>
+                              @if (creneau.coursId) {
+                                <p class="text-xs text-blue-700 mt-1">Cours ID: {{ creneau.coursId.substring(0, 8) }}</p>
+                              }
+                              @if (creneau.salleId) {
+                                <p class="text-xs text-gray-600">Salle: {{ creneau.salleId.substring(0, 8) }}</p>
+                              }
+                            </div>
+                          } @else {
+                            <div class="min-h-[60px]"></div>
+                          }
+                        </td>
+                      }
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            }
+          </div>
+        }
+
+        <!-- Conflits View -->
+        @if (selectedTab() === 'conflits') {
+          <div class="p-6">
+            @if (conflits().length === 0) {
+              <div class="text-center py-12">
+                <svg class="w-16 h-16 mx-auto text-green-500 mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                </svg>
+                <p class="text-gray-500 text-lg">Aucun conflit détecté</p>
+              </div>
+            } @else {
+              <div class="space-y-4">
+                @for (conflit of conflits(); track conflit.id) {
+                  <div class="border rounded-lg p-4" [ngClass]="getSeveriteColor(conflit.severite)">
+                    <div class="flex items-start justify-between mb-2">
+                      <div class="flex-1">
+                        <div class="flex items-center gap-2 mb-1">
+                          <span class="px-2 py-1 bg-white rounded text-xs font-medium">
+                            {{ typeConflitLabels[conflit.typeConflit] }}
+                          </span>
+                          <span class="px-2 py-1 bg-white rounded text-xs font-medium">
+                            {{ severiteLabels[conflit.severite] }}
+                          </span>
+                          <span class="px-2 py-1 bg-white rounded text-xs font-medium">
+                            {{ conflit.statutResolution }}
+                          </span>
+                        </div>
+                        <p class="font-medium mb-2">{{ conflit.description }}</p>
+                        @if (conflit.suggestionResolution) {
+                          <p class="text-sm">Suggestion: {{ conflit.suggestionResolution }}</p>
+                        }
+                        <p class="text-xs mt-2">Détecté le: {{ conflit.dateDetection | date:'short' }}</p>
+                      </div>
+
+                      @if (conflit.statutResolution === 'NON_RESOLU') {
+                        <button
+                          (click)="resolveConflit(conflit.id)"
+                          class="bg-white hover:bg-gray-50 px-3 py-1 rounded text-sm font-medium border">
+                          Résoudre
+                        </button>
+                      }
+                    </div>
+                  </div>
+                }
+              </div>
+            }
+          </div>
+        }
+      </div>
+    </div>
+  }
+</div>

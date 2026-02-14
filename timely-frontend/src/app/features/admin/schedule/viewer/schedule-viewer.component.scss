@@ -1,0 +1,15 @@
+// Styles supplémentaires pour la grille
+table {
+  table-layout: fixed;
+  width: 100%;
+
+  th:first-child,
+  td:first-child {
+    width: 100px;
+  }
+
+  th:not(:first-child),
+  td:not(:first-child) {
+    width: calc((100% - 100px) / 5);
+  }
+}

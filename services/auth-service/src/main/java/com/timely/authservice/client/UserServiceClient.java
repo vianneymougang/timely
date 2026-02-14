@@ -23,7 +23,7 @@ public interface UserServiceClient {
     
     @GetMapping("/exists-by-email")
     Boolean existsByEmail(@RequestParam("email") String email);
-    
+
     @PutMapping("/{id}/password")
     void updatePassword(@PathVariable("id") UUID id, @RequestBody UpdatePasswordRequest request);
 }
