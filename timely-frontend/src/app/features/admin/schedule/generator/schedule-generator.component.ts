@@ -1,8 +1,9 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { PlanningService } from '../../../../core/services/planning.service';
+import { EcoleDto, EcoleService } from '../../../../core/services/ecole.service';
 import { GeneratePlanningRequest, GeneratePlanningResponse, PeriodeEmploi } from '../../../../core/models/planning.model';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
@@ -14,15 +15,17 @@ import { of } from 'rxjs';
   templateUrl: './schedule-generator.component.html',
   styleUrl: './schedule-generator.component.scss'
 })
-export class ScheduleGeneratorComponent {
+export class ScheduleGeneratorComponent implements OnInit {
   private fb = inject(FormBuilder);
   private planningService = inject(PlanningService);
+  private ecoleService = inject(EcoleService);
   private router = inject(Router);
 
   generatorForm: FormGroup;
   isLoading = signal(false);
   errorMessage = signal<string | null>(null);
   generationResult = signal<GeneratePlanningResponse | null>(null);
+  ecoles = signal<EcoleDto[]>([]);
 
   periodeOptions: { value: PeriodeEmploi; label: string }[] = [
     { value: 'SEMESTRE_1', label: 'Semestre 1' },
@@ -42,6 +45,12 @@ export class ScheduleGeneratorComponent {
       dureeCreneauMinutes: [90, [Validators.required, Validators.min(30), Validators.max(240)]],
       pauseEntreCreneauxMinutes: [15, [Validators.required, Validators.min(0), Validators.max(60)]]
     });
+  }
+
+  ngOnInit(): void {
+    this.ecoleService.fetchEcolesFromApi().pipe(
+      catchError(() => of([]))
+    ).subscribe(ecoles => this.ecoles.set(ecoles));
   }
 
   onSubmit(): void {
@@ -71,7 +80,6 @@ export class ScheduleGeneratorComponent {
       .subscribe(response => {
         if (response) {
           this.generationResult.set(response);
-          console.log('Génération réussie:', response);
         }
       });
   }
