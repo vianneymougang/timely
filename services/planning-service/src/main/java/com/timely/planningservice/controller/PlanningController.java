@@ -1,10 +1,7 @@
 package com.timely.planningservice.controller;
 
-import java.time.LocalDate;
-import java.util.List;
 import java.util.UUID;
 
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +25,6 @@ import com.timely.planningservice.dto.request.SearchPlanningRequest;
 import com.timely.planningservice.dto.response.CreneauResponseDTO;
 import com.timely.planningservice.dto.response.EmploiDuTempsResponseDTO;
 import com.timely.planningservice.dto.response.GeneratePlanningResponse;
-import com.timely.planningservice.entity.enums.StatutEmploi;
 import com.timely.planningservice.service.CreneauService;
 import com.timely.planningservice.service.EmploiDuTempsService;
 import com.timely.planningservice.service.ICalExportService;
@@ -51,8 +47,6 @@ public class PlanningController {
     private final ICalExportService iCalExportService;
     private final PdfExportService pdfExportService;
     private final PlanningGenerationService planningGenerationService;
-
-    // ==================== EmploiDuTemps Endpoints ====================
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -163,8 +157,6 @@ public class PlanningController {
         GeneratePlanningResponse response = planningGenerationService.generate(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
-
-    // ==================== Creneau Endpoints ====================
 
     @PostMapping("/{emploiId}/creneaux")
     @PreAuthorize("hasRole('ADMIN')")
