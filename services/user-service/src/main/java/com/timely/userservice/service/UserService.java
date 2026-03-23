@@ -43,6 +43,6 @@ public interface UserService {
     com.timely.userservice.dto.BulkUserActionResponse bulkUnblockUsers(java.util.List<UUID> userIds);
     
     void updatePassword(UUID id, String newPassword);
-    
+
     boolean existsByEmail(String email);
 }

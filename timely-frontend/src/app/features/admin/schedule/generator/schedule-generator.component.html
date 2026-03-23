@@ -1,0 +1,263 @@
+<div class="container mx-auto px-4 py-6">
+  <div class="max-w-4xl mx-auto">
+    <!-- Header -->
+    <div class="mb-6">
+      <h2 class="text-2xl font-bold text-gray-800 mb-2">Générer un emploi du temps</h2>
+      <p class="text-gray-600">Configurez les paramètres pour générer automatiquement un emploi du temps</p>
+    </div>
+
+    <!-- Error Alert -->
+    @if (errorMessage()) {
+      <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-6">
+        <div class="flex items-start">
+          <svg class="w-5 h-5 mt-0.5 mr-3" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
+          </svg>
+          <span>{{ errorMessage() }}</span>
+        </div>
+      </div>
+    }
+
+    <!-- Success Result -->
+    @if (generationResult()) {
+      <div class="bg-white shadow-lg rounded-lg p-6 mb-6 border border-green-200">
+        <div class="flex items-center mb-4">
+          <svg class="w-8 h-8 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
+            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
+          </svg>
+          <h3 class="text-xl font-semibold text-gray-800">Génération terminée</h3>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600 mb-1">Taux de réussite</p>
+            <p class="text-2xl font-bold" [ngClass]="getSeverityClass()">
+              {{ generationResult()!.tauxReussite.toFixed(1) }}%
+            </p>
+          </div>
+
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600 mb-1">Cours planifiés</p>
+            <p class="text-2xl font-bold text-gray-800">
+              {{ generationResult()!.coursPlanifies }} / {{ generationResult()!.totalCoursAPlanifier }}
+            </p>
+          </div>
+
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600 mb-1">Conflits détectés</p>
+            <p class="text-2xl font-bold text-gray-800">
+              {{ generationResult()!.conflitsDetectes }}
+            </p>
+          </div>
+
+          <div class="bg-gray-50 p-4 rounded-lg">
+            <p class="text-sm text-gray-600 mb-1">Durée de génération</p>
+            <p class="text-2xl font-bold text-gray-800">
+              {{ (generationResult()!.dureeGenerationMs / 1000).toFixed(2) }}s
+            </p>
+          </div>
+        </div>
+
+        @if (generationResult()!.coursNonPlanifies.length > 0) {
+          <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
+            <h4 class="font-semibold text-yellow-800 mb-2">Cours non planifiés ({{ generationResult()!.coursNonPlanifies.length }})</h4>
+            <ul class="list-disc list-inside text-sm text-yellow-700 space-y-1">
+              @for (cours of generationResult()!.coursNonPlanifies; track cours.coursId) {
+                <li>{{ cours.intitule }} - {{ cours.raison }}</li>
+              }
+            </ul>
+          </div>
+        }
+
+        <div class="flex gap-3">
+          <button
+            type="button"
+            (click)="viewSchedule()"
+            class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg transition-colors">
+            Visualiser l'emploi du temps
+          </button>
+          <button
+            type="button"
+            (click)="resetForm()"
+            class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium px-6 py-2 rounded-lg transition-colors">
+            Générer un nouveau
+          </button>
+        </div>
+      </div>
+    }
+
+    <!-- Generation Form -->
+    @if (!generationResult()) {
+      <form [formGroup]="generatorForm" (ngSubmit)="onSubmit()" class="bg-white shadow-lg rounded-lg p-6">
+        <!-- Informations de base -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">Informations de base</h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- École ID -->
+            <div>
+              <label for="ecoleId" class="block text-sm font-medium text-gray-700 mb-2">
+                ID de l'école <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="text"
+                id="ecoleId"
+                formControlName="ecoleId"
+                placeholder="ex: uuid-de-ecole"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              @if (generatorForm.get('ecoleId')?.touched && generatorForm.get('ecoleId')?.errors) {
+                <p class="text-red-500 text-sm mt-1">L'ID de l'école est obligatoire</p>
+              }
+            </div>
+
+            <!-- Période -->
+            <div>
+              <label for="periode" class="block text-sm font-medium text-gray-700 mb-2">
+                Période <span class="text-red-500">*</span>
+              </label>
+              <select
+                id="periode"
+                formControlName="periode"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+                @for (option of periodeOptions; track option.value) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </div>
+
+            <!-- Date début -->
+            <div>
+              <label for="dateDebut" class="block text-sm font-medium text-gray-700 mb-2">
+                Date de début <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                id="dateDebut"
+                formControlName="dateDebut"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              @if (generatorForm.get('dateDebut')?.touched && generatorForm.get('dateDebut')?.errors) {
+                <p class="text-red-500 text-sm mt-1">La date de début est obligatoire</p>
+              }
+            </div>
+
+            <!-- Date fin -->
+            <div>
+              <label for="dateFin" class="block text-sm font-medium text-gray-700 mb-2">
+                Date de fin <span class="text-red-500">*</span>
+              </label>
+              <input
+                type="date"
+                id="dateFin"
+                formControlName="dateFin"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+              @if (generatorForm.get('dateFin')?.touched && generatorForm.get('dateFin')?.errors) {
+                <p class="text-red-500 text-sm mt-1">La date de fin est obligatoire</p>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Configuration avancée -->
+        <div class="mb-6">
+          <h3 class="text-lg font-semibold text-gray-800 mb-4">Configuration avancée</h3>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <!-- Créneaux par jour -->
+            <div>
+              <label for="creneauxParJour" class="block text-sm font-medium text-gray-700 mb-2">
+                Créneaux par jour
+              </label>
+              <input
+                type="number"
+                id="creneauxParJour"
+                formControlName="creneauxParJour"
+                min="1"
+                max="12"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            </div>
+
+            <!-- Durée créneau -->
+            <div>
+              <label for="dureeCreneauMinutes" class="block text-sm font-medium text-gray-700 mb-2">
+                Durée du créneau (minutes)
+              </label>
+              <input
+                type="number"
+                id="dureeCreneauMinutes"
+                formControlName="dureeCreneauMinutes"
+                min="30"
+                max="240"
+                step="15"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            </div>
+
+            <!-- Heure début -->
+            <div>
+              <label for="heureDebutJournee" class="block text-sm font-medium text-gray-700 mb-2">
+                Heure de début
+              </label>
+              <input
+                type="time"
+                id="heureDebutJournee"
+                formControlName="heureDebutJournee"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            </div>
+
+            <!-- Heure fin -->
+            <div>
+              <label for="heureFinJournee" class="block text-sm font-medium text-gray-700 mb-2">
+                Heure de fin
+              </label>
+              <input
+                type="time"
+                id="heureFinJournee"
+                formControlName="heureFinJournee"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            </div>
+
+            <!-- Pause -->
+            <div>
+              <label for="pauseEntreCreneauxMinutes" class="block text-sm font-medium text-gray-700 mb-2">
+                Pause entre créneaux (minutes)
+              </label>
+              <input
+                type="number"
+                id="pauseEntreCreneauxMinutes"
+                formControlName="pauseEntreCreneauxMinutes"
+                min="0"
+                max="60"
+                step="5"
+                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            </div>
+          </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="flex gap-3 pt-4 border-t">
+          <button
+            type="submit"
+            [disabled]="isLoading() || generatorForm.invalid"
+            class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium px-6 py-3 rounded-lg transition-colors flex items-center justify-center">
+            @if (isLoading()) {
+              <svg class="animate-spin h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Génération en cours...
+            } @else {
+              Générer l'emploi du temps
+            }
+          </button>
+
+          <button
+            type="button"
+            (click)="resetForm()"
+            [disabled]="isLoading()"
+            class="bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-800 font-medium px-6 py-3 rounded-lg transition-colors">
+            Réinitialiser
+          </button>
+        </div>
+      </form>
+    }
+  </div>
+</div>

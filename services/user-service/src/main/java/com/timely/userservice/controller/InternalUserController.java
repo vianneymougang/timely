@@ -57,7 +57,7 @@ public class InternalUserController {
      */
     @PutMapping("/{id}/password")
     public ResponseEntity<Void> updatePassword(
-            @PathVariable UUID id, 
+            @PathVariable UUID id,
             @Valid @RequestBody UpdatePasswordRequest request) {
         userService.updatePassword(id, request.getNewPassword());
         return ResponseEntity.ok().build();

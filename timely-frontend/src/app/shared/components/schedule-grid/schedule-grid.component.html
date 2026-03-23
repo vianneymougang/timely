@@ -1,0 +1,68 @@
+<div class="overflow-x-auto">
+  @if (timeSlots.length === 0) {
+    <div class="text-center py-12 text-gray-500">
+      <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+      </svg>
+      <p class="text-lg">Aucun créneau disponible</p>
+    </div>
+  } @else {
+    <table class="min-w-full border-collapse border border-gray-200">
+      <thead>
+        <tr class="bg-gray-50">
+          <th class="border border-gray-200 px-4 py-2 text-left font-semibold text-gray-700">
+            Heure
+          </th>
+          @for (day of daysOfWeek; track day) {
+            <th class="border border-gray-200 px-4 py-2 text-center font-semibold text-gray-700">
+              {{ dayLabels[day] }}
+            </th>
+          }
+        </tr>
+      </thead>
+      <tbody>
+        @for (slot of timeSlots; track slot.time) {
+          <tr>
+            <td class="border border-gray-200 px-4 py-2 font-medium bg-gray-50 text-gray-700 align-top">
+              {{ slot.time }}
+            </td>
+            @for (day of daysOfWeek; track day) {
+              <td class="border border-gray-200 px-2 py-2 align-top">
+                @if (slot.creneaux.get(day); as creneau) {
+                  <div
+                    (click)="onCreneauClick(creneau)"
+                    class="rounded p-3 cursor-pointer transition-all min-h-[80px] border"
+                    [ngClass]="getCreneauColor(creneau)">
+                    <div class="text-xs font-semibold mb-1 text-gray-800">
+                      {{ creneau.heureDebut }} - {{ creneau.heureFin }}
+                    </div>
+                    @if (creneau.coursId) {
+                      <div class="text-xs text-gray-700 mb-1">
+                        Cours
+                      </div>
+                    }
+                    @if (creneau.salleId) {
+                      <div class="text-xs text-gray-600">
+                        Salle
+                      </div>
+                    }
+                    @if (creneau.enseignantId) {
+                      <div class="text-xs text-gray-600">
+                        Enseignant
+                      </div>
+                    }
+                    <div class="text-xs text-gray-500 mt-1">
+                      {{ creneau.statutCreneau }}
+                    </div>
+                  </div>
+                } @else {
+                  <div class="min-h-[80px] bg-gray-50 rounded"></div>
+                }
+              </td>
+            }
+          </tr>
+        }
+      </tbody>
+    </table>
+  }
+</div>

@@ -8,6 +8,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
@@ -47,6 +48,11 @@ public class ServiceCallService {
             try {
                 log.debug("Calling {} with circuit breaker: state={}", serviceName, circuitBreaker.getState());
                 return restTemplate.exchange(targetUri, method, entity, String.class);
+            } catch (HttpClientErrorException e) {
+                log.debug("Client error from {}: {}", serviceName, e.getStatusCode());
+                return ResponseEntity.status(e.getStatusCode())
+                        .headers(e.getResponseHeaders())
+                        .body(e.getResponseBodyAsString());
             } catch (Exception e) {
                 log.error("Error calling {}: {}", serviceName, e.getMessage());
                 throw new RuntimeException("Service call failed: " + e.getMessage(), e);
