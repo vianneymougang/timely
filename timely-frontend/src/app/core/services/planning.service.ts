@@ -1,27 +1,25 @@
-import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
+  ConflitResponse,
+  CreneauRequest,
+  CreneauResponse,
+  EmploiDuTempsRequest,
+  EmploiDuTempsResponse,
   GeneratePlanningRequest,
   GeneratePlanningResponse,
-  EmploiDuTempsResponse,
-  EmploiDuTempsRequest,
-  CreneauResponse,
-  CreneauRequest,
-  ConflitResponse,
+  Page,
   SearchPlanningRequest,
-  Page
 } from '../models/planning.model';
 
 @Injectable({
-  providedIn: 'root'
+  providedIn: 'root',
 })
 export class PlanningService {
   private http = inject(HttpClient);
   private baseUrl = `${environment.apiUrl}/planning/plannings`;
-
-  // ==================== Génération automatique ====================
 
   /**
    * Génère automatiquement un emploi du temps
@@ -29,8 +27,6 @@ export class PlanningService {
   generateSchedule(request: GeneratePlanningRequest): Observable<GeneratePlanningResponse> {
     return this.http.post<GeneratePlanningResponse>(`${this.baseUrl}/generate`, request);
   }
-
-  // ==================== CRUD EmploiDuTemps ====================
 
   /**
    * Crée un emploi du temps manuellement
@@ -49,10 +45,11 @@ export class PlanningService {
   /**
    * Récupère tous les emplois du temps avec pagination
    */
-  getAllEmploisDuTemps(page: number = 0, size: number = 20): Observable<Page<EmploiDuTempsResponse>> {
-    const params = new HttpParams()
-      .set('page', page.toString())
-      .set('size', size.toString());
+  getAllEmploisDuTemps(
+    page: number = 0,
+    size: number = 20,
+  ): Observable<Page<EmploiDuTempsResponse>> {
+    const params = new HttpParams().set('page', page.toString()).set('size', size.toString());
     return this.http.get<Page<EmploiDuTempsResponse>>(this.baseUrl, { params });
   }
 
@@ -76,7 +73,10 @@ export class PlanningService {
   /**
    * Met à jour un emploi du temps
    */
-  updateEmploiDuTemps(id: string, request: EmploiDuTempsRequest): Observable<EmploiDuTempsResponse> {
+  updateEmploiDuTemps(
+    id: string,
+    request: EmploiDuTempsRequest,
+  ): Observable<EmploiDuTempsResponse> {
     return this.http.put<EmploiDuTempsResponse>(`${this.baseUrl}/${id}`, request);
   }
 
@@ -113,10 +113,12 @@ export class PlanningService {
   /**
    * Récupère les créneaux d'un emploi du temps
    */
-  getCreneauxByEmploi(emploiId: string, page: number = 0, size: number = 20): Observable<Page<CreneauResponse>> {
-    const params = new HttpParams()
-      .set('page', page.toString())
-      .set('size', size.toString());
+  getCreneauxByEmploi(
+    emploiId: string,
+    page: number = 0,
+    size: number = 20,
+  ): Observable<Page<CreneauResponse>> {
+    const params = new HttpParams().set('page', page.toString()).set('size', size.toString());
     return this.http.get<Page<CreneauResponse>>(`${this.baseUrl}/${emploiId}/creneaux`, { params });
   }
 
@@ -130,8 +132,15 @@ export class PlanningService {
   /**
    * Met à jour un créneau
    */
-  updateCreneau(emploiId: string, creneauId: string, request: CreneauRequest): Observable<CreneauResponse> {
-    return this.http.put<CreneauResponse>(`${this.baseUrl}/${emploiId}/creneaux/${creneauId}`, request);
+  updateCreneau(
+    emploiId: string,
+    creneauId: string,
+    request: CreneauRequest,
+  ): Observable<CreneauResponse> {
+    return this.http.put<CreneauResponse>(
+      `${this.baseUrl}/${emploiId}/creneaux/${creneauId}`,
+      request,
+    );
   }
 
   /**
@@ -167,8 +176,15 @@ export class PlanningService {
   /**
    * Résout un conflit
    */
-  resolveConflit(emploiId: string, conflitId: string, resolution: string): Observable<ConflitResponse> {
-    return this.http.put<ConflitResponse>(`${this.baseUrl}/${emploiId}/conflits/${conflitId}/resolve`, resolution);
+  resolveConflit(
+    emploiId: string,
+    conflitId: string,
+    resolution: string,
+  ): Observable<ConflitResponse> {
+    return this.http.put<ConflitResponse>(
+      `${this.baseUrl}/${emploiId}/conflits/${conflitId}/resolve`,
+      resolution,
+    );
   }
 
   // ==================== Export ====================
@@ -178,7 +194,7 @@ export class PlanningService {
    */
   exportToPDF(id: string): Observable<Blob> {
     return this.http.get(`${this.baseUrl}/${id}/export/pdf`, {
-      responseType: 'blob'
+      responseType: 'blob',
     });
   }
 
@@ -187,7 +203,7 @@ export class PlanningService {
    */
   exportToICal(id: string): Observable<Blob> {
     return this.http.get(`${this.baseUrl}/${id}/export/ical`, {
-      responseType: 'blob'
+      responseType: 'blob',
     });
   }
 
