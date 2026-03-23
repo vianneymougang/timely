@@ -108,12 +108,12 @@
                     <span class="font-medium">Fin:</span> {{ emploi.dateFin }}
                   </div>
                   <div>
-                    <span class="font-medium">Créneaux:</span> {{ emploi.creneaux?.length || 0 }}
+                    <span class="font-medium">Créneaux:</span> {{ emploi.creneaux.length }}
                   </div>
                   <div>
                     <span class="font-medium">Conflits:</span>
                     <span [class.text-red-600]="emploi.conflits && emploi.conflits.length > 0">
-                      {{ emploi.conflits?.length || 0 }}
+                      {{ emploi.conflits.length }}
                     </span>
                   </div>
                 </div>
