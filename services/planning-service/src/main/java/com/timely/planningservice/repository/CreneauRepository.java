@@ -54,13 +54,11 @@ public interface CreneauRepository extends JpaRepository<Creneau, UUID> {
 
     @Query("SELECT c FROM Creneau c " +
            "LEFT JOIN FETCH c.emploiDuTemps " +
-           "LEFT JOIN FETCH c.salle " +
            "WHERE c.emploiDuTemps.id = :emploiId")
     List<Creneau> findByEmploiDuTempsIdWithRelations(@Param("emploiId") UUID emploiId);
 
     @Query("SELECT c FROM Creneau c " +
            "LEFT JOIN FETCH c.emploiDuTemps " +
-           "LEFT JOIN FETCH c.salle " +
            "WHERE c.jourSemaine = :jour " +
            "AND c.heureDebut >= :heureDebut " +
            "AND c.heureFin <= :heureFin")
