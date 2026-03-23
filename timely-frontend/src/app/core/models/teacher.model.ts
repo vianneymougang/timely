@@ -1,3 +1,5 @@
+export type UserStatus = 'ACTIVE' | 'INACTIVE' | 'SUSPENDED' | 'BLOCKED';
+
 export interface Teacher {
   id: string;
   firstName: string;
@@ -13,6 +15,7 @@ export interface Teacher {
   availability: WeekAvailability;
   schedule: WeekSchedule;
   status: 'available' | 'busy' | 'unavailable';
+  userStatus: UserStatus;
 }
 
 export interface WeekAvailability {

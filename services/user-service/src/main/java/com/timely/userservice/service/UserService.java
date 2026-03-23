@@ -1,0 +1,48 @@
+package com.timely.userservice.service;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
+import com.timely.userservice.dto.AdminDto;
+import com.timely.userservice.dto.CreateAdminRequest;
+import com.timely.userservice.dto.CreateTeacherRequest;
+import com.timely.userservice.dto.InternalUserDto;
+import com.timely.userservice.dto.TeacherDto;
+import com.timely.userservice.dto.UpdateUserRequest;
+import com.timely.userservice.dto.UserDto;
+
+public interface UserService {
+    
+    TeacherDto createTeacher(CreateTeacherRequest request);
+    
+    AdminDto createAdmin(CreateAdminRequest request);
+    
+    UserDto getUserById(UUID id);
+    
+    InternalUserDto getInternalUserByEmail(String email);
+    
+    InternalUserDto getInternalUserById(UUID id);
+
+    Page<UserDto> getAllUsers(Pageable pageable);
+
+    Page<TeacherDto> getAllTeachers(Pageable pageable);
+
+    UserDto updateUser(UUID id, UpdateUserRequest request);
+    
+    void deleteUser(UUID id);
+    
+    UserDto blockUser(UUID id);
+
+    UserDto unblockUser(UUID id);
+
+    com.timely.userservice.dto.BulkUserActionResponse bulkBlockUsers(java.util.List<UUID> userIds);
+
+    com.timely.userservice.dto.BulkUserActionResponse bulkUnblockUsers(java.util.List<UUID> userIds);
+    
+    void updatePassword(UUID id, String newPassword);
+
+    boolean existsByEmail(String email);
+}

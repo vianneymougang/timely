@@ -1,0 +1,8 @@
+server:
+  port: 8095
+
+logging:
+  level:
+    root: INFO
+    com.timely.notificationservice: DEBUG
+    org.springframework.amqp: DEBUG

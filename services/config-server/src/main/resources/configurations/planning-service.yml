@@ -1,0 +1,7 @@
+server:
+  port: 8093
+
+logging:
+  level:
+    root: INFO
+    com.timely.planningservice: DEBUG

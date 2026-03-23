@@ -1,0 +1,27 @@
+{
+  "lsp": {
+    "jdtls": {
+      "initialization_options": {
+        "extendedClientCapabilities": {
+          "classFileContentsSupport": true
+        },
+        "settings": {
+          "java": {
+            "autobuild": {
+              "enabled": true
+            },
+            "configuration": {
+              "updateBuildConfiguration": "automatic"
+            }
+          }
+        }
+      }
+    }
+  },
+  "languages": {
+    "Java": {
+      "format_on_save": "off",
+      "code_actions_on_format": {}
+    }
+  }
+}

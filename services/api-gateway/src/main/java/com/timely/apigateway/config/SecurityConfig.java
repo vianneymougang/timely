@@ -1,7 +1,7 @@
 package com.timely.apigateway.config;
 
-import com.timely.apigateway.filter.JwtAuthenticationFilter;
-import lombok.RequiredArgsConstructor;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -15,7 +15,9 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
-import java.util.List;
+import com.timely.apigateway.filter.JwtAuthenticationFilter;
+
+import lombok.RequiredArgsConstructor;
 
 /**
  * Security Configuration for API Gateway
@@ -28,14 +30,14 @@ public class SecurityConfig {
 
     private final JwtAuthenticationFilter jwtAuthenticationFilter;
 
-    @Value("${cors.allowed-origins}")
+    @Value("${cors.allowed-origins:http://localhost:4200}")
     private List<String> allowedOrigins;
 
-    @Value("${cors.allowed-methods}")
+    @Value("${cors.allowed-methods:GET,POST,PUT,DELETE,OPTIONS}")
     private List<String> allowedMethods;
 
-    @Value("${cors.allowed-headers}")
-    private String allowedHeaders;
+    @Value("${cors.allowed-headers:Authorization,Content-Type,Accept,X-Requested-With}")
+    private List<String> allowedHeaders;
 
     @Value("${cors.allow-credentials}")
     private boolean allowCredentials;
@@ -50,6 +52,7 @@ public class SecurityConfig {
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()))
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("/api/auth/login", "/api/auth/refresh").permitAll()
+                        .requestMatchers("/api/auth/forgot-password", "/api/auth/reset-password", "/api/auth/validate-reset-token/**").permitAll()
                         .requestMatchers("/actuator/health", "/actuator/info").permitAll()
                         .anyRequest().authenticated()
                 )
@@ -69,7 +72,7 @@ public class SecurityConfig {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOrigins(allowedOrigins);
         configuration.setAllowedMethods(allowedMethods);
-        configuration.setAllowedHeaders(List.of(allowedHeaders));
+        configuration.setAllowedHeaders(allowedHeaders);
         configuration.setAllowCredentials(allowCredentials);
         configuration.setMaxAge(maxAge);
 

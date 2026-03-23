@@ -1,0 +1,53 @@
+spring:
+  application:
+    name: notification-service-test
+
+  data:
+    mongodb:
+      host: localhost
+      port: 27017
+      database: timely_notifications_test
+      auto-index-creation: false
+
+  mail:
+    host: localhost
+    port: 1025
+    username: timely
+    password: timely
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+  redis:
+    host: localhost
+    port: 6379
+    database: 1
+
+  cloud:
+    config:
+      enabled: false
+    discovery:
+      enabled: false
+
+eureka:
+  client:
+    enabled: false
+
+jwt:
+  secret: testSecretKeyForJwtTokenGenerationTestingPurposesOnly1234567890
+  expiration: 86400000
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info

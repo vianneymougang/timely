@@ -1,0 +1,54 @@
+spring:
+  # Spring Cloud Config - Disabled for Tests
+  cloud:
+    config:
+      enabled: false
+      import-check:
+        enabled: false
+  config:
+    import: "optional:configserver:"
+
+  # Application Configuration
+  application:
+    name: planning-service
+
+  # Database Configuration for Testing
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: false
+
+  # Flyway Configuration
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+  # RabbitMQ Configuration
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: guest
+    password: guest
+
+# Eureka Client Configuration - Disabled for Tests
+eureka:
+  client:
+    enabled: false
+    register-with-eureka: false
+    fetch-registry: false
+
+# JWT Configuration for Tests
+jwt:
+  secret: test-secret-key-for-integration-tests-minimum-256-bits-long
+  expiration: 3600000
+
+# Logging Configuration for Tests
+logging:
+  level:
+    root: WARN
+    com.timely.planningservice: INFO

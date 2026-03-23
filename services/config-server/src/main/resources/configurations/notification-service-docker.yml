@@ -1,0 +1,39 @@
+server:
+  port: 8095
+
+spring:
+  rabbitmq:
+    host: rabbitmq
+    port: 5672
+    username: admin
+    password: ${RABBITMQ_PASSWORD:changeme}
+  mail:
+    host: mailtrap
+    port: 25
+    username: ""
+    password: ""
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: false
+  data:
+    mongodb:
+      host: mongodb
+      port: 27017
+      database: notification-service-db
+      username: admin
+      password: ${MONGODB_PASSWORD:changeme}
+      authentication-database: admin
+
+eureka:
+  instance:
+    prefer-ip-address: false
+    hostname: notification-service
+
+logging:
+  level:
+    root: INFO
+    com.timely.notificationservice: DEBUG
+    org.springframework.amqp: DEBUG

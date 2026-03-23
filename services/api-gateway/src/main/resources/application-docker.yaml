@@ -1,0 +1,39 @@
+spring:
+  application:
+    name: api-gateway
+
+  config:
+    import: optional:configserver:http://config-server:8888
+
+  # Redis Configuration for rate limiting - Docker
+  data:
+    redis:
+      host: redis
+      port: 6379
+      timeout: 2000ms
+
+# Server Configuration
+server:
+  port: ${PORT:8090}
+
+# Eureka Client Configuration - Docker Profile
+eureka:
+  client:
+    service-url:
+      defaultZone: http://discovery-server:8761/eureka/
+    register-with-eureka: true
+    fetch-registry: true
+  instance:
+    prefer-ip-address: true
+    appname: API-GATEWAY
+    instance-id: ${spring.application.name}:${spring.application.instance_id:${random.value}}
+
+# Actuator Configuration
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: when-authorized
