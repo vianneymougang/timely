@@ -5,6 +5,7 @@ services:
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+      POSTGRES_DB: auth-service-db
       PGDATA: /var/lib/postgresql/data
     volumes:
       - postgres:/var/lib/postgresql/data
@@ -30,6 +31,7 @@ services:
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+      POSTGRES_DB: user-service-db
       PGDATA: /var/lib/postgresql/data
     volumes:
       - user-postgres:/var/lib/postgresql/data
@@ -55,6 +57,7 @@ services:
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+      POSTGRES_DB: planning-service-db
       PGDATA: /var/lib/postgresql/data
     volumes:
       - planning-postgres:/var/lib/postgresql/data
@@ -80,6 +83,7 @@ services:
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+      POSTGRES_DB: booking-service-db
       PGDATA: /var/lib/postgresql/data
     volumes:
       - booking-postgres:/var/lib/postgresql/data
@@ -105,6 +109,7 @@ services:
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+      POSTGRES_DB: report-service-db
       PGDATA: /var/lib/postgresql/data
     volumes:
       - report-postgres:/var/lib/postgresql/data
@@ -130,6 +135,7 @@ services:
     environment:
       POSTGRES_USER: admin
       POSTGRES_PASSWORD: ${DB_PASSWORD:-changeme}
+      POSTGRES_DB: agora-service-db
       PGDATA: /var/lib/postgresql/data
     volumes:
       - agora-postgres:/var/lib/postgresql/data
@@ -181,6 +187,12 @@ services:
       MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD:-changeme}
     networks:
       - timely-microservices
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping').ok", "--quiet"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
     deploy:
       resources:
         limits:
@@ -380,7 +392,7 @@ services:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_DATASOURCE_URL=jdbc:postgresql://auth-service-db:5432/auth-service-db
       - DB_PASSWORD=${DB_PASSWORD:-changeme}
-      - JWT_SECRET=${JWT_SECRET}
+      - JWT_SECRET=${JWT_SECRET:-mySecretKeyForJWTTokenGenerationThisShouldBeAtLeast256BitsLongForHS256Algorithm}
       - SPRING_RABBITMQ_HOST=rabbitmq
       - SPRING_RABBITMQ_PORT=5672
       - SPRING_RABBITMQ_USERNAME=admin
@@ -519,7 +531,7 @@ services:
       rabbitmq:
         condition: service_healthy
       mongodb:
-        condition: service_started
+        condition: service_healthy
       discovery-server:
         condition: service_healthy
       config-server:
@@ -535,7 +547,7 @@ services:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_DATA_MONGODB_HOST=mongodb
       - MONGODB_PASSWORD=${MONGODB_PASSWORD:-changeme}
-      - JWT_SECRET=${JWT_SECRET}
+      - JWT_SECRET=${JWT_SECRET:-mySecretKeyForJWTTokenGenerationThisShouldBeAtLeast256BitsLongForHS256Algorithm}
       - SPRING_RABBITMQ_HOST=rabbitmq
       - SPRING_RABBITMQ_PORT=5672
       - SPRING_RABBITMQ_USERNAME=admin
@@ -577,7 +589,7 @@ services:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_DATASOURCE_URL=jdbc:postgresql://report-service-db:5432/report-service-db
       - DB_PASSWORD=${DB_PASSWORD:-changeme}
-      - JWT_SECRET=${JWT_SECRET}
+      - JWT_SECRET=${JWT_SECRET:-mySecretKeyForJWTTokenGenerationThisShouldBeAtLeast256BitsLongForHS256Algorithm}
       - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-changeme}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
       - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
@@ -615,7 +627,7 @@ services:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_DATASOURCE_URL=jdbc:postgresql://agora-service-db:5432/agora-service-db
       - DB_PASSWORD=${DB_PASSWORD:-changeme}
-      - JWT_SECRET=${JWT_SECRET}
+      - JWT_SECRET=${JWT_SECRET:-mySecretKeyForJWTTokenGenerationThisShouldBeAtLeast256BitsLongForHS256Algorithm}
       - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-changeme}
       - AGORA_PASSWORD=${AGORA_PASSWORD:-changeme}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
