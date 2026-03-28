@@ -14,8 +14,9 @@ services:
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "admin"]
       interval: 10s
-      timeout: 5s
+      timeout: 20s
       retries: 5
+      start_period: 60s
     networks:
       - timely-microservices
     restart: unless-stopped
@@ -40,8 +41,9 @@ services:
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "admin"]
       interval: 10s
-      timeout: 5s
+      timeout: 20s
       retries: 5
+      start_period: 60s
     networks:
       - timely-microservices
     restart: unless-stopped
@@ -66,8 +68,9 @@ services:
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "admin"]
       interval: 10s
-      timeout: 5s
+      timeout: 20s
       retries: 5
+      start_period: 60s
     networks:
       - timely-microservices
     restart: unless-stopped
@@ -92,8 +95,9 @@ services:
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "admin"]
       interval: 10s
-      timeout: 5s
+      timeout: 20s
       retries: 5
+      start_period: 60s
     networks:
       - timely-microservices
     restart: unless-stopped
@@ -118,8 +122,9 @@ services:
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "admin"]
       interval: 10s
-      timeout: 5s
+      timeout: 20s
       retries: 5
+      start_period: 60s
     networks:
       - timely-microservices
     restart: unless-stopped
@@ -144,8 +149,9 @@ services:
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "admin"]
       interval: 10s
-      timeout: 5s
+      timeout: 20s
       retries: 5
+      start_period: 60s
     networks:
       - timely-microservices
     restart: unless-stopped
@@ -190,7 +196,7 @@ services:
     healthcheck:
       test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping').ok", "--quiet"]
       interval: 10s
-      timeout: 5s
+      timeout: 20s
       retries: 5
       start_period: 30s
     deploy:
@@ -227,8 +233,9 @@ services:
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
       interval: 10s
-      timeout: 5s
+      timeout: 20s
       retries: 5
+      start_period: 60s
     networks:
       - timely-microservices
     restart: unless-stopped
@@ -271,8 +278,9 @@ services:
     healthcheck:
       test: ["CMD", "rabbitmq-diagnostics", "ping"]
       interval: 10s
-      timeout: 5s
+      timeout: 20s
       retries: 5
+      start_period: 60s
     deploy:
       resources:
         limits:
@@ -290,8 +298,9 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
       interval: 10s
-      timeout: 5s
+      timeout: 20s
       retries: 5
+      start_period: 60s
     restart: unless-stopped
     deploy:
       resources:
@@ -312,8 +321,9 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
       interval: 10s
-      timeout: 5s
+      timeout: 20s
       retries: 5
+      start_period: 60s
     networks:
       - timely-microservices
     environment:
@@ -346,8 +356,9 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8090/actuator/health"]
       interval: 10s
-      timeout: 5s
+      timeout: 20s
       retries: 5
+      start_period: 60s
     networks:
       - timely-microservices
     environment:
@@ -384,8 +395,9 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8091/actuator/health"]
       interval: 10s
-      timeout: 5s
+      timeout: 20s
       retries: 5
+      start_period: 60s
     networks:
       - timely-microservices
     environment:
@@ -426,8 +438,9 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8092/actuator/health"]
       interval: 10s
-      timeout: 5s
+      timeout: 20s
       retries: 5
+      start_period: 60s
     networks:
       - timely-microservices
     environment:
@@ -463,8 +476,9 @@ services:
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8093/actuator/health" ]
       interval: 10s
-      timeout: 5s
+      timeout: 20s
       retries: 5
+      start_period: 60s
     networks:
       - timely-microservices
     environment:
@@ -500,8 +514,9 @@ services:
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8094/actuator/health" ]
       interval: 10s
-      timeout: 5s
+      timeout: 20s
       retries: 5
+      start_period: 60s
     networks:
       - timely-microservices
     environment:
@@ -539,8 +554,9 @@ services:
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:8095/actuator/health"]
       interval: 10s
-      timeout: 5s
+      timeout: 20s
       retries: 5
+      start_period: 60s
     networks:
       - timely-microservices
     environment:
@@ -581,8 +597,9 @@ services:
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8096/actuator/health" ]
       interval: 10s
-      timeout: 5s
+      timeout: 20s
       retries: 5
+      start_period: 60s
     networks:
       - timely-microservices
     environment:
@@ -619,8 +636,9 @@ services:
     healthcheck:
       test: [ "CMD", "curl", "-f", "http://localhost:8097/actuator/health" ]
       interval: 10s
-      timeout: 5s
+      timeout: 20s
       retries: 5
+      start_period: 60s
     networks:
       - timely-microservices
     environment:
