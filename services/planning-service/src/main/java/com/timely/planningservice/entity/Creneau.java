@@ -88,6 +88,6 @@ public class Creneau {
         this.heureDebut = heureDebut;
         this.heureFin = heureFin;
         this.typeRecurrence = typeRecurrence;
-        this.statutCreneau = StatutCreneau.ACTIF;
+        this.statutCreneau = StatutCreneau.RESERVE;
     }
 }

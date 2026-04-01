@@ -149,7 +149,7 @@ public class EmploiDuTempsService {
         EmploiDuTemps emploi = emploiDuTempsRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("EmploiDuTemps not found with ID: " + id));
 
-        emploi.setStatut(StatutEmploi.VALIDE);
+        emploi.setStatut(StatutEmploi.VALIDATED);
         emploi.setUtilisateurValidation(validatorEmail);
 
         EmploiDuTemps validatedEmploi = emploiDuTempsRepository.save(emploi);
@@ -166,11 +166,11 @@ public class EmploiDuTempsService {
         EmploiDuTemps emploi = emploiDuTempsRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("EmploiDuTemps not found with ID: " + id));
 
-        if (emploi.getStatut() != StatutEmploi.VALIDE) {
+        if (emploi.getStatut() != StatutEmploi.VALIDATED) {
             throw new IllegalStateException("Only validated EmploisDuTemps can be published");
         }
 
-        emploi.setStatut(StatutEmploi.PUBLIE);
+        emploi.setStatut(StatutEmploi.PUBLISHED);
         emploi.setDatePublication(LocalDateTime.now());
         if (emploi.getUtilisateurValidation() == null) {
             emploi.setUtilisateurValidation(publisherEmail);

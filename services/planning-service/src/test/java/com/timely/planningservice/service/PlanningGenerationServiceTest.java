@@ -131,7 +131,7 @@ class PlanningGenerationServiceTest {
         emploiDuTempsResponse = new EmploiDuTempsResponseDTO();
         emploiDuTempsResponse.setId(emploiId);
         emploiDuTempsResponse.setEcoleId(ecoleId);
-        emploiDuTempsResponse.setStatut(StatutEmploi.BROUILLON);
+        emploiDuTempsResponse.setStatut(StatutEmploi.DRAFT);
         emploiDuTempsResponse.setDateDebut(request.getDateDebut());
         emploiDuTempsResponse.setDateFin(request.getDateFin());
 

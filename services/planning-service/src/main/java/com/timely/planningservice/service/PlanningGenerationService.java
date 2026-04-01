@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -44,6 +45,7 @@ public class PlanningGenerationService {
     private final EmploiDuTempsRepository emploiDuTempsRepository;
 
     @Transactional
+    @CacheEvict(value = "planning:emploi", allEntries = true)
     public GeneratePlanningResponse generate(GeneratePlanningRequest request) {
         long startTime = System.currentTimeMillis();
         log.info("Starting planning generation for school {} from {} to {}",
@@ -103,7 +105,7 @@ public class PlanningGenerationService {
                         var autoAssignRequest = new BookingServiceClient.AutoAssignSalleRequest(
                                 request.getEcoleId(),
                                 coursInfo.cours.typeCours(),
-                                coursInfo.cours.effectifGroupe(),
+                                coursInfo.cours.effectifGroupe() != null ? coursInfo.cours.effectifGroupe() : 30,
                                 bestSlot.date,
                                 bestSlot.heureDebut,
                                 bestSlot.heureFin,
@@ -312,14 +314,22 @@ public class PlanningGenerationService {
 
     private boolean isTeacherAvailable(TimeSlot slot, CoursInfo coursInfo) {
         if (coursInfo.disponibilites.isEmpty()) {
-            return true;  // If no availability data, assume available
+            return true;
+        }
+
+        boolean hasValidDispo = coursInfo.disponibilites.stream()
+                .anyMatch(dispo -> dispo.jourSemaine() != null && dispo.heureDebut() != null && dispo.heureFin() != null);
+
+        if (!hasValidDispo) {
+            return true;
         }
 
         return coursInfo.disponibilites.stream()
+                .filter(dispo -> dispo.jourSemaine() != null && dispo.heureDebut() != null && dispo.heureFin() != null)
                 .anyMatch(dispo ->
                         dispo.jourSemaine().equalsIgnoreCase(slot.jourSemaine.name()) &&
-                                LocalTime.parse(dispo.heureDebut()).compareTo(slot.heureDebut) <= 0 &&
-                                LocalTime.parse(dispo.heureFin()).compareTo(slot.heureFin) >= 0
+                                LocalTime.parse(dispo.heureDebut()).isBefore(slot.heureFin) &&
+                                LocalTime.parse(dispo.heureFin()).isAfter(slot.heureDebut)
                 );
     }
 

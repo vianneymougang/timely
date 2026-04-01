@@ -72,8 +72,8 @@ class EmploiDuTempsServiceTest {
         request.setSortBy("dateDebut");
         request.setSortDirection("ASC");
 
-        EmploiDuTemps emploi1 = createEmploiDuTemps(ecoleId, StatutEmploi.BROUILLON);
-        EmploiDuTemps emploi2 = createEmploiDuTemps(ecoleId, StatutEmploi.VALIDE);
+        EmploiDuTemps emploi1 = createEmploiDuTemps(ecoleId, StatutEmploi.DRAFT);
+        EmploiDuTemps emploi2 = createEmploiDuTemps(ecoleId, StatutEmploi.VALIDATED);
 
         EmploiDuTempsResponseDTO response1 = createResponseDTO(emploi1);
         EmploiDuTempsResponseDTO response2 = createResponseDTO(emploi2);
@@ -103,13 +103,13 @@ class EmploiDuTempsServiceTest {
     void searchAdvanced_byStatut_returnsFiltered() {
         // Arrange
         SearchPlanningRequest request = new SearchPlanningRequest();
-        request.setStatut(StatutEmploi.PUBLIE);
+        request.setStatut(StatutEmploi.PUBLISHED);
         request.setPage(0);
         request.setSize(20);
         request.setSortBy("dateDebut");
         request.setSortDirection("ASC");
 
-        EmploiDuTemps emploi = createEmploiDuTemps(UUID.randomUUID(), StatutEmploi.PUBLIE);
+        EmploiDuTemps emploi = createEmploiDuTemps(UUID.randomUUID(), StatutEmploi.PUBLISHED);
         emploi.setDatePublication(LocalDateTime.now());
 
         EmploiDuTempsResponseDTO responseDTO = createResponseDTO(emploi);
@@ -126,7 +126,7 @@ class EmploiDuTempsServiceTest {
         // Assert
         assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(1);
-        assertThat(result.getContent().get(0).getStatut()).isEqualTo(StatutEmploi.PUBLIE);
+        assertThat(result.getContent().get(0).getStatut()).isEqualTo(StatutEmploi.PUBLISHED);
         assertThat(result.getContent().get(0).getDatePublication()).isNotNull();
 
         verify(emploiDuTempsRepository).findAll(any(Specification.class), any(Pageable.class));
@@ -146,13 +146,13 @@ class EmploiDuTempsServiceTest {
         request.setEnseignantId(enseignantId);
         request.setSalleId(salleId);
         request.setSemaine(semaine);
-        request.setStatut(StatutEmploi.VALIDE);
+        request.setStatut(StatutEmploi.VALIDATED);
         request.setPage(0);
         request.setSize(10);
         request.setSortBy("dateDebut");
         request.setSortDirection("DESC");
 
-        EmploiDuTemps emploi = createEmploiDuTemps(ecoleId, StatutEmploi.VALIDE);
+        EmploiDuTemps emploi = createEmploiDuTemps(ecoleId, StatutEmploi.VALIDATED);
         EmploiDuTempsResponseDTO responseDTO = createResponseDTO(emploi);
 
         Page<EmploiDuTemps> mockPage = new PageImpl<>(List.of(emploi));
@@ -168,7 +168,7 @@ class EmploiDuTempsServiceTest {
         assertThat(result).isNotNull();
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getContent().get(0).getEcoleId()).isEqualTo(ecoleId);
-        assertThat(result.getContent().get(0).getStatut()).isEqualTo(StatutEmploi.VALIDE);
+        assertThat(result.getContent().get(0).getStatut()).isEqualTo(StatutEmploi.VALIDATED);
 
         // Verify specification was built with all filters
         ArgumentCaptor<Specification<EmploiDuTemps>> specCaptor = ArgumentCaptor.forClass(Specification.class);
@@ -191,9 +191,9 @@ class EmploiDuTempsServiceTest {
         request.setSortBy("dateCreation");
         request.setSortDirection("DESC");
 
-        EmploiDuTemps emploi1 = createEmploiDuTemps(UUID.randomUUID(), StatutEmploi.BROUILLON);
-        EmploiDuTemps emploi2 = createEmploiDuTemps(UUID.randomUUID(), StatutEmploi.VALIDE);
-        EmploiDuTemps emploi3 = createEmploiDuTemps(UUID.randomUUID(), StatutEmploi.PUBLIE);
+        EmploiDuTemps emploi1 = createEmploiDuTemps(UUID.randomUUID(), StatutEmploi.DRAFT);
+        EmploiDuTemps emploi2 = createEmploiDuTemps(UUID.randomUUID(), StatutEmploi.VALIDATED);
+        EmploiDuTemps emploi3 = createEmploiDuTemps(UUID.randomUUID(), StatutEmploi.PUBLISHED);
 
         EmploiDuTempsResponseDTO response1 = createResponseDTO(emploi1);
         EmploiDuTempsResponseDTO response2 = createResponseDTO(emploi2);
@@ -241,12 +241,12 @@ class EmploiDuTempsServiceTest {
         UUID emploiId = UUID.randomUUID();
         String publisherEmail = "admin@iusjc.edu";
 
-        EmploiDuTemps emploi = createEmploiDuTemps(UUID.randomUUID(), StatutEmploi.VALIDE);
+        EmploiDuTemps emploi = createEmploiDuTemps(UUID.randomUUID(), StatutEmploi.VALIDATED);
         emploi.setId(emploiId);
         emploi.setUtilisateurValidation("validator@iusjc.edu");
 
         EmploiDuTempsResponseDTO responseDTO = createResponseDTO(emploi);
-        responseDTO.setStatut(StatutEmploi.PUBLIE);
+        responseDTO.setStatut(StatutEmploi.PUBLISHED);
         responseDTO.setDatePublication(LocalDateTime.now());
 
         when(emploiDuTempsRepository.findById(emploiId)).thenReturn(java.util.Optional.of(emploi));
@@ -258,7 +258,7 @@ class EmploiDuTempsServiceTest {
 
         // Assert
         assertThat(result).isNotNull();
-        assertThat(result.getStatut()).isEqualTo(StatutEmploi.PUBLIE);
+        assertThat(result.getStatut()).isEqualTo(StatutEmploi.PUBLISHED);
         assertThat(result.getDatePublication()).isNotNull();
 
         // Verify the entity was updated correctly
@@ -266,7 +266,7 @@ class EmploiDuTempsServiceTest {
         verify(emploiDuTempsRepository).save(emploiCaptor.capture());
 
         EmploiDuTemps savedEmploi = emploiCaptor.getValue();
-        assertThat(savedEmploi.getStatut()).isEqualTo(StatutEmploi.PUBLIE);
+        assertThat(savedEmploi.getStatut()).isEqualTo(StatutEmploi.PUBLISHED);
         assertThat(savedEmploi.getDatePublication()).isNotNull();
         assertThat(savedEmploi.getUtilisateurValidation()).isEqualTo("validator@iusjc.edu");
     }
@@ -281,7 +281,7 @@ class EmploiDuTempsServiceTest {
         LocalDate dateDebut = LocalDate.of(2025, 2, 10);
         LocalDate dateFin = LocalDate.of(2025, 2, 16);
 
-        EmploiDuTemps emploi = createEmploiDuTemps(ecoleId, StatutEmploi.VALIDE);
+        EmploiDuTemps emploi = createEmploiDuTemps(ecoleId, StatutEmploi.VALIDATED);
         emploi.setId(emploiId);
         emploi.setDateDebut(dateDebut);
         emploi.setDateFin(dateFin);
@@ -320,7 +320,7 @@ class EmploiDuTempsServiceTest {
         String publisherEmail = "admin@iusjc.edu";
 
         // Test with BROUILLON status
-        EmploiDuTemps emploiBrouillon = createEmploiDuTemps(UUID.randomUUID(), StatutEmploi.BROUILLON);
+        EmploiDuTemps emploiBrouillon = createEmploiDuTemps(UUID.randomUUID(), StatutEmploi.DRAFT);
         emploiBrouillon.setId(emploiId);
 
         when(emploiDuTempsRepository.findById(emploiId))
@@ -332,7 +332,7 @@ class EmploiDuTempsServiceTest {
                 .hasMessage("Only validated EmploisDuTemps can be published");
 
         // Test with already PUBLIE status
-        EmploiDuTemps emploiPublie = createEmploiDuTemps(UUID.randomUUID(), StatutEmploi.PUBLIE);
+        EmploiDuTemps emploiPublie = createEmploiDuTemps(UUID.randomUUID(), StatutEmploi.PUBLISHED);
         emploiPublie.setId(emploiId);
         emploiPublie.setDatePublication(LocalDateTime.now());
 
