@@ -1,5 +1,6 @@
 package com.timely.userservice.service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -52,4 +53,6 @@ public interface AvailabilityService {
      * @return list of individual availability slots
      */
     List<AvailabilitySlotDto> getAvailabilityByTeacherId(UUID teacherId);
+
+    List<AvailabilitySlotDto> getEffectiveAvailability(UUID teacherId, LocalDate weekStart);
 }

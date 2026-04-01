@@ -1,6 +1,7 @@
 package com.timely.userservice.controller;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
@@ -13,34 +14,57 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.timely.userservice.dto.AvailabilitySlotDto;
+import com.timely.userservice.exception.ResourceNotFoundException;
+import com.timely.userservice.model.Teacher;
+import com.timely.userservice.model.User;
+import com.timely.userservice.repository.UserRepository;
 import com.timely.userservice.service.AvailabilityService;
 
 import lombok.RequiredArgsConstructor;
 
-/**
- * Internal REST controller for teacher and availability inter-service communication.
- * No security constraints - should only be called by other microservices.
- * NOT exposed via API Gateway.
- */
 @RestController
 @RequestMapping("/internal")
 @RequiredArgsConstructor
 public class InternalAvailabilityController {
 
     private final AvailabilityService availabilityService;
+    private final UserRepository userRepository;
 
-    /**
-     * Get all availability slots for a teacher
-     */
     @GetMapping("/disponibilites/enseignant/{enseignantId}")
-    public ResponseEntity<List<AvailabilitySlotDto>> getDisponibilites(@PathVariable UUID enseignantId) {
+    public ResponseEntity<List<DisponibiliteDTO>> getDisponibilites(@PathVariable UUID enseignantId) {
         List<AvailabilitySlotDto> slots = availabilityService.getAvailabilityByTeacherId(enseignantId);
-        return ResponseEntity.ok(slots);
+        List<DisponibiliteDTO> dtos = slots.stream()
+                .map(slot -> new DisponibiliteDTO(
+                        slot.getId(),
+                        slot.getTeacherId(),
+                        slot.getDayOfWeek() != null ? slot.getDayOfWeek().name() : null,
+                        slot.getStartTime() != null ? slot.getStartTime().toString() : null,
+                        slot.getEndTime() != null ? slot.getEndTime().toString() : null,
+                        true
+                ))
+                .toList();
+        return ResponseEntity.ok(dtos);
     }
 
-    /**
-     * Check if a teacher is available at a specific time
-     */
+    @GetMapping("/disponibilites/effective")
+    public ResponseEntity<List<DisponibiliteDTO>> getEffectiveDisponibilites(
+            @RequestParam UUID enseignantId,
+            @RequestParam String weekStart) {
+        LocalDate week = LocalDate.parse(weekStart);
+        List<AvailabilitySlotDto> slots = availabilityService.getEffectiveAvailability(enseignantId, week);
+        List<DisponibiliteDTO> dtos = slots.stream()
+                .map(slot -> new DisponibiliteDTO(
+                        slot.getId(),
+                        slot.getTeacherId(),
+                        slot.getDayOfWeek() != null ? slot.getDayOfWeek().name() : null,
+                        slot.getStartTime() != null ? slot.getStartTime().toString() : null,
+                        slot.getEndTime() != null ? slot.getEndTime().toString() : null,
+                        true
+                ))
+                .toList();
+        return ResponseEntity.ok(dtos);
+    }
+
     @GetMapping("/disponibilites/check")
     public ResponseEntity<Boolean> checkDisponibilite(
             @RequestParam UUID enseignantId,
@@ -51,14 +75,10 @@ public class InternalAvailabilityController {
         LocalTime startTime = LocalTime.parse(heureDebut);
         LocalTime endTime = LocalTime.parse(heureFin);
 
-        // Get all availabilities for the teacher
+        DayOfWeek requestedDay = DayOfWeek.valueOf(jourSemaine.toUpperCase());
+
         List<AvailabilitySlotDto> availabilities = availabilityService.getAvailabilityByTeacherId(enseignantId);
 
-        // Convert French day name to DayOfWeek enum
-        DayOfWeek requestedDay = convertFrenchDayToDayOfWeek(jourSemaine);
-
-        // Check if any slot matches the requested time
-        // A slot is available if it covers the entire requested time range
         boolean isAvailable = availabilities.stream()
                 .anyMatch(slot ->
                     slot.getDayOfWeek().equals(requestedDay) &&
@@ -69,61 +89,39 @@ public class InternalAvailabilityController {
         return ResponseEntity.ok(isAvailable);
     }
 
-    /**
-     * Get teacher info (simplified - returns basic info)
-     */
     @GetMapping("/enseignants/{id}")
     public ResponseEntity<EnseignantDTO> getEnseignant(@PathVariable UUID id) {
-        // This is a placeholder - in a real system, you'd have a proper teacher service
-        // For now, return a simple DTO
+        User user = userRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Teacher not found: " + id));
+
+        Teacher teacher = user instanceof Teacher t ? t : null;
+
         EnseignantDTO dto = new EnseignantDTO(
-            id,
-            "Unknown",  // nom - would be fetched from User service
-            "Teacher",  // prenom
-            "teacher@example.com",  // email
-            "General",  // specialite
-            "Assistant"  // grade
+                user.getId(),
+                user.getName(),
+                user.getSurname(),
+                user.getEmail(),
+                teacher != null ? teacher.getRank() : null,
+                teacher != null ? teacher.getGrade() : null
         );
         return ResponseEntity.ok(dto);
     }
 
-    /**
-     * Simple DTO for teacher information (matches planning-service expectations)
-     */
     public record EnseignantDTO(
-        UUID id,
-        String nom,
-        String prenom,
-        String email,
-        String specialite,
-        String grade
+            UUID id,
+            String nom,
+            String prenom,
+            String email,
+            String specialite,
+            String grade
     ) {}
 
-    /**
-     * Simple DTO for availability (matches planning-service expectations)
-     */
     public record DisponibiliteDTO(
-        UUID id,
-        UUID enseignantId,
-        String jourSemaine,
-        String heureDebut,
-        String heureFin,
-        boolean estDisponible
+            UUID id,
+            UUID enseignantId,
+            String jourSemaine,
+            String heureDebut,
+            String heureFin,
+            boolean estDisponible
     ) {}
-
-    /**
-     * Helper method to convert French day names to DayOfWeek enum
-     */
-    private DayOfWeek convertFrenchDayToDayOfWeek(String frenchDay) {
-        return switch (frenchDay.toLowerCase()) {
-            case "lundi" -> DayOfWeek.MONDAY;
-            case "mardi" -> DayOfWeek.TUESDAY;
-            case "mercredi" -> DayOfWeek.WEDNESDAY;
-            case "jeudi" -> DayOfWeek.THURSDAY;
-            case "vendredi" -> DayOfWeek.FRIDAY;
-            case "samedi" -> DayOfWeek.SATURDAY;
-            case "dimanche" -> DayOfWeek.SUNDAY;
-            default -> throw new IllegalArgumentException("Invalid French day name: " + frenchDay);
-        };
-    }
 }

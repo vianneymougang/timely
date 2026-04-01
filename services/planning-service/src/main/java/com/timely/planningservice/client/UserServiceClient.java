@@ -17,6 +17,12 @@ public interface UserServiceClient {
     @GetMapping("/disponibilites/enseignant/{enseignantId}")
     List<DisponibiliteDTO> getDisponibilites(@PathVariable("enseignantId") UUID enseignantId);
 
+    @GetMapping("/disponibilites/effective")
+    List<DisponibiliteDTO> getEffectiveDisponibilites(
+            @RequestParam UUID enseignantId,
+            @RequestParam String weekStart
+    );
+
     @GetMapping("/disponibilites/check")
     boolean checkDisponibilite(
             @RequestParam UUID enseignantId,
