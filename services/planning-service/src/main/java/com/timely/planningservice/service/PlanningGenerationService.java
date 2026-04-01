@@ -21,6 +21,8 @@ import com.timely.planningservice.dto.request.EmploiDuTempsRequestDTO;
 import com.timely.planningservice.dto.request.GeneratePlanningRequest;
 import com.timely.planningservice.dto.response.CoursNonPlanifie;
 import com.timely.planningservice.dto.response.GeneratePlanningResponse;
+import com.timely.planningservice.entity.EmploiDuTemps;
+import com.timely.planningservice.entity.enums.PeriodeEmploi;
 import com.timely.planningservice.entity.enums.TypeRecurrence;
 import com.timely.planningservice.repository.EmploiDuTempsRepository;
 
@@ -48,10 +50,18 @@ public class PlanningGenerationService {
 
         LocalDate weekEnd = request.getWeekStart().plusDays(5);
 
+        List<EmploiDuTemps> existing =
+                emploiDuTempsRepository.findByEcoleIdAndDateRange(request.getEcoleId(), request.getWeekStart(), weekEnd);
+        if (!existing.isEmpty()) {
+            emploiDuTempsRepository.deleteAll(existing);
+            log.info("Deleted {} existing schedule(s) for school {} week {}", existing.size(), request.getEcoleId(), request.getWeekStart());
+        }
+
         EmploiDuTempsRequestDTO emploiRequest = new EmploiDuTempsRequestDTO();
         emploiRequest.setEcoleId(request.getEcoleId());
         emploiRequest.setDateDebut(request.getWeekStart());
         emploiRequest.setDateFin(weekEnd);
+        emploiRequest.setPeriode(PeriodeEmploi.SEMAINE);
         emploiRequest.setNotes("Généré automatiquement");
 
         var emploiResponse = emploiDuTempsService.createEmploiDuTemps(emploiRequest);
@@ -60,7 +70,7 @@ public class PlanningGenerationService {
         List<BookingServiceClient.CoursDTO> allCours = bookingServiceClient.getCoursByEcole(request.getEcoleId());
         log.info("Found {} courses to schedule", allCours.size());
 
-        List<CoursInfo> coursInfos = preprocessCourses(allCours);
+        List<CoursInfo> coursInfos = preprocessCourses(allCours, request.getWeekStart());
 
         List<TimeSlot> availableSlots = generateTimeSlotGrid(request.getWeekStart());
         log.info("Generated {} available time slots", availableSlots.size());
@@ -135,7 +145,7 @@ public class PlanningGenerationService {
 
                     creneauService.createCreneau(emploiId, creneauRequest);
 
-                    bestSlot.markUsedBy(coursInfo.cours.classeId(), coursInfo.cours.enseignantId());
+                    bestSlot.markUsedBy(coursInfo.cours.classeId(), coursInfo.cours.enseignantId(), salle.id());
                     creneauxPlaces++;
 
                 } catch (Exception e) {
@@ -176,7 +186,7 @@ public class PlanningGenerationService {
         );
     }
 
-    private List<CoursInfo> preprocessCourses(List<BookingServiceClient.CoursDTO> allCours) {
+    private List<CoursInfo> preprocessCourses(List<BookingServiceClient.CoursDTO> allCours, LocalDate weekStart) {
         return allCours.stream().map(cours -> {
             CoursInfo info = new CoursInfo();
             info.cours = cours;
@@ -190,7 +200,7 @@ public class PlanningGenerationService {
             info.requiredSlots = (int) Math.ceil(cours.volumeHoraire() * 60.0 / config.getSlotDurationMinutes());
 
             try {
-                info.disponibilites = userServiceClient.getDisponibilites(cours.enseignantId());
+                info.disponibilites = userServiceClient.getEffectiveDisponibilites(cours.enseignantId(), weekStart.toString());
             } catch (Exception e) {
                 log.warn("Could not fetch availabilities for teacher {}: {}", cours.enseignantId(), e.getMessage());
                 info.disponibilites = new ArrayList<>();
@@ -321,10 +331,12 @@ public class PlanningGenerationService {
         LocalDate date;
         private final List<UUID> usedByClasses = new ArrayList<>();
         private final List<UUID> usedByTeachers = new ArrayList<>();
+        private final List<UUID> usedByRooms = new ArrayList<>();
 
-        void markUsedBy(UUID classeId, UUID enseignantId) {
+        void markUsedBy(UUID classeId, UUID enseignantId, UUID salleId) {
             if (classeId != null) usedByClasses.add(classeId);
             if (enseignantId != null) usedByTeachers.add(enseignantId);
+            if (salleId != null) usedByRooms.add(salleId);
         }
 
         boolean isUsedByClass(UUID classeId) {
@@ -333,6 +345,10 @@ public class PlanningGenerationService {
 
         boolean isUsedByTeacher(UUID enseignantId) {
             return enseignantId != null && usedByTeachers.contains(enseignantId);
+        }
+
+        boolean isUsedByRoom(UUID salleId) {
+            return salleId != null && usedByRooms.contains(salleId);
         }
     }
 }

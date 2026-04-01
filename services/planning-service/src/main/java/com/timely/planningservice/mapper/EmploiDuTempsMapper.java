@@ -12,7 +12,7 @@ import com.timely.planningservice.entity.EmploiDuTemps;
 public interface EmploiDuTempsMapper {
 
     @Mapping(target = "id", ignore = true)
-    @Mapping(target = "statut", constant = "BROUILLON")
+    @Mapping(target = "statut", constant = "DRAFT")
     @Mapping(target = "dateCreation", expression = "java(java.time.LocalDateTime.now())")
     @Mapping(target = "datePublication", ignore = true)
     @Mapping(target = "utilisateurValidation", ignore = true)
