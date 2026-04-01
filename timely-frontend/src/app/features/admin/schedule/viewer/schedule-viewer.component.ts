@@ -20,7 +20,7 @@ import { ConflictResolverComponent, ResolutionData } from '../components/conflic
 
 interface TimeSlot {
   time: string;
-  creneaux: Map<DayOfWeek, CreneauResponse | null>;
+  creneaux: Map<DayOfWeek, CreneauResponse[]>;
 }
 
 @Component({
@@ -43,6 +43,11 @@ export class ScheduleViewerComponent implements OnInit {
   emploiDuTemps = signal<EmploiDuTempsResponse | null>(null);
   conflits = signal<ConflitResponse[]>([]);
   timeSlots = signal<TimeSlot[]>([]);
+  allCreneaux = signal<CreneauResponse[]>([]);
+  availableSalles = signal<string[]>([]);
+  selectedSalleId = signal<string | null>(null);
+
+  readonly FIXED_SLOT_TIMES = ['08:00', '09:00', '10:00', '11:00', '13:00', '14:00', '15:00', '16:00'];
 
   isLoading = signal(false);
   isLoadingConflits = signal(false);
@@ -68,7 +73,7 @@ export class ScheduleViewerComponent implements OnInit {
   toastMessage = signal<string | null>(null);
   toastType = signal<'success' | 'error' | 'info'>('success');
 
-  daysOfWeek: DayOfWeek[] = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'];
+  daysOfWeek: DayOfWeek[] = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
   dayLabels = DayOfWeekLabels;
   statutLabels = StatutEmploiLabels;
   typeConflitLabels = TypeConflitLabels;
@@ -143,32 +148,53 @@ export class ScheduleViewerComponent implements OnInit {
         if (response) {
           this.emploiDuTemps.set(response);
           this.conflits.set(response.conflits || []);
-          this.buildTimeSlots(response.creneaux || []);
+          const creneaux = response.creneaux || [];
+          this.allCreneaux.set(creneaux);
+          const salleIds = [...new Set(creneaux.map(c => c.salleId).filter((s): s is string => !!s))];
+          this.availableSalles.set(salleIds);
+          this.rebuildGrid();
         }
       });
   }
 
   buildTimeSlots(creneaux: CreneauResponse[]): void {
-    const timeSlotsMap = new Map<string, Map<DayOfWeek, CreneauResponse>>();
+    const salleIds = [...new Set(creneaux.map(c => c.salleId).filter((s): s is string => !!s))];
+    this.availableSalles.set(salleIds);
+    this.allCreneaux.set(creneaux);
+    this.rebuildGrid();
+  }
 
-    creneaux.forEach(creneau => {
-      const timeKey = creneau.heureDebut;
-      if (!timeSlotsMap.has(timeKey)) {
-        timeSlotsMap.set(timeKey, new Map());
+  rebuildGrid(): void {
+    const filtered = this.selectedSalleId()
+      ? this.allCreneaux().filter(c => c.salleId === this.selectedSalleId())
+      : this.allCreneaux();
+
+    const timeSlotsMap = new Map<string, Map<DayOfWeek, CreneauResponse[]>>();
+
+    for (const timeStr of this.FIXED_SLOT_TIMES) {
+      const dayMap = new Map<DayOfWeek, CreneauResponse[]>();
+      for (const day of this.daysOfWeek) {
+        dayMap.set(day, []);
       }
-      timeSlotsMap.get(timeKey)!.set(creneau.jourSemaine, creneau);
+      timeSlotsMap.set(timeStr, dayMap);
+    }
+
+    filtered.forEach(creneau => {
+      const timeKey = creneau.heureDebut.substring(0, 5);
+      if (timeSlotsMap.has(timeKey)) {
+        timeSlotsMap.get(timeKey)!.get(creneau.jourSemaine)?.push(creneau);
+      }
     });
 
     const slots: TimeSlot[] = Array.from(timeSlotsMap.entries())
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([time, creneauxMap]) => ({
-        time,
-        creneaux: new Map(
-          this.daysOfWeek.map(day => [day, creneauxMap.get(day) || null])
-        )
-      }));
+      .map(([time, creneauxMap]) => ({ time, creneaux: creneauxMap }));
 
     this.timeSlots.set(slots);
+  }
+
+  filterBySalle(salleId: string | null): void {
+    this.selectedSalleId.set(salleId);
+    this.rebuildGrid();
   }
 
   detectConflits(): void {
