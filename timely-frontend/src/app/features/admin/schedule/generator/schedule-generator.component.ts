@@ -4,7 +4,7 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Router } from '@angular/router';
 import { PlanningService } from '../../../../core/services/planning.service';
 import { EcoleDto, EcoleService } from '../../../../core/services/ecole.service';
-import { GeneratePlanningRequest, GeneratePlanningResponse, PeriodeEmploi } from '../../../../core/models/planning.model';
+import { GeneratePlanningRequest, GeneratePlanningResponse } from '../../../../core/models/planning.model';
 import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
 
@@ -27,23 +27,10 @@ export class ScheduleGeneratorComponent implements OnInit {
   generationResult = signal<GeneratePlanningResponse | null>(null);
   ecoles = signal<EcoleDto[]>([]);
 
-  periodeOptions: { value: PeriodeEmploi; label: string }[] = [
-    { value: 'SEMESTRE_1', label: 'Semestre 1' },
-    { value: 'SEMESTRE_2', label: 'Semestre 2' },
-    { value: 'ANNUEL', label: 'Annuel' }
-  ];
-
   constructor() {
     this.generatorForm = this.fb.group({
       ecoleId: ['', Validators.required],
-      dateDebut: ['', Validators.required],
-      dateFin: ['', Validators.required],
-      periode: ['SEMESTRE_1', Validators.required],
-      creneauxParJour: [6, [Validators.required, Validators.min(1), Validators.max(12)]],
-      heureDebutJournee: ['08:00', Validators.required],
-      heureFinJournee: ['18:00', Validators.required],
-      dureeCreneauMinutes: [90, [Validators.required, Validators.min(30), Validators.max(240)]],
-      pauseEntreCreneauxMinutes: [15, [Validators.required, Validators.min(0), Validators.max(60)]]
+      weekStart: ['', [Validators.required, this.mondayValidator]]
     });
   }
 
@@ -51,6 +38,12 @@ export class ScheduleGeneratorComponent implements OnInit {
     this.ecoleService.fetchEcolesFromApi().pipe(
       catchError(() => of([]))
     ).subscribe(ecoles => this.ecoles.set(ecoles));
+  }
+
+  private mondayValidator(control: import('@angular/forms').AbstractControl) {
+    if (!control.value) return null;
+    const date = new Date(control.value);
+    return date.getDay() === 1 ? null : { notMonday: true };
   }
 
   onSubmit(): void {
@@ -68,7 +61,6 @@ export class ScheduleGeneratorComponent implements OnInit {
     this.planningService.generateSchedule(request)
       .pipe(
         catchError(error => {
-          console.error('Erreur lors de la génération:', error);
           this.errorMessage.set(
             error.error?.message ||
             'Une erreur est survenue lors de la génération de l\'emploi du temps'
@@ -92,14 +84,7 @@ export class ScheduleGeneratorComponent implements OnInit {
   }
 
   resetForm(): void {
-    this.generatorForm.reset({
-      periode: 'SEMESTRE_1',
-      creneauxParJour: 6,
-      heureDebutJournee: '08:00',
-      heureFinJournee: '18:00',
-      dureeCreneauMinutes: 90,
-      pauseEntreCreneauxMinutes: 15
-    });
+    this.generatorForm.reset();
     this.errorMessage.set(null);
     this.generationResult.set(null);
   }
@@ -107,7 +92,6 @@ export class ScheduleGeneratorComponent implements OnInit {
   getSeverityClass(): string {
     const result = this.generationResult();
     if (!result) return '';
-
     if (result.tauxReussite >= 90) return 'text-green-600';
     if (result.tauxReussite >= 70) return 'text-yellow-600';
     return 'text-red-600';

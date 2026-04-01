@@ -5,7 +5,6 @@ import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Comparator;
-import java.util.Date;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -22,16 +21,12 @@ import com.timely.planningservice.dto.request.EmploiDuTempsRequestDTO;
 import com.timely.planningservice.dto.request.GeneratePlanningRequest;
 import com.timely.planningservice.dto.response.CoursNonPlanifie;
 import com.timely.planningservice.dto.response.GeneratePlanningResponse;
-import com.timely.planningservice.entity.EmploiDuTemps;
 import com.timely.planningservice.entity.enums.TypeRecurrence;
 import com.timely.planningservice.repository.EmploiDuTempsRepository;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * Service for automatic planning generation using MCF (Most Constrained First) algorithm
- */
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -47,42 +42,36 @@ public class PlanningGenerationService {
     @Transactional
     @CacheEvict(value = "planning:emploi", allEntries = true)
     public GeneratePlanningResponse generate(GeneratePlanningRequest request) {
+        request.validate();
         long startTime = System.currentTimeMillis();
-        log.info("Starting planning generation for school {} from {} to {}",
-                request.getEcoleId(), request.getDateDebut(), request.getDateFin());
+        log.info("Starting planning generation for school {} week starting {}", request.getEcoleId(), request.getWeekStart());
 
-        // 1. Create EmploiDuTemps in BROUILLON status
+        LocalDate weekEnd = request.getWeekStart().plusDays(5);
+
         EmploiDuTempsRequestDTO emploiRequest = new EmploiDuTempsRequestDTO();
         emploiRequest.setEcoleId(request.getEcoleId());
-        emploiRequest.setDateDebut(request.getDateDebut());
-        emploiRequest.setDateFin(request.getDateFin());
-        emploiRequest.setPeriode(request.getPeriode());
-        emploiRequest.setNotes("Généré automatiquement par algorithme MCF");
+        emploiRequest.setDateDebut(request.getWeekStart());
+        emploiRequest.setDateFin(weekEnd);
+        emploiRequest.setNotes("Généré automatiquement");
 
         var emploiResponse = emploiDuTempsService.createEmploiDuTemps(emploiRequest);
         UUID emploiId = emploiResponse.getId();
 
-        // 2. Fetch all courses for the school
         List<BookingServiceClient.CoursDTO> allCours = bookingServiceClient.getCoursByEcole(request.getEcoleId());
         log.info("Found {} courses to schedule", allCours.size());
 
-        // 3. Pre-process courses and calculate constraints
-        List<CoursInfo> coursInfos = preprocessCourses(allCours, request);
+        List<CoursInfo> coursInfos = preprocessCourses(allCours);
 
-        // 4. Generate time slot grid
-        List<TimeSlot> availableSlots = generateTimeSlotGrid(request);
+        List<TimeSlot> availableSlots = generateTimeSlotGrid(request.getWeekStart());
         log.info("Generated {} available time slots", availableSlots.size());
 
-        // 5. Smart sorting: Most Constrained First
         coursInfos.sort(Comparator
-                .comparingDouble(CoursInfo::getConstraintScore)  // Most constrained first
-                .thenComparing(c -> getTypePriority(c.cours.typeCours()))  // Then by type
-                .thenComparingInt(c -> -c.cours.volumeHoraire()));  // Then by volume desc
+                .comparingDouble(CoursInfo::getConstraintScore)
+                .thenComparing(c -> getTypePriority(c.cours.typeCours()))
+                .thenComparingInt(c -> -c.cours.volumeHoraire()));
 
-        // 6. Place courses using MCF algorithm
         List<CoursNonPlanifie> coursNonPlanifies = new ArrayList<>();
         int coursPlanifies = 0;
-        int conflitsDetectes = 0;
 
         for (CoursInfo coursInfo : coursInfos) {
             if (!coursInfo.isSchedulable) {
@@ -96,71 +85,61 @@ public class PlanningGenerationService {
 
             int creneauxPlaces = 0;
             for (int i = 0; i < coursInfo.requiredSlots; i++) {
-                TimeSlot bestSlot = findBestSlot(availableSlots, coursInfo, emploiId);
+                TimeSlot bestSlot = findBestSlot(availableSlots, coursInfo);
 
-                if (bestSlot != null) {
-                    // Try to auto-assign room
-                    BookingServiceClient.SalleDTO salle = null;
-                    try {
-                        var autoAssignRequest = new BookingServiceClient.AutoAssignSalleRequest(
-                                request.getEcoleId(),
-                                coursInfo.cours.typeCours(),
-                                coursInfo.cours.effectifGroupe() != null ? coursInfo.cours.effectifGroupe() : 30,
-                                bestSlot.date,
-                                bestSlot.heureDebut,
-                                bestSlot.heureFin,
-                                null  // No specific equipment required
-                        );
-                        salle = bookingServiceClient.autoAssignSalle(autoAssignRequest);
-                    } catch (Exception e) {
-                        log.warn("Could not auto-assign room for course {}: {}", coursInfo.cours.intitule(), e.getMessage());
-                        // Break - can't place this course without a room
-                        break;
-                    }
+                if (bestSlot == null) break;
 
-                    if (salle != null) {
-                        // Create reservation
-                        try {
-                            var reservationRequest = new BookingServiceClient.CreateReservationRequest(
-                                    bestSlot.date,
-                                    bestSlot.heureDebut,
-                                    bestSlot.heureFin,
-                                    bestSlot.jourSemaine,
-                                    "HEBDOMADAIRE",
-                                    coursInfo.cours.id(),
-                                    salle.id(),
-                                    coursInfo.groupeId,
-                                    coursInfo.cours.enseignantId()
-                            );
-                            bookingServiceClient.createReservation(reservationRequest);
+                BookingServiceClient.SalleDTO salle = null;
+                try {
+                    var autoAssignRequest = new BookingServiceClient.AutoAssignSalleRequest(
+                            request.getEcoleId(),
+                            coursInfo.cours.typeCours(),
+                            coursInfo.cours.effectifGroupe() != null ? coursInfo.cours.effectifGroupe() : 30,
+                            bestSlot.date,
+                            bestSlot.heureDebut,
+                            bestSlot.heureFin,
+                            null
+                    );
+                    salle = bookingServiceClient.autoAssignSalle(autoAssignRequest);
+                } catch (Exception e) {
+                    log.warn("Could not auto-assign room for course {}: {}", coursInfo.cours.intitule(), e.getMessage());
+                    break;
+                }
 
-                            // Create creneau in planning
-                            CreneauRequestDTO creneauRequest = new CreneauRequestDTO();
-                            creneauRequest.setJourSemaine(bestSlot.jourSemaine);
-                            creneauRequest.setHeureDebut(bestSlot.heureDebut);
-                            creneauRequest.setHeureFin(bestSlot.heureFin);
-                            creneauRequest.setDateCreneau(bestSlot.date);
-                            creneauRequest.setTypeRecurrence(TypeRecurrence.HEBDOMADAIRE);
-                            creneauRequest.setCoursId(coursInfo.cours.id());
-                            creneauRequest.setEnseignantId(coursInfo.cours.enseignantId());
-                            creneauRequest.setSalleId(salle.id());
-                            creneauRequest.setGroupeId(coursInfo.groupeId);
+                if (salle == null) break;
 
-                            creneauService.createCreneau(emploiId, creneauRequest);
+                try {
+                    var reservationRequest = new BookingServiceClient.CreateReservationRequest(
+                            bestSlot.date,
+                            bestSlot.heureDebut,
+                            bestSlot.heureFin,
+                            bestSlot.jourSemaine,
+                            "HEBDOMADAIRE",
+                            coursInfo.cours.id(),
+                            salle.id(),
+                            coursInfo.groupeId,
+                            coursInfo.cours.enseignantId()
+                    );
+                    bookingServiceClient.createReservation(reservationRequest);
 
-                            // Mark slot as used
-                            bestSlot.used = true;
-                            creneauxPlaces++;
+                    CreneauRequestDTO creneauRequest = new CreneauRequestDTO();
+                    creneauRequest.setJourSemaine(bestSlot.jourSemaine);
+                    creneauRequest.setHeureDebut(bestSlot.heureDebut);
+                    creneauRequest.setHeureFin(bestSlot.heureFin);
+                    creneauRequest.setDateCreneau(bestSlot.date);
+                    creneauRequest.setTypeRecurrence(TypeRecurrence.HEBDOMADAIRE);
+                    creneauRequest.setCoursId(coursInfo.cours.id());
+                    creneauRequest.setEnseignantId(coursInfo.cours.enseignantId());
+                    creneauRequest.setSalleId(salle.id());
+                    creneauRequest.setGroupeId(coursInfo.groupeId);
 
-                        } catch (Exception e) {
-                            log.error("Error creating reservation/creneau: {}", e.getMessage());
-                            break;
-                        }
-                    } else {
-                        break;  // No room available
-                    }
-                } else {
-                    // No slot available for this course
+                    creneauService.createCreneau(emploiId, creneauRequest);
+
+                    bestSlot.markUsedBy(coursInfo.cours.classeId(), coursInfo.cours.enseignantId());
+                    creneauxPlaces++;
+
+                } catch (Exception e) {
+                    log.error("Error creating reservation/creneau: {}", e.getMessage());
                     break;
                 }
             }
@@ -180,8 +159,8 @@ public class PlanningGenerationService {
         }
 
         long duration = System.currentTimeMillis() - startTime;
-        double tauxReussite = coursInfos.isEmpty() ? 0.0
-                : (coursPlanifies * 100.0) / coursInfos.stream().filter(c -> c.isSchedulable).count();
+        long schedulable = coursInfos.stream().filter(c -> c.isSchedulable).count();
+        double tauxReussite = schedulable == 0 ? 0.0 : (coursPlanifies * 100.0) / schedulable;
 
         log.info("Planning generation completed: {}/{} courses scheduled ({}%) in {}ms",
                 coursPlanifies, allCours.size(), String.format("%.1f", tauxReussite), duration);
@@ -192,30 +171,24 @@ public class PlanningGenerationService {
                 coursPlanifies,
                 coursNonPlanifies,
                 tauxReussite,
-                conflitsDetectes,
+                0,
                 duration
         );
     }
 
-    private List<CoursInfo> preprocessCourses(List<BookingServiceClient.CoursDTO> allCours, GeneratePlanningRequest request) {
+    private List<CoursInfo> preprocessCourses(List<BookingServiceClient.CoursDTO> allCours) {
         return allCours.stream().map(cours -> {
             CoursInfo info = new CoursInfo();
             info.cours = cours;
 
-            // Q1.1=B: If no teacher, mark as non-schedulable
             if (cours.enseignantId() == null) {
                 info.isSchedulable = false;
                 info.nonSchedulableReason = "Aucun enseignant assigné";
                 return info;
             }
 
-            // Calculate required slots
-            int dureeMinutes = request.getDureeCreneauMinutes() != null
-                    ? request.getDureeCreneauMinutes()
-                    : config.getDureeCreneauDefaut();
-            info.requiredSlots = (int) Math.ceil(cours.volumeHoraire() * 60.0 / dureeMinutes);
+            info.requiredSlots = (int) Math.ceil(cours.volumeHoraire() * 60.0 / config.getSlotDurationMinutes());
 
-            // Fetch teacher availabilities
             try {
                 info.disponibilites = userServiceClient.getDisponibilites(cours.enseignantId());
             } catch (Exception e) {
@@ -223,7 +196,6 @@ public class PlanningGenerationService {
                 info.disponibilites = new ArrayList<>();
             }
 
-            // Fetch groups for the course
             try {
                 List<BookingServiceClient.GroupeDTO> groupes = bookingServiceClient.getGroupesByCours(cours.id());
                 info.groupeId = groupes.isEmpty() ? null : groupes.get(0).id();
@@ -231,8 +203,7 @@ public class PlanningGenerationService {
                 log.warn("Could not fetch groups for course {}: {}", cours.id(), e.getMessage());
             }
 
-            // Calculate constraint score (lower = more constrained)
-            int availableSlotCount = info.disponibilites.size() * 5;  // Rough estimate
+            int availableSlotCount = info.disponibilites.size() * 5;
             info.constraintScore = availableSlotCount > 0
                     ? (double) availableSlotCount / info.requiredSlots
                     : 0.0;
@@ -242,67 +213,38 @@ public class PlanningGenerationService {
         }).collect(Collectors.toList());
     }
 
-    private List<TimeSlot> generateTimeSlotGrid(GeneratePlanningRequest request) {
+    private List<TimeSlot> generateTimeSlotGrid(LocalDate weekStart) {
         List<TimeSlot> slots = new ArrayList<>();
+        List<LocalTime> slotStarts = config.getSlotStartTimes();
 
-        LocalTime heureDebut = request.getHeureDebutJournee() != null
-                ? request.getHeureDebutJournee()
-                : config.getHeureDebutDefaut();
-
-        LocalTime heureFin = request.getHeureFinJournee() != null
-                ? request.getHeureFinJournee()
-                : config.getHeureFinDefaut();
-
-        int dureeMinutes = request.getDureeCreneauMinutes() != null
-                ? request.getDureeCreneauMinutes()
-                : config.getDureeCreneauDefaut();
-
-        int pauseMinutes = request.getPauseEntreCreneauxMinutes() != null
-                ? request.getPauseEntreCreneauxMinutes()
-                : config.getPauseDefaut();
-
-        // For each day Monday-Saturday
-        for (DayOfWeek day : new DayOfWeek[]{
-                DayOfWeek.MONDAY, DayOfWeek.TUESDAY, DayOfWeek.WEDNESDAY,
-                DayOfWeek.THURSDAY, DayOfWeek.FRIDAY, DayOfWeek.SATURDAY}) {
-
-            LocalTime currentTime = heureDebut;
-            LocalDate firstOccurrence = getFirstOccurrence(request.getDateDebut(), day);
-
-            while (currentTime.plusMinutes(dureeMinutes).isBefore(heureFin) ||
-                    currentTime.plusMinutes(dureeMinutes).equals(heureFin)) {
-
+        for (DayOfWeek day : config.getActiveDays()) {
+            LocalDate date = weekStart;
+            while (date.getDayOfWeek() != day) {
+                date = date.plusDays(1);
+            }
+            for (LocalTime start : slotStarts) {
                 TimeSlot slot = new TimeSlot();
                 slot.jourSemaine = day;
-                slot.heureDebut = currentTime;
-                slot.heureFin = currentTime.plusMinutes(dureeMinutes);
-                slot.date = firstOccurrence;
-                slot.used = false;
-
+                slot.heureDebut = start;
+                slot.heureFin = start.plusMinutes(config.getSlotDurationMinutes());
+                slot.date = date;
                 slots.add(slot);
-
-                currentTime = currentTime.plusMinutes(dureeMinutes + pauseMinutes);
             }
         }
 
         return slots;
     }
 
-    private TimeSlot findBestSlot(List<TimeSlot> availableSlots, CoursInfo coursInfo, UUID emploiId) {
+    private TimeSlot findBestSlot(List<TimeSlot> availableSlots, CoursInfo coursInfo) {
         TimeSlot bestSlot = null;
         double bestScore = Double.NEGATIVE_INFINITY;
 
         for (TimeSlot slot : availableSlots) {
-            if (slot.used) continue;
+            if (slot.isUsedByClass(coursInfo.cours.classeId())) continue;
+            if (slot.isUsedByTeacher(coursInfo.cours.enseignantId())) continue;
+            if (!isTeacherAvailable(slot, coursInfo)) continue;
 
-            // Check teacher availability
-            if (!isTeacherAvailable(slot, coursInfo)) {
-                continue;
-            }
-
-            // Calculate score
             double score = calculateSlotScore(slot, coursInfo);
-
             if (score > bestScore) {
                 bestSlot = slot;
                 bestScore = score;
@@ -313,55 +255,40 @@ public class PlanningGenerationService {
     }
 
     private boolean isTeacherAvailable(TimeSlot slot, CoursInfo coursInfo) {
-        if (coursInfo.disponibilites.isEmpty()) {
-            return true;
-        }
+        if (coursInfo.disponibilites.isEmpty()) return true;
 
         boolean hasValidDispo = coursInfo.disponibilites.stream()
-                .anyMatch(dispo -> dispo.jourSemaine() != null && dispo.heureDebut() != null && dispo.heureFin() != null);
+                .anyMatch(d -> d.jourSemaine() != null && d.heureDebut() != null && d.heureFin() != null);
 
-        if (!hasValidDispo) {
-            return true;
-        }
+        if (!hasValidDispo) return true;
 
         return coursInfo.disponibilites.stream()
-                .filter(dispo -> dispo.jourSemaine() != null && dispo.heureDebut() != null && dispo.heureFin() != null)
-                .anyMatch(dispo ->
-                        dispo.jourSemaine().equalsIgnoreCase(slot.jourSemaine.name()) &&
-                                LocalTime.parse(dispo.heureDebut()).isBefore(slot.heureFin) &&
-                                LocalTime.parse(dispo.heureFin()).isAfter(slot.heureDebut)
+                .filter(d -> d.jourSemaine() != null && d.heureDebut() != null && d.heureFin() != null)
+                .anyMatch(d ->
+                        d.jourSemaine().equalsIgnoreCase(slot.jourSemaine.name()) &&
+                        LocalTime.parse(d.heureDebut()).isBefore(slot.heureFin) &&
+                        LocalTime.parse(d.heureFin()).isAfter(slot.heureDebut)
                 );
     }
 
     private double calculateSlotScore(TimeSlot slot, CoursInfo coursInfo) {
         double score = 100.0;
 
-        // Prefer morning for CM (Q2.1 config)
         if ("CM".equals(coursInfo.cours.typeCours()) && slot.heureDebut.getHour() < 12) {
-            score += config.getScoreCmMatin();
+            score += config.getScoreCmMorning();
         }
 
-        // Penalize late afternoon (Q2.1 config)
         if (slot.heureDebut.getHour() >= 16) {
-            score -= config.getPenaliteCreneauTardif();
+            score -= config.getPenaltyLateAfternoon();
         }
 
-        // Prefer mid-week days (Q2.1 config)
         if (slot.jourSemaine == DayOfWeek.TUESDAY ||
                 slot.jourSemaine == DayOfWeek.WEDNESDAY ||
                 slot.jourSemaine == DayOfWeek.THURSDAY) {
-            score += config.getScoreMilieuSemaine();
+            score += config.getScoreMidWeek();
         }
 
         return score;
-    }
-
-    private LocalDate getFirstOccurrence(LocalDate startDate, DayOfWeek targetDay) {
-        LocalDate date = startDate;
-        while (date.getDayOfWeek() != targetDay) {
-            date = date.plusDays(1);
-        }
-        return date;
     }
 
     private int getTypePriority(String typeCours) {
@@ -373,7 +300,6 @@ public class PlanningGenerationService {
         };
     }
 
-    // Inner classes
     private static class CoursInfo {
         BookingServiceClient.CoursDTO cours;
         int requiredSlots;
@@ -393,6 +319,20 @@ public class PlanningGenerationService {
         LocalTime heureDebut;
         LocalTime heureFin;
         LocalDate date;
-        boolean used;
+        private final List<UUID> usedByClasses = new ArrayList<>();
+        private final List<UUID> usedByTeachers = new ArrayList<>();
+
+        void markUsedBy(UUID classeId, UUID enseignantId) {
+            if (classeId != null) usedByClasses.add(classeId);
+            if (enseignantId != null) usedByTeachers.add(enseignantId);
+        }
+
+        boolean isUsedByClass(UUID classeId) {
+            return classeId != null && usedByClasses.contains(classeId);
+        }
+
+        boolean isUsedByTeacher(UUID enseignantId) {
+            return enseignantId != null && usedByTeachers.contains(enseignantId);
+        }
     }
 }

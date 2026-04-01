@@ -1,12 +1,10 @@
 <div class="container mx-auto px-4 py-6">
-  <div class="max-w-4xl mx-auto">
-    <!-- Header -->
+  <div class="max-w-2xl mx-auto">
     <div class="mb-6">
       <h2 class="text-2xl font-bold text-gray-800 mb-2">Générer un emploi du temps</h2>
-      <p class="text-gray-600">Configurez les paramètres pour générer automatiquement un emploi du temps</p>
+      <p class="text-gray-600">Sélectionnez l'école et la semaine de départ. La grille est fixe : lundi–samedi, 8h–17h, créneaux d'1h, pause 12h–13h.</p>
     </div>
 
-    <!-- Error Alert -->
     @if (errorMessage()) {
       <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-6">
         <div class="flex items-start">
@@ -18,7 +16,6 @@
       </div>
     }
 
-    <!-- Success Result -->
     @if (generationResult()) {
       <div class="bg-white shadow-lg rounded-lg p-6 mb-6 border border-green-200">
         <div class="flex items-center mb-4">
@@ -28,33 +25,26 @@
           <h3 class="text-xl font-semibold text-gray-800">Génération terminée</h3>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+        <div class="grid grid-cols-2 gap-4 mb-4">
           <div class="bg-gray-50 p-4 rounded-lg">
             <p class="text-sm text-gray-600 mb-1">Taux de réussite</p>
             <p class="text-2xl font-bold" [ngClass]="getSeverityClass()">
               {{ generationResult()!.tauxReussite.toFixed(1) }}%
             </p>
           </div>
-
           <div class="bg-gray-50 p-4 rounded-lg">
             <p class="text-sm text-gray-600 mb-1">Cours planifiés</p>
             <p class="text-2xl font-bold text-gray-800">
               {{ generationResult()!.coursPlanifies }} / {{ generationResult()!.totalCoursAPlanifier }}
             </p>
           </div>
-
           <div class="bg-gray-50 p-4 rounded-lg">
             <p class="text-sm text-gray-600 mb-1">Conflits détectés</p>
-            <p class="text-2xl font-bold text-gray-800">
-              {{ generationResult()!.conflitsDetectes }}
-            </p>
+            <p class="text-2xl font-bold text-gray-800">{{ generationResult()!.conflitsDetectes }}</p>
           </div>
-
           <div class="bg-gray-50 p-4 rounded-lg">
             <p class="text-sm text-gray-600 mb-1">Durée de génération</p>
-            <p class="text-2xl font-bold text-gray-800">
-              {{ (generationResult()!.dureeGenerationMs / 1000).toFixed(2) }}s
-            </p>
+            <p class="text-2xl font-bold text-gray-800">{{ (generationResult()!.dureeGenerationMs / 1000).toFixed(2) }}s</p>
           </div>
         </div>
 
@@ -63,7 +53,7 @@
             <h4 class="font-semibold text-yellow-800 mb-2">Cours non planifiés ({{ generationResult()!.coursNonPlanifies.length }})</h4>
             <ul class="list-disc list-inside text-sm text-yellow-700 space-y-1">
               @for (cours of generationResult()!.coursNonPlanifies; track cours.coursId) {
-                <li>{{ cours.intitule }} - {{ cours.raison }}</li>
+                <li>{{ cours.intitule }} — {{ cours.raison }}</li>
               }
             </ul>
           </div>
@@ -86,157 +76,55 @@
       </div>
     }
 
-    <!-- Generation Form -->
     @if (!generationResult()) {
       <form [formGroup]="generatorForm" (ngSubmit)="onSubmit()" class="bg-white shadow-lg rounded-lg p-6">
-        <!-- Informations de base -->
-        <div class="mb-6">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">Informations de base</h3>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- École -->
-            <div>
-              <label for="ecoleId" class="block text-sm font-medium text-gray-700 mb-2">
-                École <span class="text-red-500">*</span>
-              </label>
-              <select
-                id="ecoleId"
-                formControlName="ecoleId"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white">
-                <option value="" disabled>Sélectionner une école</option>
-                @for (ecole of ecoles(); track ecole.id) {
-                  <option [value]="ecole.id">{{ ecole.nom }} ({{ ecole.code }})</option>
-                }
-              </select>
-              @if (generatorForm.get('ecoleId')?.touched && generatorForm.get('ecoleId')?.errors) {
-                <p class="text-red-500 text-sm mt-1">L'école est obligatoire</p>
+        <div class="space-y-4">
+          <div>
+            <label for="ecoleId" class="block text-sm font-medium text-gray-700 mb-2">
+              École <span class="text-red-500">*</span>
+            </label>
+            <select
+              id="ecoleId"
+              formControlName="ecoleId"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white">
+              <option value="" disabled>Sélectionner une école</option>
+              @for (ecole of ecoles(); track ecole.id) {
+                <option [value]="ecole.id">{{ ecole.nom }}</option>
               }
-            </div>
+            </select>
+            @if (generatorForm.get('ecoleId')?.touched && generatorForm.get('ecoleId')?.errors) {
+              <p class="text-red-500 text-sm mt-1">L'école est obligatoire</p>
+            }
+          </div>
 
-            <!-- Période -->
-            <div>
-              <label for="periode" class="block text-sm font-medium text-gray-700 mb-2">
-                Période <span class="text-red-500">*</span>
-              </label>
-              <select
-                id="periode"
-                formControlName="periode"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                @for (option of periodeOptions; track option.value) {
-                  <option [value]="option.value">{{ option.label }}</option>
-                }
-              </select>
-            </div>
+          <div>
+            <label for="weekStart" class="block text-sm font-medium text-gray-700 mb-2">
+              Semaine (lundi) <span class="text-red-500">*</span>
+            </label>
+            <input
+              type="date"
+              id="weekStart"
+              formControlName="weekStart"
+              class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+            @if (generatorForm.get('weekStart')?.touched && generatorForm.get('weekStart')?.errors?.['required']) {
+              <p class="text-red-500 text-sm mt-1">La date de début est obligatoire</p>
+            }
+            @if (generatorForm.get('weekStart')?.touched && generatorForm.get('weekStart')?.errors?.['notMonday']) {
+              <p class="text-red-500 text-sm mt-1">La date doit être un lundi</p>
+            }
+          </div>
 
-            <!-- Date début -->
-            <div>
-              <label for="dateDebut" class="block text-sm font-medium text-gray-700 mb-2">
-                Date de début <span class="text-red-500">*</span>
-              </label>
-              <input
-                type="date"
-                id="dateDebut"
-                formControlName="dateDebut"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-              @if (generatorForm.get('dateDebut')?.touched && generatorForm.get('dateDebut')?.errors) {
-                <p class="text-red-500 text-sm mt-1">La date de début est obligatoire</p>
-              }
-            </div>
-
-            <!-- Date fin -->
-            <div>
-              <label for="dateFin" class="block text-sm font-medium text-gray-700 mb-2">
-                Date de fin <span class="text-red-500">*</span>
-              </label>
-              <input
-                type="date"
-                id="dateFin"
-                formControlName="dateFin"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-              @if (generatorForm.get('dateFin')?.touched && generatorForm.get('dateFin')?.errors) {
-                <p class="text-red-500 text-sm mt-1">La date de fin est obligatoire</p>
-              }
-            </div>
+          <div class="bg-blue-50 rounded-lg p-4 text-sm text-blue-700">
+            <p class="font-medium mb-1">Grille fixe :</p>
+            <ul class="list-disc list-inside space-y-0.5">
+              <li>Lundi au samedi</li>
+              <li>8 créneaux/jour : 8h–9h, 9h–10h, 10h–11h, 11h–12h, 13h–14h, 14h–15h, 15h–16h, 16h–17h</li>
+              <li>Pause déjeuner : 12h–13h (exclue)</li>
+            </ul>
           </div>
         </div>
 
-        <!-- Configuration avancée -->
-        <div class="mb-6">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">Configuration avancée</h3>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Créneaux par jour -->
-            <div>
-              <label for="creneauxParJour" class="block text-sm font-medium text-gray-700 mb-2">
-                Créneaux par jour
-              </label>
-              <input
-                type="number"
-                id="creneauxParJour"
-                formControlName="creneauxParJour"
-                min="1"
-                max="12"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-            </div>
-
-            <!-- Durée créneau -->
-            <div>
-              <label for="dureeCreneauMinutes" class="block text-sm font-medium text-gray-700 mb-2">
-                Durée du créneau (minutes)
-              </label>
-              <input
-                type="number"
-                id="dureeCreneauMinutes"
-                formControlName="dureeCreneauMinutes"
-                min="30"
-                max="240"
-                step="15"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-            </div>
-
-            <!-- Heure début -->
-            <div>
-              <label for="heureDebutJournee" class="block text-sm font-medium text-gray-700 mb-2">
-                Heure de début
-              </label>
-              <input
-                type="time"
-                id="heureDebutJournee"
-                formControlName="heureDebutJournee"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-            </div>
-
-            <!-- Heure fin -->
-            <div>
-              <label for="heureFinJournee" class="block text-sm font-medium text-gray-700 mb-2">
-                Heure de fin
-              </label>
-              <input
-                type="time"
-                id="heureFinJournee"
-                formControlName="heureFinJournee"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-            </div>
-
-            <!-- Pause -->
-            <div>
-              <label for="pauseEntreCreneauxMinutes" class="block text-sm font-medium text-gray-700 mb-2">
-                Pause entre créneaux (minutes)
-              </label>
-              <input
-                type="number"
-                id="pauseEntreCreneauxMinutes"
-                formControlName="pauseEntreCreneauxMinutes"
-                min="0"
-                max="60"
-                step="5"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-            </div>
-          </div>
-        </div>
-
-        <!-- Actions -->
-        <div class="flex gap-3 pt-4 border-t">
+        <div class="flex gap-3 pt-6 border-t mt-6">
           <button
             type="submit"
             [disabled]="isLoading() || generatorForm.invalid"
@@ -251,7 +139,6 @@
               Générer l'emploi du temps
             }
           </button>
-
           <button
             type="button"
             (click)="resetForm()"

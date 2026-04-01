@@ -1,5 +1,5 @@
 // Enums
-export type PeriodeEmploi = 'SEMESTRE_1' | 'SEMESTRE_2' | 'ANNUEL';
+export type PeriodeEmploi = 'SEMAINE' | 'MOIS' | 'TRIMESTRE' | 'SEMESTRE';
 export type StatutEmploi = 'DRAFT' | 'VALIDATED' | 'PUBLISHED' | 'ARCHIVED';
 export type TypeRecurrence = 'UNIQUE' | 'HEBDOMADAIRE' | 'BIHEBDOMADAIRE';
 export type StatutCreneau = 'DISPONIBLE' | 'RESERVE' | 'CONFIRME' | 'ANNULE';
@@ -10,14 +10,7 @@ export type StatutResolution = 'NON_RESOLU' | 'EN_COURS' | 'RESOLU' | 'IGNORE';
 // DTOs Request
 export interface GeneratePlanningRequest {
   ecoleId: string;
-  dateDebut: string; // Format ISO: YYYY-MM-DD
-  dateFin: string;
-  periode: PeriodeEmploi;
-  creneauxParJour?: number;
-  heureDebutJournee?: string; // Format HH:mm
-  heureFinJournee?: string;
-  dureeCreneauMinutes?: number;
-  pauseEntreCreneauxMinutes?: number;
+  weekStart: string; // Format ISO: YYYY-MM-DD, must be a Monday
 }
 
 export interface EmploiDuTempsRequest {
