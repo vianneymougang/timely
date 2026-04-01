@@ -13,6 +13,15 @@ import {
   CreateClasseDTO
 } from '../../../core/models/academic.model';
 
+export const CYCLE_TYPE_OPTIONS = [
+  { value: 'LICENCE', label: 'Licence (L)' },
+  { value: 'MASTER', label: 'Master (M)' },
+  { value: 'PREPA_INGENIEUR', label: 'Prépa Ingénieur (PI)' },
+  { value: 'CYCLE_INGENIEUR', label: 'Cycle Ingénieur (CI)' },
+  { value: 'CPGE', label: 'CPGE' },
+  { value: 'PREPA_VOGT', label: 'Prépa Vogt (PV)' }
+];
+
 @Component({
   selector: 'app-academic',
   standalone: true,
@@ -26,28 +35,26 @@ export class AcademicComponent implements OnInit {
   private classeService = inject(ClasseService);
   private fb = inject(FormBuilder);
 
-  // Signaux pour les données
   ecoles = signal<Ecole[]>([]);
   filieres = signal<Filiere[]>([]);
   classes = signal<Classe[]>([]);
 
-  // Section active (ecole, filiere ou classe)
   activeSection = signal<'ecole' | 'filiere' | 'classe'>('ecole');
 
-  // Modals
   showEcoleModal = signal(false);
   showFiliereModal = signal(false);
   showClasseModal = signal(false);
 
-  // Mode édition
   editingEcole = signal<Ecole | null>(null);
   editingFiliere = signal<Filiere | null>(null);
   editingClasse = signal<Classe | null>(null);
 
-  // Formulaires
   ecoleForm!: FormGroup;
   filiereForm!: FormGroup;
   classeForm!: FormGroup;
+
+  readonly cycleTypeOptions = CYCLE_TYPE_OPTIONS;
+  readonly yearIndexOptions = [1, 2, 3, 4, 5];
 
   ngOnInit(): void {
     this.initForms();
@@ -63,13 +70,14 @@ export class AcademicComponent implements OnInit {
 
     this.filiereForm = this.fb.group({
       nom: ['', [Validators.required, Validators.minLength(3)]],
+      cycleType: ['', Validators.required],
       description: ['', [Validators.required, Validators.minLength(10)]],
       ecoleId: ['', Validators.required]
     });
 
     this.classeForm = this.fb.group({
       nom: ['', [Validators.required, Validators.minLength(2)]],
-      niveau: ['', [Validators.required, Validators.minLength(2)]],
+      yearIndex: [null, [Validators.required, Validators.min(1), Validators.max(5)]],
       filiereId: ['', Validators.required]
     });
   }
@@ -80,12 +88,10 @@ export class AcademicComponent implements OnInit {
     this.classeService.getClasses().subscribe(data => this.classes.set(data));
   }
 
-  // Gestion des sections
   setActiveSection(section: 'ecole' | 'filiere' | 'classe'): void {
     this.activeSection.set(section);
   }
 
-  // Gestion des écoles
   openEcoleModal(ecole?: Ecole): void {
     if (ecole) {
       this.editingEcole.set(ecole);
@@ -105,14 +111,9 @@ export class AcademicComponent implements OnInit {
 
   saveEcole(): void {
     if (this.ecoleForm.invalid) return;
-
     const ecoleData = this.ecoleForm.value;
-
     if (this.editingEcole()) {
-      this.ecoleService.updateEcole({
-        id: this.editingEcole()!.id!,
-        ...ecoleData
-      }).subscribe(() => {
+      this.ecoleService.updateEcole({ id: this.editingEcole()!.id!, ...ecoleData }).subscribe(() => {
         this.closeEcoleModal();
         this.loadData();
       });
@@ -126,13 +127,10 @@ export class AcademicComponent implements OnInit {
 
   deleteEcole(id: string): void {
     if (confirm('Êtes-vous sûr de vouloir supprimer cette école ? Toutes les filières associées seront également affectées.')) {
-      this.ecoleService.deleteEcole(id).subscribe(() => {
-        this.loadData();
-      });
+      this.ecoleService.deleteEcole(id).subscribe(() => this.loadData());
     }
   }
 
-  // Gestion des filières
   openFiliereModal(filiere?: Filiere): void {
     if (filiere) {
       this.editingFiliere.set(filiere);
@@ -152,14 +150,9 @@ export class AcademicComponent implements OnInit {
 
   saveFiliere(): void {
     if (this.filiereForm.invalid) return;
-
     const filiereData = this.filiereForm.value;
-
     if (this.editingFiliere()) {
-      this.filiereService.updateFiliere({
-        id: this.editingFiliere()!.id!,
-        ...filiereData
-      }).subscribe(() => {
+      this.filiereService.updateFiliere({ id: this.editingFiliere()!.id!, ...filiereData }).subscribe(() => {
         this.closeFiliereModal();
         this.loadData();
       });
@@ -173,13 +166,10 @@ export class AcademicComponent implements OnInit {
 
   deleteFiliere(id: string): void {
     if (confirm('Êtes-vous sûr de vouloir supprimer cette filière ? Toutes les classes associées seront également affectées.')) {
-      this.filiereService.deleteFiliere(id).subscribe(() => {
-        this.loadData();
-      });
+      this.filiereService.deleteFiliere(id).subscribe(() => this.loadData());
     }
   }
 
-  // Gestion des classes
   openClasseModal(classe?: Classe): void {
     if (classe) {
       this.editingClasse.set(classe);
@@ -199,14 +189,9 @@ export class AcademicComponent implements OnInit {
 
   saveClasse(): void {
     if (this.classeForm.invalid) return;
-
     const classeData = this.classeForm.value;
-
     if (this.editingClasse()) {
-      this.classeService.updateClasse({
-        id: this.editingClasse()!.id!,
-        ...classeData
-      }).subscribe(() => {
+      this.classeService.updateClasse({ id: this.editingClasse()!.id!, ...classeData }).subscribe(() => {
         this.closeClasseModal();
         this.loadData();
       });
@@ -220,13 +205,10 @@ export class AcademicComponent implements OnInit {
 
   deleteClasse(id: string): void {
     if (confirm('Êtes-vous sûr de vouloir supprimer cette classe ?')) {
-      this.classeService.deleteClasse(id).subscribe(() => {
-        this.loadData();
-      });
+      this.classeService.deleteClasse(id).subscribe(() => this.loadData());
     }
   }
 
-  // Helpers
   getEcoleName(ecoleId: string): string {
     const ecole = this.ecoles().find(e => e.id === ecoleId);
     return ecole ? ecole.nom : 'École inconnue';
@@ -235,5 +217,9 @@ export class AcademicComponent implements OnInit {
   getFiliereName(filiereId: string): string {
     const filiere = this.filieres().find(f => f.id === filiereId);
     return filiere ? filiere.nom : 'Filière inconnue';
+  }
+
+  getCycleTypeLabel(value: string): string {
+    return this.cycleTypeOptions.find(o => o.value === value)?.label ?? value;
   }
 }

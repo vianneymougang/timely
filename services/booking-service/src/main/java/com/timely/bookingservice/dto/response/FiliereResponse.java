@@ -15,6 +15,7 @@ public class FiliereResponse {
     private String ecoleNom;
     private String nom;
     private String code;
+    private String cycleType;
     private String description;
     private LocalDateTime dateCreation;
     private LocalDateTime dateModification;
