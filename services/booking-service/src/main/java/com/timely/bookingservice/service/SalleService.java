@@ -72,14 +72,14 @@ public class SalleService {
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "salles:ecole", key = "#ecoleId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
+    @Cacheable(value = "salles:ecole", condition = "#pageable.isPaged()", key = "#ecoleId + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<SalleResponse> getByEcoleId(UUID ecoleId, Pageable pageable) {
         return salleRepository.findByEcoleId(ecoleId, pageable)
                 .map(salleMapper::toResponse);
     }
 
     @Transactional(readOnly = true)
-    @Cacheable(value = "salles:disponibles", key = "#capaciteMin + '-' + #typeSalle + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
+    @Cacheable(value = "salles:disponibles", condition = "#pageable.isPaged()", key = "#capaciteMin + '-' + #typeSalle + '-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<SalleResponse> getDisponibles(Integer capaciteMin, TypeSalle typeSalle, Pageable pageable) {
         return salleRepository.findSallesDisponibles(capaciteMin, typeSalle, pageable)
                 .map(salleMapper::toResponse);
