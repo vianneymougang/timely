@@ -39,6 +39,7 @@ public class EmploiDuTempsService {
     private final EmploiDuTempsRepository emploiDuTempsRepository;
     private final EmploiDuTempsMapper emploiDuTempsMapper;
     private final RabbitTemplate rabbitTemplate;
+    private final PlanningDataEnricher dataEnricher;
 
     @Transactional
     public EmploiDuTempsResponseDTO createEmploiDuTemps(EmploiDuTempsRequestDTO requestDTO) {
@@ -59,7 +60,31 @@ public class EmploiDuTempsService {
         EmploiDuTemps emploi = emploiDuTempsRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("EmploiDuTemps not found with ID: " + id));
 
-        return emploiDuTempsMapper.toResponseDTO(emploi);
+        EmploiDuTempsResponseDTO response = emploiDuTempsMapper.toResponseDTO(emploi);
+
+        // Enrich creneaux with data from other services
+        try {
+            PlanningDataEnricher.EnrichedPlanningData enrichedData = dataEnricher.enrichEmploiDuTemps(emploi);
+
+            if (response.getCreneaux() != null) {
+                response.getCreneaux().forEach(dto -> {
+                    enrichedData.creneaux().stream()
+                            .filter(c -> c.id().equals(dto.getId()))
+                            .findFirst()
+                            .ifPresent(enriched -> {
+                                dto.setCoursIntitule(enriched.nomCours());
+                                dto.setCoursType(enriched.typeCours());
+                                dto.setEnseignantNom(enriched.nomEnseignant());
+                                dto.setSalleNom(enriched.numeroSalle());
+                                dto.setGroupeNom(enriched.nomGroupe());
+                            });
+                });
+            }
+        } catch (Exception e) {
+            log.warn("Failed to enrich emploi du temps {}: {}", id, e.getMessage());
+        }
+
+        return response;
     }
 
     @Transactional(readOnly = true)

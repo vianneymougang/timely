@@ -13,7 +13,7 @@ public interface CreneauMapper {
 
     @Mapping(target = "id", ignore = true)
     @Mapping(target = "emploiDuTemps", ignore = true)
-    @Mapping(target = "statutCreneau", constant = "ACTIF")
+    @Mapping(target = "statutCreneau", constant = "DISPONIBLE")
     Creneau toEntity(CreneauRequestDTO dto);
 
     @Mapping(target = "emploiDuTempsId", source = "emploiDuTemps.id")

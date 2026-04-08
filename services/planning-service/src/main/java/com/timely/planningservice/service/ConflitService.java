@@ -93,6 +93,15 @@ public class ConflitService {
         return conflitRepository.countNonResolusParEmploi(emploiDuTempsId);
     }
 
+    @Transactional(readOnly = true)
+    public List<ConflitResponseDTO> getAllConflits() {
+        log.debug("Fetching all Conflits");
+        return conflitRepository.findAll()
+                .stream()
+                .map(conflitMapper::toResponseDTO)
+                .toList();
+    }
+
     @Transactional
     public ConflitResponseDTO resolveConflit(UUID id, String resolution) {
         log.info("Resolving Conflit with ID: {}", id);

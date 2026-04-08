@@ -36,4 +36,10 @@ public class CreneauRequestDTO {
     private UUID salleId;
     private UUID groupeId;
     private UUID coursId;
+
+    private String coursIntitule;
+    private String coursType;
+    private String enseignantNom;
+    private String salleNom;
+    private String groupeNom;
 }

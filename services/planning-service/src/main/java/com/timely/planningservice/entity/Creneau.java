@@ -81,6 +81,21 @@ public class Creneau {
     @Column(name = "cours_id")
     private UUID coursId;
 
+    @Column(name = "cours_intitule")
+    private String coursIntitule;
+
+    @Column(name = "cours_type", length = 10)
+    private String coursType;
+
+    @Column(name = "enseignant_nom")
+    private String enseignantNom;
+
+    @Column(name = "salle_nom")
+    private String salleNom;
+
+    @Column(name = "groupe_nom")
+    private String groupeNom;
+
     public Creneau(EmploiDuTemps emploiDuTemps, DayOfWeek jourSemaine, LocalTime heureDebut,
                    LocalTime heureFin, TypeRecurrence typeRecurrence) {
         this.emploiDuTemps = emploiDuTemps;
