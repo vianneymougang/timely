@@ -23,6 +23,7 @@ public interface CoursMapper {
 
     @Mapping(target = "ue", ignore = true)
     @Mapping(target = "classe", ignore = true)
+    @Mapping(target = "statut", defaultExpression = "java(com.timely.bookingservice.entity.enums.StatutCours.ACTIF)")
     Cours toEntity(CoursRequest request);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)
