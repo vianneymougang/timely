@@ -24,7 +24,7 @@ services:
       resources:
         limits:
           memory: 256M
-          cpus: '0.3'
+          cpus: "0.3"
 
   user-service-db:
     container_name: user-service-db
@@ -51,7 +51,7 @@ services:
       resources:
         limits:
           memory: 256M
-          cpus: '0.3'
+          cpus: "0.3"
 
   planning-service-db:
     container_name: planning-service-db
@@ -78,7 +78,7 @@ services:
       resources:
         limits:
           memory: 256M
-          cpus: '0.3'
+          cpus: "0.3"
 
   booking-service-db:
     container_name: booking-service-db
@@ -105,7 +105,7 @@ services:
       resources:
         limits:
           memory: 256M
-          cpus: '0.3'
+          cpus: "0.3"
 
   report-service-db:
     container_name: report-service-db
@@ -132,7 +132,7 @@ services:
       resources:
         limits:
           memory: 256M
-          cpus: '0.3'
+          cpus: "0.3"
 
   agora-service-db:
     container_name: agora-service-db
@@ -159,7 +159,7 @@ services:
       resources:
         limits:
           memory: 256M
-          cpus: '0.3'
+          cpus: "0.3"
 
   pgadmin:
     container_name: timely_ms_pgadmin
@@ -179,7 +179,7 @@ services:
       resources:
         limits:
           memory: 128M
-          cpus: '0.2'
+          cpus: "0.2"
 
   mongodb:
     container_name: timely_ms_mongo_db
@@ -194,7 +194,8 @@ services:
     networks:
       - timely-microservices
     healthcheck:
-      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping').ok", "--quiet"]
+      test:
+        ["CMD", "mongosh", "--eval", "db.adminCommand('ping').ok", "--quiet"]
       interval: 10s
       timeout: 20s
       retries: 5
@@ -203,7 +204,7 @@ services:
       resources:
         limits:
           memory: 256M
-          cpus: '0.25'
+          cpus: "0.25"
 
   mongo-express:
     container_name: timely_ms_mongo_express
@@ -221,7 +222,7 @@ services:
       resources:
         limits:
           memory: 128M
-          cpus: '0.2'
+          cpus: "0.2"
 
   redis:
     container_name: timely_ms_redis
@@ -243,7 +244,7 @@ services:
       resources:
         limits:
           memory: 256M
-          cpus: '0.25'
+          cpus: "0.25"
 
   mailtrap:
     image: dbck/mailtrap:latest
@@ -259,7 +260,7 @@ services:
       resources:
         limits:
           memory: 128M
-          cpus: '0.2'
+          cpus: "0.2"
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -285,7 +286,7 @@ services:
       resources:
         limits:
           memory: 256M
-          cpus: '0.25'
+          cpus: "0.25"
 
   # Microservices Infrastructure
   config-server:
@@ -306,7 +307,7 @@ services:
       resources:
         limits:
           memory: 384M
-          cpus: '0.3'
+          cpus: "0.3"
         reservations:
           memory: 192M
 
@@ -333,7 +334,7 @@ services:
       resources:
         limits:
           memory: 384M
-          cpus: '0.3'
+          cpus: "0.3"
         reservations:
           memory: 192M
 
@@ -373,7 +374,7 @@ services:
       resources:
         limits:
           memory: 384M
-          cpus: '0.3'
+          cpus: "0.3"
         reservations:
           memory: 192M
 
@@ -420,7 +421,7 @@ services:
       resources:
         limits:
           memory: 512M
-          cpus: '0.5'
+          cpus: "0.5"
         reservations:
           memory: 256M
 
@@ -458,7 +459,7 @@ services:
       resources:
         limits:
           memory: 512M
-          cpus: '0.5'
+          cpus: "0.5"
         reservations:
           memory: 256M
 
@@ -475,7 +476,7 @@ services:
       config-server:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8093/actuator/health" ]
+      test: ["CMD", "curl", "-f", "http://localhost:8093/actuator/health"]
       interval: 10s
       timeout: 20s
       retries: 5
@@ -496,7 +497,7 @@ services:
       resources:
         limits:
           memory: 512M
-          cpus: '0.5'
+          cpus: "0.5"
         reservations:
           memory: 256M
 
@@ -513,7 +514,7 @@ services:
       config-server:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8094/actuator/health" ]
+      test: ["CMD", "curl", "-f", "http://localhost:8094/actuator/health"]
       interval: 10s
       timeout: 20s
       retries: 5
@@ -534,7 +535,7 @@ services:
       resources:
         limits:
           memory: 512M
-          cpus: '0.5'
+          cpus: "0.5"
         reservations:
           memory: 256M
 
@@ -579,7 +580,7 @@ services:
       resources:
         limits:
           memory: 512M
-          cpus: '0.5'
+          cpus: "0.5"
         reservations:
           memory: 256M
 
@@ -596,7 +597,7 @@ services:
       config-server:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8096/actuator/health" ]
+      test: ["CMD", "curl", "-f", "http://localhost:8096/actuator/health"]
       interval: 10s
       timeout: 20s
       retries: 5
@@ -618,7 +619,7 @@ services:
       resources:
         limits:
           memory: 512M
-          cpus: '0.5'
+          cpus: "0.5"
         reservations:
           memory: 256M
 
@@ -635,7 +636,7 @@ services:
       config-server:
         condition: service_healthy
     healthcheck:
-      test: [ "CMD", "curl", "-f", "http://localhost:8097/actuator/health" ]
+      test: ["CMD", "curl", "-f", "http://localhost:8097/actuator/health"]
       interval: 10s
       timeout: 20s
       retries: 5
@@ -658,7 +659,7 @@ services:
       resources:
         limits:
           memory: 512M
-          cpus: '0.5'
+          cpus: "0.5"
         reservations:
           memory: 256M
 
