@@ -1,120 +1,304 @@
+-- =============================================
+-- V6 - User Service : Seed data Phase 7
+-- Campus IUSJC - 6 enseignants
+-- =============================================
+-- UUID legend:
+--   Enseignants    : b1111111-0000-0000-0000-00000000000X
+--   Dispo template : ca111111-0000-0000-0000-00000000000X
+--   IntervenirEcole: 1e111111-0000-0000-0000-00000000000X
+--   Enseigner      : e1111111-0000-0000-0000-00000000000X
+--
+-- Refs ecoles (booking-service, IDs deterministes):
+--   SJI  : 11111111-1111-1111-1111-111111111101
+--   SJM  : 11111111-1111-1111-1111-111111111102
+--   CPGE : 11111111-1111-1111-1111-111111111103
+--   PV   : 11111111-1111-1111-1111-111111111104
+--
+-- Refs cours (booking-service, IDs deterministes):
+--   Analyse I CM (CP1)        : 66666666-6666-6666-6666-666666666601
+--   Analyse I TD (CP1)        : 66666666-6666-6666-6666-666666666602
+--   Algebre CM (CPGE1-MPSI)   : 66666666-6666-6666-6666-666666666603
+--   Algo & Struct CM (CI1-GI) : 66666666-6666-6666-6666-666666666604
+--   Prog C TP (CI1-GI)        : 66666666-6666-6666-6666-666666666605
+--   Base Donnees CM (CI2-GI)  : 66666666-6666-6666-6666-666666666606
+--   Systemes Info CM (L2-CF)  : 66666666-6666-6666-6666-666666666607
+--   Comptabilite CM (L1-CF)   : 66666666-6666-6666-6666-666666666608
+--   Mecanique CM (CP1)        : 66666666-6666-6666-6666-666666666609
+--   Physique Gen. CM (CPGE1)  : 66666666-6666-6666-6666-66666666660a
+--   Physique Gen. CM (PV1)    : 66666666-6666-6666-6666-66666666660b
+--   Analyse I CM (CP2)        : 66666666-6666-6666-6666-66666666660c
+--   Algebre CM (CPGE2-MPSI)   : 66666666-6666-6666-6666-66666666660d
+--   Physique Gen. CM (CPGE2)  : 66666666-6666-6666-6666-66666666660e
+--   Physique Gen. CM (PV2)    : 66666666-6666-6666-6666-66666666660f
+
+-- ==========================================
+-- 1. ENSEIGNANTS
+-- ==========================================
+-- Mot de passe pour tous : 'password' (hash BCrypt)
 INSERT INTO users (id, user_type, name, surname, email, password, role, status, creation_date, matricule, grade, rank, hourly_rate) VALUES
-('b0000001-0000-0000-0000-000000000000', 'TEACHER', 'Jean-Pierre', 'Bakala', 'jbakala@timely.edu', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'ROLE_TEACHER', 'ACTIVE', '2024-09-01', 'ENS-001', 'Professeur', 'Informatique', '75000'),
-('b0000002-0000-0000-0000-000000000000', 'TEACHER', 'Marie', 'Kabongo', 'mkabongo@timely.edu', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'ROLE_TEACHER', 'ACTIVE', '2024-09-01', 'ENS-002', 'Maitre de conferences', 'Mathematiques', '60000'),
-('b0000003-0000-0000-0000-000000000000', 'TEACHER', 'Paul', 'Ngoma', 'pngoma@timely.edu', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'ROLE_TEACHER', 'ACTIVE', '2024-09-01', 'ENS-003', 'Professeur', 'Droit', '75000'),
-('b0000004-0000-0000-0000-000000000000', 'TEACHER', 'Sophie', 'Lulendo', 'slulendo@timely.edu', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'ROLE_TEACHER', 'ACTIVE', '2024-09-01', 'ENS-004', 'Maitre de conferences', 'Sciences Fondamentales', '60000'),
-('b0000005-0000-0000-0000-000000000000', 'TEACHER', 'Andre', 'Mbuyi', 'ambuyi@timely.edu', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'ROLE_TEACHER', 'ACTIVE', '2024-09-01', 'ENS-005', 'Professeur', 'Reseaux', '75000'),
-('b0000006-0000-0000-0000-000000000000', 'TEACHER', 'Claire', 'Tshiamala', 'ctshiamala@timely.edu', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'ROLE_TEACHER', 'ACTIVE', '2024-09-01', 'ENS-006', 'Maitre de conferences', 'Algorithmique', '60000'),
-('b0000007-0000-0000-0000-000000000000', 'TEACHER', 'Robert', 'Kasongo', 'rkasongo@timely.edu', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'ROLE_TEACHER', 'ACTIVE', '2024-09-01', 'ENS-007', 'Professeur', 'Economie', '75000'),
-('b0000008-0000-0000-0000-000000000000', 'TEACHER', 'Elise', 'Mwamba', 'emwamba@timely.edu', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'ROLE_TEACHER', 'ACTIVE', '2024-09-01', 'ENS-008', 'Maitre de conferences', 'Gestion', '60000'),
-('b0000009-0000-0000-0000-000000000000', 'TEACHER', 'Michel', 'Lutumba', 'mlutumba@timely.edu', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'ROLE_TEACHER', 'ACTIVE', '2024-09-01', 'ENS-009', 'Professeur', 'Base de Donnees', '75000'),
-('b000000a-0000-0000-0000-000000000000', 'TEACHER', 'Florence', 'Nkosi', 'fnkosi@timely.edu', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'ROLE_TEACHER', 'ACTIVE', '2024-09-01', 'ENS-010', 'Professeur', 'Genie Logiciel', '75000'),
-('b000000b-0000-0000-0000-000000000000', 'TEACHER', 'Etienne', 'Mbaya', 'embaya@timely.edu', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'ROLE_TEACHER', 'ACTIVE', '2024-09-01', 'ENS-011', 'Maitre de conferences', 'Comptabilite', '60000'),
-('b000000c-0000-0000-0000-000000000000', 'TEACHER', 'Amandine', 'Diallo', 'adiallo@timely.edu', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'ROLE_TEACHER', 'ACTIVE', '2024-09-01', 'ENS-012', 'Maitre de conferences', 'Statistiques', '60000');
+    ('b1111111-0000-0000-0000-000000000001', 'TEACHER', 'Jean',   'Dupont',  'j.dupont@iusjc.cd',  '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'ROLE_TEACHER', 'ACTIVE', '2024-09-01', 'ENS-101', 'Professeur',           'Mathematiques', '80000'),
+    ('b1111111-0000-0000-0000-000000000002', 'TEACHER', 'Sophie', 'Martin',  's.martin@iusjc.cd',  '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'ROLE_TEACHER', 'ACTIVE', '2024-09-01', 'ENS-102', 'Maitre de conferences', 'Informatique',  '65000'),
+    ('b1111111-0000-0000-0000-000000000003', 'TEACHER', 'Pierre', 'Leclerc', 'p.leclerc@iusjc.cd', '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'ROLE_TEACHER', 'ACTIVE', '2024-09-01', 'ENS-103', 'Professeur',           'Finance',       '80000'),
+    ('b1111111-0000-0000-0000-000000000004', 'TEACHER', 'Linh',   'Nguyen',  'l.nguyen@iusjc.cd',  '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'ROLE_TEACHER', 'ACTIVE', '2024-09-01', 'ENS-104', 'Charge de cours',      'Genie Civil',   '50000'),
+    ('b1111111-0000-0000-0000-000000000005', 'TEACHER', 'Paul',   'Kamga',   'p.kamga@iusjc.cd',   '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'ROLE_TEACHER', 'ACTIVE', '2024-09-01', 'ENS-105', 'Professeur',           'Physique',      '80000'),
+    ('b1111111-0000-0000-0000-000000000006', 'TEACHER', 'Aline',  'Mbarga',  'a.mbarga@iusjc.cd',  '$2a$10$dXJ3SW6G7P50lGmMkkmwe.20cQQubK3.HZWzG3YB1tlRy.fqvM/BG', 'ROLE_TEACHER', 'ACTIVE', '2024-09-01', 'ENS-106', 'Maitre de conferences', 'Informatique',  '65000');
 
-INSERT INTO intervenir_ecole (id, enseignant_id, ecole_id, date_debut) VALUES
-(uuid_generate_v4(), 'b0000001-0000-0000-0000-000000000000', 'a0000002-0000-0000-0000-000000000000', '2024-09-01'),
-(uuid_generate_v4(), 'b0000001-0000-0000-0000-000000000000', 'a0000004-0000-0000-0000-000000000000', '2024-09-01'),
-(uuid_generate_v4(), 'b0000002-0000-0000-0000-000000000000', 'a0000002-0000-0000-0000-000000000000', '2024-09-01'),
-(uuid_generate_v4(), 'b0000002-0000-0000-0000-000000000000', 'a0000004-0000-0000-0000-000000000000', '2024-09-01'),
-(uuid_generate_v4(), 'b0000003-0000-0000-0000-000000000000', 'a0000001-0000-0000-0000-000000000000', '2024-09-01'),
-(uuid_generate_v4(), 'b0000004-0000-0000-0000-000000000000', 'a0000002-0000-0000-0000-000000000000', '2024-09-01'),
-(uuid_generate_v4(), 'b0000005-0000-0000-0000-000000000000', 'a0000002-0000-0000-0000-000000000000', '2024-09-01'),
-(uuid_generate_v4(), 'b0000006-0000-0000-0000-000000000000', 'a0000002-0000-0000-0000-000000000000', '2024-09-01'),
-(uuid_generate_v4(), 'b0000006-0000-0000-0000-000000000000', 'a0000004-0000-0000-0000-000000000000', '2024-09-01'),
-(uuid_generate_v4(), 'b0000007-0000-0000-0000-000000000000', 'a0000001-0000-0000-0000-000000000000', '2024-09-01'),
-(uuid_generate_v4(), 'b0000007-0000-0000-0000-000000000000', 'a0000003-0000-0000-0000-000000000000', '2024-09-01'),
-(uuid_generate_v4(), 'b0000008-0000-0000-0000-000000000000', 'a0000003-0000-0000-0000-000000000000', '2024-09-01'),
-(uuid_generate_v4(), 'b0000009-0000-0000-0000-000000000000', 'a0000002-0000-0000-0000-000000000000', '2024-09-01'),
-(uuid_generate_v4(), 'b0000009-0000-0000-0000-000000000000', 'a0000004-0000-0000-0000-000000000000', '2024-09-01'),
-(uuid_generate_v4(), 'b000000a-0000-0000-0000-000000000000', 'a0000004-0000-0000-0000-000000000000', '2024-09-01'),
-(uuid_generate_v4(), 'b000000b-0000-0000-0000-000000000000', 'a0000003-0000-0000-0000-000000000000', '2024-09-01'),
-(uuid_generate_v4(), 'b000000c-0000-0000-0000-000000000000', 'a0000003-0000-0000-0000-000000000000', '2024-09-01');
-
+-- ==========================================
+-- 2. DISPONIBILITES TEMPLATE
+-- ==========================================
 INSERT INTO teacher_availability (id, teacher_id, last_updated, version) VALUES
-('ca000001-0000-0000-0000-000000000000', 'b0000001-0000-0000-0000-000000000000', CURRENT_TIMESTAMP, 0),
-('ca000002-0000-0000-0000-000000000000', 'b0000002-0000-0000-0000-000000000000', CURRENT_TIMESTAMP, 0),
-('ca000003-0000-0000-0000-000000000000', 'b0000003-0000-0000-0000-000000000000', CURRENT_TIMESTAMP, 0),
-('ca000004-0000-0000-0000-000000000000', 'b0000004-0000-0000-0000-000000000000', CURRENT_TIMESTAMP, 0),
-('ca000005-0000-0000-0000-000000000000', 'b0000005-0000-0000-0000-000000000000', CURRENT_TIMESTAMP, 0),
-('ca000006-0000-0000-0000-000000000000', 'b0000006-0000-0000-0000-000000000000', CURRENT_TIMESTAMP, 0),
-('ca000007-0000-0000-0000-000000000000', 'b0000007-0000-0000-0000-000000000000', CURRENT_TIMESTAMP, 0),
-('ca000008-0000-0000-0000-000000000000', 'b0000008-0000-0000-0000-000000000000', CURRENT_TIMESTAMP, 0),
-('ca000009-0000-0000-0000-000000000000', 'b0000009-0000-0000-0000-000000000000', CURRENT_TIMESTAMP, 0),
-('ca00000a-0000-0000-0000-000000000000', 'b000000a-0000-0000-0000-000000000000', CURRENT_TIMESTAMP, 0),
-('ca00000b-0000-0000-0000-000000000000', 'b000000b-0000-0000-0000-000000000000', CURRENT_TIMESTAMP, 0),
-('ca00000c-0000-0000-0000-000000000000', 'b000000c-0000-0000-0000-000000000000', CURRENT_TIMESTAMP, 0);
+    ('ca111111-0000-0000-0000-000000000001', 'b1111111-0000-0000-0000-000000000001', CURRENT_TIMESTAMP, 0),
+    ('ca111111-0000-0000-0000-000000000002', 'b1111111-0000-0000-0000-000000000002', CURRENT_TIMESTAMP, 0),
+    ('ca111111-0000-0000-0000-000000000003', 'b1111111-0000-0000-0000-000000000003', CURRENT_TIMESTAMP, 0),
+    ('ca111111-0000-0000-0000-000000000004', 'b1111111-0000-0000-0000-000000000004', CURRENT_TIMESTAMP, 0),
+    ('ca111111-0000-0000-0000-000000000005', 'b1111111-0000-0000-0000-000000000005', CURRENT_TIMESTAMP, 0),
+    ('ca111111-0000-0000-0000-000000000006', 'b1111111-0000-0000-0000-000000000006', CURRENT_TIMESTAMP, 0);
+
+-- Creneaux de disponibilite (1h chacun, lundi-vendredi)
+-- Contrainte: hour_start >= 8 AND hour_start < 17 AND hour_end = hour_start + 1
+--
+-- Dupont  (26h/sem) : lun/mar/jeu 8-12+14-16, mer/ven 8-12
+-- Martin  (30h/sem) : lun/mar/jeu 8-12+13-16, mer 8-12+13-15, ven 8-11
+-- Leclerc (20h/sem) : lun 8-12+14-17, mer 8-12+14-16, jeu 9-12+14-15, ven 9-12
+-- Nguyen  (19h/sem) : lun 8-12+13-15, mar 8-12, mer 8-11, jeu 8-12, ven 8-10
+-- Kamga   (26h/sem) : lun/jeu 8-12+14-16, mar 8-12+14-17, mer 8-12, ven 8-11
+-- Mbarga  (20h/sem) : lun-ven 13-17
 
 INSERT INTO availability_time_slots (id, availability_id, day_of_week, hour_start, hour_end) VALUES
-(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','lundi',8,9),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','lundi',9,10),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','lundi',10,11),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','lundi',11,12),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','lundi',13,14),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','lundi',14,15),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','lundi',15,16),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','lundi',16,17),
-(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','mardi',8,9),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','mardi',9,10),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','mardi',10,11),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','mardi',11,12),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','mardi',13,14),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','mardi',14,15),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','mardi',15,16),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','mardi',16,17),
-(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','mercredi',8,9),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','mercredi',9,10),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','mercredi',10,11),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','mercredi',11,12),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','mercredi',13,14),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','mercredi',14,15),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','mercredi',15,16),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','mercredi',16,17),
-(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','jeudi',8,9),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','jeudi',9,10),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','jeudi',10,11),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','jeudi',11,12),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','jeudi',13,14),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','jeudi',14,15),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','jeudi',15,16),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','jeudi',16,17),
-(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','vendredi',8,9),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','vendredi',9,10),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','vendredi',10,11),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','vendredi',11,12),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','vendredi',13,14),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','vendredi',14,15),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','vendredi',15,16),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','vendredi',16,17),
-(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','samedi',8,9),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','samedi',9,10),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','samedi',10,11),(uuid_generate_v4(),'ca000001-0000-0000-0000-000000000000','samedi',11,12),
-(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','lundi',8,9),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','lundi',9,10),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','lundi',10,11),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','lundi',11,12),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','lundi',13,14),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','lundi',14,15),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','lundi',15,16),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','lundi',16,17),
-(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','mardi',8,9),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','mardi',9,10),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','mardi',10,11),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','mardi',11,12),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','mardi',13,14),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','mardi',14,15),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','mardi',15,16),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','mardi',16,17),
-(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','mercredi',8,9),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','mercredi',9,10),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','mercredi',10,11),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','mercredi',11,12),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','mercredi',13,14),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','mercredi',14,15),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','mercredi',15,16),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','mercredi',16,17),
-(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','jeudi',8,9),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','jeudi',9,10),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','jeudi',10,11),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','jeudi',11,12),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','jeudi',13,14),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','jeudi',14,15),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','jeudi',15,16),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','jeudi',16,17),
-(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','vendredi',8,9),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','vendredi',9,10),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','vendredi',10,11),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','vendredi',11,12),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','vendredi',13,14),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','vendredi',14,15),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','vendredi',15,16),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','vendredi',16,17),
-(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','samedi',8,9),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','samedi',9,10),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','samedi',10,11),(uuid_generate_v4(),'ca000002-0000-0000-0000-000000000000','samedi',11,12),
-(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','lundi',8,9),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','lundi',9,10),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','lundi',10,11),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','lundi',11,12),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','lundi',13,14),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','lundi',14,15),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','lundi',15,16),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','lundi',16,17),
-(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','mardi',8,9),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','mardi',9,10),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','mardi',10,11),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','mardi',11,12),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','mardi',13,14),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','mardi',14,15),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','mardi',15,16),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','mardi',16,17),
-(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','mercredi',8,9),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','mercredi',9,10),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','mercredi',10,11),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','mercredi',11,12),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','mercredi',13,14),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','mercredi',14,15),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','mercredi',15,16),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','mercredi',16,17),
-(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','jeudi',8,9),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','jeudi',9,10),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','jeudi',10,11),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','jeudi',11,12),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','jeudi',13,14),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','jeudi',14,15),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','jeudi',15,16),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','jeudi',16,17),
-(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','vendredi',8,9),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','vendredi',9,10),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','vendredi',10,11),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','vendredi',11,12),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','vendredi',13,14),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','vendredi',14,15),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','vendredi',15,16),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','vendredi',16,17),
-(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','samedi',8,9),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','samedi',9,10),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','samedi',10,11),(uuid_generate_v4(),'ca000003-0000-0000-0000-000000000000','samedi',11,12),
-(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','lundi',8,9),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','lundi',9,10),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','lundi',10,11),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','lundi',11,12),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','lundi',13,14),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','lundi',14,15),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','lundi',15,16),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','lundi',16,17),
-(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','mardi',8,9),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','mardi',9,10),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','mardi',10,11),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','mardi',11,12),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','mardi',13,14),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','mardi',14,15),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','mardi',15,16),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','mardi',16,17),
-(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','mercredi',8,9),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','mercredi',9,10),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','mercredi',10,11),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','mercredi',11,12),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','mercredi',13,14),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','mercredi',14,15),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','mercredi',15,16),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','mercredi',16,17),
-(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','jeudi',8,9),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','jeudi',9,10),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','jeudi',10,11),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','jeudi',11,12),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','jeudi',13,14),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','jeudi',14,15),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','jeudi',15,16),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','jeudi',16,17),
-(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','vendredi',8,9),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','vendredi',9,10),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','vendredi',10,11),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','vendredi',11,12),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','vendredi',13,14),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','vendredi',14,15),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','vendredi',15,16),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','vendredi',16,17),
-(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','samedi',8,9),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','samedi',9,10),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','samedi',10,11),(uuid_generate_v4(),'ca000004-0000-0000-0000-000000000000','samedi',11,12),
-(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','lundi',8,9),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','lundi',9,10),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','lundi',10,11),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','lundi',11,12),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','lundi',13,14),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','lundi',14,15),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','lundi',15,16),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','lundi',16,17),
-(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','mardi',8,9),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','mardi',9,10),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','mardi',10,11),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','mardi',11,12),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','mardi',13,14),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','mardi',14,15),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','mardi',15,16),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','mardi',16,17),
-(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','mercredi',8,9),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','mercredi',9,10),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','mercredi',10,11),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','mercredi',11,12),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','mercredi',13,14),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','mercredi',14,15),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','mercredi',15,16),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','mercredi',16,17),
-(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','jeudi',8,9),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','jeudi',9,10),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','jeudi',10,11),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','jeudi',11,12),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','jeudi',13,14),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','jeudi',14,15),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','jeudi',15,16),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','jeudi',16,17),
-(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','vendredi',8,9),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','vendredi',9,10),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','vendredi',10,11),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','vendredi',11,12),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','vendredi',13,14),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','vendredi',14,15),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','vendredi',15,16),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','vendredi',16,17),
-(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','samedi',8,9),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','samedi',9,10),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','samedi',10,11),(uuid_generate_v4(),'ca000005-0000-0000-0000-000000000000','samedi',11,12),
-(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','lundi',8,9),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','lundi',9,10),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','lundi',10,11),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','lundi',11,12),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','lundi',13,14),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','lundi',14,15),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','lundi',15,16),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','lundi',16,17),
-(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','mardi',8,9),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','mardi',9,10),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','mardi',10,11),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','mardi',11,12),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','mardi',13,14),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','mardi',14,15),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','mardi',15,16),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','mardi',16,17),
-(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','mercredi',8,9),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','mercredi',9,10),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','mercredi',10,11),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','mercredi',11,12),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','mercredi',13,14),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','mercredi',14,15),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','mercredi',15,16),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','mercredi',16,17),
-(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','jeudi',8,9),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','jeudi',9,10),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','jeudi',10,11),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','jeudi',11,12),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','jeudi',13,14),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','jeudi',14,15),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','jeudi',15,16),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','jeudi',16,17),
-(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','vendredi',8,9),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','vendredi',9,10),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','vendredi',10,11),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','vendredi',11,12),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','vendredi',13,14),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','vendredi',14,15),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','vendredi',15,16),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','vendredi',16,17),
-(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','samedi',8,9),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','samedi',9,10),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','samedi',10,11),(uuid_generate_v4(),'ca000006-0000-0000-0000-000000000000','samedi',11,12),
-(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','lundi',8,9),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','lundi',9,10),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','lundi',10,11),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','lundi',11,12),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','lundi',13,14),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','lundi',14,15),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','lundi',15,16),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','lundi',16,17),
-(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','mardi',8,9),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','mardi',9,10),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','mardi',10,11),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','mardi',11,12),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','mardi',13,14),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','mardi',14,15),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','mardi',15,16),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','mardi',16,17),
-(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','mercredi',8,9),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','mercredi',9,10),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','mercredi',10,11),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','mercredi',11,12),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','mercredi',13,14),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','mercredi',14,15),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','mercredi',15,16),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','mercredi',16,17),
-(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','jeudi',8,9),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','jeudi',9,10),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','jeudi',10,11),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','jeudi',11,12),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','jeudi',13,14),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','jeudi',14,15),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','jeudi',15,16),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','jeudi',16,17),
-(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','vendredi',8,9),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','vendredi',9,10),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','vendredi',10,11),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','vendredi',11,12),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','vendredi',13,14),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','vendredi',14,15),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','vendredi',15,16),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','vendredi',16,17),
-(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','samedi',8,9),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','samedi',9,10),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','samedi',10,11),(uuid_generate_v4(),'ca000007-0000-0000-0000-000000000000','samedi',11,12),
-(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','lundi',8,9),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','lundi',9,10),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','lundi',10,11),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','lundi',11,12),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','lundi',13,14),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','lundi',14,15),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','lundi',15,16),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','lundi',16,17),
-(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','mardi',8,9),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','mardi',9,10),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','mardi',10,11),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','mardi',11,12),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','mardi',13,14),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','mardi',14,15),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','mardi',15,16),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','mardi',16,17),
-(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','mercredi',8,9),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','mercredi',9,10),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','mercredi',10,11),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','mercredi',11,12),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','mercredi',13,14),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','mercredi',14,15),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','mercredi',15,16),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','mercredi',16,17),
-(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','jeudi',8,9),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','jeudi',9,10),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','jeudi',10,11),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','jeudi',11,12),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','jeudi',13,14),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','jeudi',14,15),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','jeudi',15,16),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','jeudi',16,17),
-(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','vendredi',8,9),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','vendredi',9,10),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','vendredi',10,11),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','vendredi',11,12),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','vendredi',13,14),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','vendredi',14,15),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','vendredi',15,16),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','vendredi',16,17),
-(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','samedi',8,9),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','samedi',9,10),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','samedi',10,11),(uuid_generate_v4(),'ca000008-0000-0000-0000-000000000000','samedi',11,12),
-(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','lundi',8,9),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','lundi',9,10),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','lundi',10,11),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','lundi',11,12),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','lundi',13,14),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','lundi',14,15),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','lundi',15,16),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','lundi',16,17),
-(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','mardi',8,9),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','mardi',9,10),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','mardi',10,11),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','mardi',11,12),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','mardi',13,14),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','mardi',14,15),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','mardi',15,16),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','mardi',16,17),
-(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','mercredi',8,9),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','mercredi',9,10),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','mercredi',10,11),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','mercredi',11,12),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','mercredi',13,14),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','mercredi',14,15),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','mercredi',15,16),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','mercredi',16,17),
-(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','jeudi',8,9),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','jeudi',9,10),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','jeudi',10,11),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','jeudi',11,12),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','jeudi',13,14),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','jeudi',14,15),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','jeudi',15,16),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','jeudi',16,17),
-(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','vendredi',8,9),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','vendredi',9,10),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','vendredi',10,11),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','vendredi',11,12),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','vendredi',13,14),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','vendredi',14,15),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','vendredi',15,16),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','vendredi',16,17),
-(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','samedi',8,9),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','samedi',9,10),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','samedi',10,11),(uuid_generate_v4(),'ca000009-0000-0000-0000-000000000000','samedi',11,12),
-(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','lundi',8,9),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','lundi',9,10),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','lundi',10,11),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','lundi',11,12),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','lundi',13,14),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','lundi',14,15),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','lundi',15,16),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','lundi',16,17),
-(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','mardi',8,9),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','mardi',9,10),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','mardi',10,11),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','mardi',11,12),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','mardi',13,14),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','mardi',14,15),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','mardi',15,16),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','mardi',16,17),
-(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','mercredi',8,9),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','mercredi',9,10),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','mercredi',10,11),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','mercredi',11,12),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','mercredi',13,14),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','mercredi',14,15),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','mercredi',15,16),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','mercredi',16,17),
-(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','jeudi',8,9),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','jeudi',9,10),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','jeudi',10,11),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','jeudi',11,12),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','jeudi',13,14),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','jeudi',14,15),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','jeudi',15,16),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','jeudi',16,17),
-(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','vendredi',8,9),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','vendredi',9,10),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','vendredi',10,11),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','vendredi',11,12),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','vendredi',13,14),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','vendredi',14,15),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','vendredi',15,16),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','vendredi',16,17),
-(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','samedi',8,9),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','samedi',9,10),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','samedi',10,11),(uuid_generate_v4(),'ca00000a-0000-0000-0000-000000000000','samedi',11,12),
-(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','lundi',8,9),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','lundi',9,10),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','lundi',10,11),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','lundi',11,12),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','lundi',13,14),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','lundi',14,15),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','lundi',15,16),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','lundi',16,17),
-(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','mardi',8,9),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','mardi',9,10),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','mardi',10,11),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','mardi',11,12),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','mardi',13,14),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','mardi',14,15),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','mardi',15,16),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','mardi',16,17),
-(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','mercredi',8,9),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','mercredi',9,10),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','mercredi',10,11),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','mercredi',11,12),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','mercredi',13,14),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','mercredi',14,15),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','mercredi',15,16),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','mercredi',16,17),
-(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','jeudi',8,9),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','jeudi',9,10),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','jeudi',10,11),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','jeudi',11,12),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','jeudi',13,14),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','jeudi',14,15),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','jeudi',15,16),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','jeudi',16,17),
-(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','vendredi',8,9),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','vendredi',9,10),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','vendredi',10,11),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','vendredi',11,12),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','vendredi',13,14),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','vendredi',14,15),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','vendredi',15,16),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','vendredi',16,17),
-(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','samedi',8,9),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','samedi',9,10),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','samedi',10,11),(uuid_generate_v4(),'ca00000b-0000-0000-0000-000000000000','samedi',11,12),
-(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','lundi',8,9),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','lundi',9,10),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','lundi',10,11),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','lundi',11,12),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','lundi',13,14),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','lundi',14,15),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','lundi',15,16),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','lundi',16,17),
-(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','mardi',8,9),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','mardi',9,10),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','mardi',10,11),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','mardi',11,12),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','mardi',13,14),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','mardi',14,15),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','mardi',15,16),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','mardi',16,17),
-(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','mercredi',8,9),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','mercredi',9,10),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','mercredi',10,11),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','mercredi',11,12),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','mercredi',13,14),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','mercredi',14,15),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','mercredi',15,16),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','mercredi',16,17),
-(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','jeudi',8,9),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','jeudi',9,10),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','jeudi',10,11),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','jeudi',11,12),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','jeudi',13,14),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','jeudi',14,15),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','jeudi',15,16),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','jeudi',16,17),
-(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','vendredi',8,9),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','vendredi',9,10),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','vendredi',10,11),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','vendredi',11,12),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','vendredi',13,14),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','vendredi',14,15),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','vendredi',15,16),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','vendredi',16,17),
-(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','samedi',8,9),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','samedi',9,10),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','samedi',10,11),(uuid_generate_v4(),'ca00000c-0000-0000-0000-000000000000','samedi',11,12);
+    -- -------------------------------------------------------
+    -- Dupont (ca111111-...-001)
+    -- -------------------------------------------------------
+    -- lundi 8-12 + 14-16 (6h)
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000001', 'lundi',    8, 9),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000001', 'lundi',    9, 10),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000001', 'lundi',   10, 11),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000001', 'lundi',   11, 12),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000001', 'lundi',   14, 15),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000001', 'lundi',   15, 16),
+    -- mardi 8-12 + 14-16 (6h)
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000001', 'mardi',    8, 9),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000001', 'mardi',    9, 10),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000001', 'mardi',   10, 11),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000001', 'mardi',   11, 12),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000001', 'mardi',   14, 15),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000001', 'mardi',   15, 16),
+    -- mercredi 8-12 (4h)
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000001', 'mercredi', 8, 9),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000001', 'mercredi', 9, 10),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000001', 'mercredi',10, 11),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000001', 'mercredi',11, 12),
+    -- jeudi 8-12 + 14-16 (6h)
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000001', 'jeudi',    8, 9),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000001', 'jeudi',    9, 10),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000001', 'jeudi',   10, 11),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000001', 'jeudi',   11, 12),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000001', 'jeudi',   14, 15),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000001', 'jeudi',   15, 16),
+    -- vendredi 8-12 (4h)  => total Dupont: 26h
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000001', 'vendredi', 8, 9),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000001', 'vendredi', 9, 10),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000001', 'vendredi',10, 11),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000001', 'vendredi',11, 12),
+
+    -- -------------------------------------------------------
+    -- Martin (ca111111-...-002)
+    -- -------------------------------------------------------
+    -- lundi 8-12 + 13-16 (7h)
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000002', 'lundi',    8, 9),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000002', 'lundi',    9, 10),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000002', 'lundi',   10, 11),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000002', 'lundi',   11, 12),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000002', 'lundi',   13, 14),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000002', 'lundi',   14, 15),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000002', 'lundi',   15, 16),
+    -- mardi 8-12 + 13-16 (7h)
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000002', 'mardi',    8, 9),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000002', 'mardi',    9, 10),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000002', 'mardi',   10, 11),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000002', 'mardi',   11, 12),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000002', 'mardi',   13, 14),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000002', 'mardi',   14, 15),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000002', 'mardi',   15, 16),
+    -- mercredi 8-12 + 13-15 (6h)
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000002', 'mercredi', 8, 9),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000002', 'mercredi', 9, 10),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000002', 'mercredi',10, 11),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000002', 'mercredi',11, 12),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000002', 'mercredi',13, 14),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000002', 'mercredi',14, 15),
+    -- jeudi 8-12 + 13-16 (7h)
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000002', 'jeudi',    8, 9),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000002', 'jeudi',    9, 10),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000002', 'jeudi',   10, 11),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000002', 'jeudi',   11, 12),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000002', 'jeudi',   13, 14),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000002', 'jeudi',   14, 15),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000002', 'jeudi',   15, 16),
+    -- vendredi 8-11 (3h)  => total Martin: 30h
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000002', 'vendredi', 8, 9),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000002', 'vendredi', 9, 10),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000002', 'vendredi',10, 11),
+
+    -- -------------------------------------------------------
+    -- Leclerc (ca111111-...-003)
+    -- -------------------------------------------------------
+    -- lundi 8-12 + 14-17 (7h)
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000003', 'lundi',    8, 9),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000003', 'lundi',    9, 10),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000003', 'lundi',   10, 11),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000003', 'lundi',   11, 12),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000003', 'lundi',   14, 15),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000003', 'lundi',   15, 16),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000003', 'lundi',   16, 17),
+    -- mercredi 8-12 + 14-16 (6h)
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000003', 'mercredi', 8, 9),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000003', 'mercredi', 9, 10),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000003', 'mercredi',10, 11),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000003', 'mercredi',11, 12),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000003', 'mercredi',14, 15),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000003', 'mercredi',15, 16),
+    -- jeudi 9-12 + 14-15 (4h)
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000003', 'jeudi',    9, 10),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000003', 'jeudi',   10, 11),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000003', 'jeudi',   11, 12),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000003', 'jeudi',   14, 15),
+    -- vendredi 9-12 (3h)  => total Leclerc: 20h
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000003', 'vendredi', 9, 10),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000003', 'vendredi',10, 11),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000003', 'vendredi',11, 12),
+
+    -- -------------------------------------------------------
+    -- Nguyen (ca111111-...-004)
+    -- -------------------------------------------------------
+    -- lundi 8-12 + 13-15 (6h)
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000004', 'lundi',    8, 9),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000004', 'lundi',    9, 10),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000004', 'lundi',   10, 11),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000004', 'lundi',   11, 12),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000004', 'lundi',   13, 14),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000004', 'lundi',   14, 15),
+    -- mardi 8-12 (4h)
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000004', 'mardi',    8, 9),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000004', 'mardi',    9, 10),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000004', 'mardi',   10, 11),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000004', 'mardi',   11, 12),
+    -- mercredi 8-11 (3h)
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000004', 'mercredi', 8, 9),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000004', 'mercredi', 9, 10),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000004', 'mercredi',10, 11),
+    -- jeudi 8-12 (4h)
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000004', 'jeudi',    8, 9),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000004', 'jeudi',    9, 10),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000004', 'jeudi',   10, 11),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000004', 'jeudi',   11, 12),
+    -- vendredi 8-10 (2h)  => total Nguyen: 19h
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000004', 'vendredi', 8, 9),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000004', 'vendredi', 9, 10),
+
+    -- -------------------------------------------------------
+    -- Kamga (ca111111-...-005)
+    -- -------------------------------------------------------
+    -- lundi 8-12 + 14-16 (6h)
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000005', 'lundi',    8, 9),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000005', 'lundi',    9, 10),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000005', 'lundi',   10, 11),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000005', 'lundi',   11, 12),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000005', 'lundi',   14, 15),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000005', 'lundi',   15, 16),
+    -- mardi 8-12 + 14-17 (7h)
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000005', 'mardi',    8, 9),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000005', 'mardi',    9, 10),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000005', 'mardi',   10, 11),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000005', 'mardi',   11, 12),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000005', 'mardi',   14, 15),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000005', 'mardi',   15, 16),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000005', 'mardi',   16, 17),
+    -- mercredi 8-12 (4h)
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000005', 'mercredi', 8, 9),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000005', 'mercredi', 9, 10),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000005', 'mercredi',10, 11),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000005', 'mercredi',11, 12),
+    -- jeudi 8-12 + 14-16 (6h)
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000005', 'jeudi',    8, 9),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000005', 'jeudi',    9, 10),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000005', 'jeudi',   10, 11),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000005', 'jeudi',   11, 12),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000005', 'jeudi',   14, 15),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000005', 'jeudi',   15, 16),
+    -- vendredi 8-11 (3h)  => total Kamga: 26h
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000005', 'vendredi', 8, 9),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000005', 'vendredi', 9, 10),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000005', 'vendredi',10, 11),
+
+    -- -------------------------------------------------------
+    -- Mbarga (ca111111-...-006)
+    -- -------------------------------------------------------
+    -- lundi-vendredi 13-17 (4h/jour x 5 = 20h)
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000006', 'lundi',   13, 14),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000006', 'lundi',   14, 15),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000006', 'lundi',   15, 16),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000006', 'lundi',   16, 17),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000006', 'mardi',   13, 14),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000006', 'mardi',   14, 15),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000006', 'mardi',   15, 16),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000006', 'mardi',   16, 17),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000006', 'mercredi',13, 14),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000006', 'mercredi',14, 15),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000006', 'mercredi',15, 16),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000006', 'mercredi',16, 17),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000006', 'jeudi',   13, 14),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000006', 'jeudi',   14, 15),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000006', 'jeudi',   15, 16),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000006', 'jeudi',   16, 17),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000006', 'vendredi',13, 14),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000006', 'vendredi',14, 15),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000006', 'vendredi',15, 16),
+    (uuid_generate_v4(), 'ca111111-0000-0000-0000-000000000006', 'vendredi',16, 17);
+
+-- ==========================================
+-- 3. AFFECTATIONS ENSEIGNANT-ECOLES (intervenir_ecole)
+-- ecole_id = UUID deterministe du booking-service
+-- ==========================================
+INSERT INTO intervenir_ecole (id, enseignant_id, ecole_id, date_debut) VALUES
+    -- Dupont : SJI + CPGE (partage inter-ecoles)
+    ('1e111111-0000-0000-0000-000000000001', 'b1111111-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111101', '2024-09-01'),
+    ('1e111111-0000-0000-0000-000000000002', 'b1111111-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111103', '2024-09-01'),
+    -- Martin : SJI + SJM (partage inter-ecoles)
+    ('1e111111-0000-0000-0000-000000000003', 'b1111111-0000-0000-0000-000000000002', '11111111-1111-1111-1111-111111111101', '2024-09-01'),
+    ('1e111111-0000-0000-0000-000000000004', 'b1111111-0000-0000-0000-000000000002', '11111111-1111-1111-1111-111111111102', '2024-09-01'),
+    -- Leclerc : SJM
+    ('1e111111-0000-0000-0000-000000000005', 'b1111111-0000-0000-0000-000000000003', '11111111-1111-1111-1111-111111111102', '2024-09-01'),
+    -- Nguyen : SJI
+    ('1e111111-0000-0000-0000-000000000006', 'b1111111-0000-0000-0000-000000000004', '11111111-1111-1111-1111-111111111101', '2024-09-01'),
+    -- Kamga : CPGE + PV (partage inter-ecoles)
+    ('1e111111-0000-0000-0000-000000000007', 'b1111111-0000-0000-0000-000000000005', '11111111-1111-1111-1111-111111111103', '2024-09-01'),
+    ('1e111111-0000-0000-0000-000000000008', 'b1111111-0000-0000-0000-000000000005', '11111111-1111-1111-1111-111111111104', '2024-09-01'),
+    -- Mbarga : SJI
+    ('1e111111-0000-0000-0000-000000000009', 'b1111111-0000-0000-0000-000000000006', '11111111-1111-1111-1111-111111111101', '2024-09-01');
+
+-- ==========================================
+-- 4. AFFECTATIONS ENSEIGNANT-COURS (enseigner)
+-- cours_id = UUID deterministe du booking-service
+-- ==========================================
+INSERT INTO enseigner (id, enseignant_id, cours_id, date_debut) VALUES
+    -- Dupont (SJI + CPGE) -- 5 cours
+    ('e1111111-0000-0000-0000-000000000001', 'b1111111-0000-0000-0000-000000000001', '66666666-6666-6666-6666-666666666601', '2024-09-01'), -- Analyse I CM (CP1)
+    ('e1111111-0000-0000-0000-000000000002', 'b1111111-0000-0000-0000-000000000001', '66666666-6666-6666-6666-666666666602', '2024-09-01'), -- Analyse I TD (CP1)
+    ('e1111111-0000-0000-0000-000000000003', 'b1111111-0000-0000-0000-000000000001', '66666666-6666-6666-6666-666666666603', '2024-09-01'), -- Algebre CM (CPGE1) <- autre ecole
+    ('e1111111-0000-0000-0000-000000000004', 'b1111111-0000-0000-0000-000000000001', '66666666-6666-6666-6666-66666666660c', '2024-09-01'), -- Analyse I CM (CP2)
+    ('e1111111-0000-0000-0000-000000000005', 'b1111111-0000-0000-0000-000000000001', '66666666-6666-6666-6666-66666666660d', '2024-09-01'), -- Algebre CM (CPGE2) <- autre ecole
+    -- Martin (SJI + SJM) -- 3 cours
+    ('e1111111-0000-0000-0000-000000000006', 'b1111111-0000-0000-0000-000000000002', '66666666-6666-6666-6666-666666666604', '2024-09-01'), -- Algo & Struct CM (CI1-GI)
+    ('e1111111-0000-0000-0000-000000000007', 'b1111111-0000-0000-0000-000000000002', '66666666-6666-6666-6666-666666666606', '2024-09-01'), -- Base Donnees CM (CI2-GI)
+    ('e1111111-0000-0000-0000-000000000008', 'b1111111-0000-0000-0000-000000000002', '66666666-6666-6666-6666-666666666607', '2024-09-01'), -- Systemes Info CM (L2-CF) <- autre ecole
+    -- Leclerc (SJM) -- 1 cours
+    ('e1111111-0000-0000-0000-000000000009', 'b1111111-0000-0000-0000-000000000003', '66666666-6666-6666-6666-666666666608', '2024-09-01'), -- Comptabilite CM (L1-CF)
+    -- Nguyen (SJI) -- 1 cours
+    ('e1111111-0000-0000-0000-000000000010', 'b1111111-0000-0000-0000-000000000004', '66666666-6666-6666-6666-666666666609', '2024-09-01'), -- Mecanique CM (CP1)
+    -- Kamga (CPGE + PV) -- 4 cours
+    ('e1111111-0000-0000-0000-000000000011', 'b1111111-0000-0000-0000-000000000005', '66666666-6666-6666-6666-66666666660a', '2024-09-01'), -- Physique Gen. CM (CPGE1)
+    ('e1111111-0000-0000-0000-000000000012', 'b1111111-0000-0000-0000-000000000005', '66666666-6666-6666-6666-66666666660b', '2024-09-01'), -- Physique Gen. CM (PV1)  <- autre ecole
+    ('e1111111-0000-0000-0000-000000000013', 'b1111111-0000-0000-0000-000000000005', '66666666-6666-6666-6666-66666666660e', '2024-09-01'), -- Physique Gen. CM (CPGE2)
+    ('e1111111-0000-0000-0000-000000000014', 'b1111111-0000-0000-0000-000000000005', '66666666-6666-6666-6666-66666666660f', '2024-09-01'), -- Physique Gen. CM (PV2)  <- autre ecole
+    -- Mbarga (SJI) -- 1 cours
+    ('e1111111-0000-0000-0000-000000000015', 'b1111111-0000-0000-0000-000000000006', '66666666-6666-6666-6666-666666666605', '2024-09-01'); -- Prog C TP (CI1-GI)
