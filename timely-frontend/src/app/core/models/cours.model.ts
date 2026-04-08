@@ -6,6 +6,7 @@ export interface Cours {
   typeCours: 'CM' | 'TD' | 'TP';
   coefficient: number;
   ueId: string;
+  enseignantId?: string;
   ue?: UE;
 }
 
@@ -34,6 +35,7 @@ export interface CreateCoursDTO {
   typeCours: 'CM' | 'TD' | 'TP';
   coefficient: number;
   ueId: string;
+  enseignantId?: string;
 }
 
 export interface UpdateCoursDTO extends Partial<CreateCoursDTO> {

@@ -3,7 +3,7 @@
   <div class="bg-gray-50 rounded-lg p-4">
     <h3 class="text-lg font-semibold text-gray-800 mb-4">Filtres de recherche</h3>
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
       <div>
         <label for="dateDebut" class="block text-sm font-medium text-gray-700 mb-2">
           Date début
@@ -24,6 +24,22 @@
           id="dateFin"
           [(ngModel)]="searchRequest.dateFin"
           class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+      </div>
+
+      <div>
+        <label for="ecoleFilter" class="block text-sm font-medium text-gray-700 mb-2">
+          École
+        </label>
+        <select
+          id="ecoleFilter"
+          [(ngModel)]="searchRequest.ecoleId"
+          (ngModelChange)="onEcoleFilter()"
+          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+          <option value="">Toutes les écoles</option>
+          @for (ecole of ecoles(); track ecole.id) {
+            <option [value]="ecole.id">{{ ecole.nom }}</option>
+          }
+        </select>
       </div>
 
       <div>
@@ -84,8 +100,14 @@
         <p class="text-lg">Aucun emploi du temps trouvé</p>
       </div>
     } @else {
-      <div class="space-y-4">
-        @for (emploi of emploisDuTemps(); track emploi.id) {
+      <div class="space-y-6">
+        @for (group of groupedByWeek; track group.weekLabel) {
+          <div>
+            <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3 px-1">
+              {{ group.weekLabel }}
+            </h3>
+            <div class="space-y-3">
+        @for (emploi of group.emplois; track emploi.id) {
           <div
             (click)="viewSchedule(emploi.id)"
             class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer">
@@ -93,8 +115,9 @@
               <div class="flex-1">
                 <div class="flex items-center gap-3 mb-2">
                   <h3 class="text-lg font-semibold text-gray-800">
-                    Emploi du temps - {{ emploi.periode }}
+                    {{ getEcoleNom(emploi.ecoleId) }}
                   </h3>
+                  <p class="text-sm text-gray-500">{{ getWeekLabel(emploi.dateDebut) }} &bull; {{ emploi.periode }}</p>
                   <span class="px-2 py-1 rounded-full text-xs font-medium" [ngClass]="getStatutColor(emploi.statut)">
                     {{ statutLabels[emploi.statut] }}
                   </span>
@@ -137,6 +160,9 @@
                   </button>
                 }
               </div>
+            </div>
+          </div>
+        }
             </div>
           </div>
         }

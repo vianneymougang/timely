@@ -5,12 +5,14 @@ table {
 
   th:first-child,
   td:first-child {
-    width: 100px;
+    width: 115px;
+    min-width: 115px;
   }
 
   th:not(:first-child),
   td:not(:first-child) {
-    width: calc((100% - 100px) / 5);
+    width: calc((100% - 115px) / 6);
+    min-width: 150px;
   }
 }
 
@@ -32,18 +34,20 @@ table {
 
 // Styles pour les conflits
 .hover\:shadow-md:hover {
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
 }
 
 // Transition douce pour tous les éléments interactifs
 button,
 select,
-input[type="checkbox"] {
+input[type='checkbox'] {
   transition: all 0.2s ease-in-out;
 }
 
 // Style pour les checkboxes
-input[type="checkbox"]:checked {
+input[type='checkbox']:checked {
   background-color: #2563eb;
   border-color: #2563eb;
 }
