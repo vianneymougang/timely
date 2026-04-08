@@ -12,22 +12,21 @@ import java.util.UUID;
 @FeignClient(name = "booking-service")
 public interface BookingServiceClient {
 
-    @GetMapping("/api/bookings/salles")
+    @GetMapping("/internal/salles")
     List<Object> getSalles();
 
-    @GetMapping("/api/bookings/salles/{id}")
+    @GetMapping("/internal/salles/{id}")
     Object getSalle(@PathVariable UUID id);
 
-    @GetMapping("/api/bookings/reservations")
+    @GetMapping("/internal/reservations")
     List<Object> getReservations(
-            @RequestParam(required = false) UUID ecoleId,
             @RequestParam(required = false) LocalDate dateDebut,
             @RequestParam(required = false) LocalDate dateFin
     );
 
-    @GetMapping("/api/bookings/cours")
+    @GetMapping("/internal/cours")
     List<Object> getCours();
 
-    @GetMapping("/api/bookings/etudiants")
+    @GetMapping("/internal/etudiants")
     List<Object> getEtudiants();
 }
