@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/features/teacher/schedule/teacher-schedule.component.ts", "src/app/features/teacher/schedule/teacher-schedule.component.html"],
+  "sourcesContent": ["import { Component } from '@angular/core';\n\n@Component({\n  selector: 'app-teacher-schedule.component',\n  imports: [],\n  templateUrl: './teacher-schedule.component.html',\n  styleUrl: './teacher-schedule.component.scss',\n})\nexport class TeacherScheduleComponent {\n\n}\n", "<p>teacher-schedule.component works!</p>\n"],
+  "mappings": ";;;;;;;;;;;;;AAQM,IAAO,2BAAP,MAAO,0BAAwB;;qCAAxB,2BAAwB;EAAA;yEAAxB,2BAAwB,WAAA,CAAA,CAAA,wBAAA,GAAA,WAAA,CAAA,GAAA,OAAA,KAAA,OAAA,GAAA,MAAA,GAAA,UAAA,SAAA,kCAAA,IAAA,KAAA;AAAA,QAAA,KAAA,GAAA;ACRrC,MAAA,4BAAA,GAAA,GAAA;AAAG,MAAA,iBAAA,GAAA,mCAAA;AAAiC,MAAA,0BAAA;;;;;sEDQvB,0BAAwB,CAAA;UANpC;uBACW,kCAAgC,SACjC,CAAA,GAAE,UAAA,6CAAA,CAAA;;;;6EAIA,0BAAwB,EAAA,WAAA,4BAAA,UAAA,mEAAA,YAAA,EAAA,CAAA;AAAA,GAAA;",
+  "names": []
+}
