@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
+import org.springframework.web.client.HttpServerErrorException;
 import org.springframework.web.client.RestTemplate;
 
 import io.github.resilience4j.circuitbreaker.CircuitBreaker;
@@ -50,6 +51,14 @@ public class ServiceCallService {
                 return restTemplate.exchange(targetUri, method, entity, String.class);
             } catch (HttpClientErrorException e) {
                 log.debug("Client error from {}: {}", serviceName, e.getStatusCode());
+                return ResponseEntity.status(e.getStatusCode())
+                        .headers(e.getResponseHeaders())
+                        .body(e.getResponseBodyAsString());
+            } catch (HttpServerErrorException e) {
+                // Pass through 5xx responses as-is — the backend error is real and should
+                // reach the caller. Do NOT throw here so the circuit breaker is NOT triggered
+                // by backend bugs (only by true connectivity failures like timeouts/IOExceptions).
+                log.error("Server error from {}: {} - {}", serviceName, e.getStatusCode(), e.getResponseBodyAsString());
                 return ResponseEntity.status(e.getStatusCode())
                         .headers(e.getResponseHeaders())
                         .body(e.getResponseBodyAsString());
