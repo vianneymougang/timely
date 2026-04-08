@@ -4,9 +4,6 @@ import { MOCK_TEACHERS } from '../data/mock-data';
 import { Teacher, UserStatus } from '../models/teacher.model';
 import { ApiService } from './api.service';
 
-/**
- * Interface pour la réponse du backend
- */
 interface TeacherResponseDTO {
   id: string;
   name: string;
@@ -18,6 +15,14 @@ interface TeacherResponseDTO {
   rank: string;
   hourlyRate: string;
   status: string;
+}
+
+interface PageResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
 }
 
 @Injectable({
@@ -79,8 +84,8 @@ export class TeacherService {
   }
 
   getTeachers(): Observable<Teacher[]> {
-    return this.apiService.get<TeacherResponseDTO[]>('/users/teachers').pipe(
-      map((dtos) => dtos.map((dto) => this.mapToTeacher(dto))),
+    return this.apiService.get<PageResponse<TeacherResponseDTO>>('/users/teachers').pipe(
+      map((response) => response.content.map((dto) => this.mapToTeacher(dto))),
       tap((teachers) => this.teachers.set(teachers))
     );
   }

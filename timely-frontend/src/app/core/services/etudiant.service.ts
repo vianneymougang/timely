@@ -1,144 +1,116 @@
-import { Injectable } from '@angular/core';
-import { Observable, BehaviorSubject } from 'rxjs';
+import { Injectable, inject } from '@angular/core';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
 import { Etudiant, CreateEtudiantDTO, UpdateEtudiantDTO } from '../models/etudiant.model';
+import { ApiService } from './api.service';
+
+interface PagedResponse<T> {
+  content: T[];
+  totalElements: number;
+  totalPages: number;
+  size: number;
+  number: number;
+}
+
+interface EtudiantApiResponse {
+  id: string;
+  classeId: string;
+  classeCode: string;
+  matricule: string;
+  nom: string;
+  prenom: string;
+  email: string;
+  telephone: string;
+  dateInscription: string;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class EtudiantService {
-  private etudiantSubject = new BehaviorSubject<Etudiant[]>([]);
-  public etudiant$ = this.etudiantSubject.asObservable();
-
-  // Mock data - à remplacer par des appels API
-  private mockEtudiants: Etudiant[] = [
-    {
-      id: '1',
-      matricule: '2024I001',
-      nom: 'MEPE',
-      prenom: 'Victoire',
-      email: 'victoire.mepe@gmail.com',
-      telephone: '+237 650 123 456',
-      dateNaissance: '2005-05-15',
-      classeId: '1',
-      groupeId: '1'
-    },
-    {
-      id: '2',
-      matricule: '2024002',
-      nom: 'Mougang',
-      prenom: 'Ange-Vianney',
-      email: 'ange@example.com',
-      telephone: '+237 650 234 567',
-      dateNaissance: '2003-08-20',
-      classeId: '1',
-      groupeId: '1'
-    },
-    {
-      id: '3',
-      matricule: '2024003',
-      nom: 'Biango',
-      prenom: 'Miguel',
-      email: 'miguel@gmail.com',
-      telephone: '+237 650 345 678',
-      dateNaissance: '2002-11-10',
-      classeId: '1',
-      groupeId: '2'
-    },
-    {
-      id: '4',
-      matricule: '2024003',
-      nom: 'hjgbj',
-      prenom: 'Miguel',
-      email: 'hghg@gmail.com',
-      telephone: '+237 650 345 688',
-      dateNaissance: '2002-11-10',
-      classeId: '3',
-    },
-  ];
-
-  constructor() {
-    this.etudiantSubject.next(this.mockEtudiants);
-  }
+  private apiService = inject(ApiService);
 
   getEtudiants(): Observable<Etudiant[]> {
-    return this.etudiant$;
+    return this.apiService.get<PagedResponse<EtudiantApiResponse>>('/bookings/etudiants', { page: 0, size: 200 }).pipe(
+      map(page => page.content.map(this.toEtudiant))
+    );
   }
 
-  getEtudiantById(id: string): Etudiant | undefined {
-    return this.mockEtudiants.find(e => e.id === id);
+  getEtudiantById(id: string): Observable<Etudiant> {
+    return this.apiService.get<EtudiantApiResponse>(`/bookings/etudiants/${id}`).pipe(
+      map(this.toEtudiant)
+    );
   }
 
   getEtudiantsByClasse(classeId: string): Observable<Etudiant[]> {
-    return new Observable(observer => {
-      const etudiants = this.mockEtudiants.filter(e => e.classeId === classeId);
-      observer.next(etudiants);
-      observer.complete();
-    });
+    return this.apiService.get<PagedResponse<EtudiantApiResponse>>(`/bookings/classes/${classeId}/etudiants`, { page: 0, size: 200 }).pipe(
+      map(page => page.content.map(this.toEtudiant))
+    );
   }
 
   getEtudiantsByGroupe(groupeId: string): Observable<Etudiant[]> {
-    return new Observable(observer => {
-      const etudiants = this.mockEtudiants.filter(e => e.groupeId === groupeId);
-      observer.next(etudiants);
-      observer.complete();
-    });
+    return this.getEtudiants().pipe(
+      map(etudiants => etudiants.filter(e => e.groupeId === groupeId))
+    );
   }
 
   createEtudiant(etudiant: CreateEtudiantDTO): Observable<Etudiant> {
-    return new Observable(observer => {
-      const newEtudiant: Etudiant = {
-        id: Date.now().toString(),
-        ...etudiant
-      };
-      this.mockEtudiants.push(newEtudiant);
-      this.etudiantSubject.next([...this.mockEtudiants]);
-      observer.next(newEtudiant);
-      observer.complete();
-    });
+    const body = {
+      classeId: etudiant.classeId,
+      matricule: etudiant.matricule,
+      nom: etudiant.nom,
+      prenom: etudiant.prenom,
+      email: etudiant.email,
+      telephone: etudiant.telephone,
+      dateInscription: etudiant.dateNaissance
+    };
+    return this.apiService.post<EtudiantApiResponse>('/bookings/etudiants', body).pipe(
+      map(this.toEtudiant)
+    );
   }
 
   updateEtudiant(etudiant: UpdateEtudiantDTO): Observable<Etudiant> {
-    return new Observable(observer => {
-      const index = this.mockEtudiants.findIndex(e => e.id === etudiant.id);
-      if (index !== -1) {
-        this.mockEtudiants[index] = { ...this.mockEtudiants[index], ...etudiant };
-        this.etudiantSubject.next([...this.mockEtudiants]);
-        observer.next(this.mockEtudiants[index]);
-      }
-      observer.complete();
-    });
+    const { id, ...rest } = etudiant;
+    const body = {
+      classeId: rest.classeId,
+      matricule: rest.matricule,
+      nom: rest.nom,
+      prenom: rest.prenom,
+      email: rest.email,
+      telephone: rest.telephone,
+      dateInscription: rest.dateNaissance
+    };
+    return this.apiService.put<EtudiantApiResponse>(`/bookings/etudiants/${id}`, body).pipe(
+      map(this.toEtudiant)
+    );
   }
 
   deleteEtudiant(id: string): Observable<void> {
-    return new Observable(observer => {
-      this.mockEtudiants = this.mockEtudiants.filter(e => e.id !== id);
-      this.etudiantSubject.next([...this.mockEtudiants]);
-      observer.next();
-      observer.complete();
-    });
+    return this.apiService.delete<void>(`/bookings/etudiants/${id}`);
   }
 
   affecterGroupe(etudiantId: string, groupeId: string): Observable<Etudiant> {
-    return new Observable(observer => {
-      const index = this.mockEtudiants.findIndex(e => e.id === etudiantId);
-      if (index !== -1) {
-        this.mockEtudiants[index].groupeId = groupeId;
-        this.etudiantSubject.next([...this.mockEtudiants]);
-        observer.next(this.mockEtudiants[index]);
-      }
-      observer.complete();
-    });
+    return this.apiService.post<EtudiantApiResponse>(`/bookings/groupes/${groupeId}/etudiants/${etudiantId}`, {}).pipe(
+      map(this.toEtudiant)
+    );
   }
 
-  retirerGroupe(etudiantId: string): Observable<Etudiant> {
-    return new Observable(observer => {
-      const index = this.mockEtudiants.findIndex(e => e.id === etudiantId);
-      if (index !== -1) {
-        this.mockEtudiants[index].groupeId = undefined;
-        this.etudiantSubject.next([...this.mockEtudiants]);
-        observer.next(this.mockEtudiants[index]);
-      }
-      observer.complete();
-    });
+  retirerGroupe(etudiantId: string, groupeId: string): Observable<Etudiant> {
+    return this.apiService.delete<EtudiantApiResponse>(`/bookings/groupes/${groupeId}/etudiants/${etudiantId}`).pipe(
+      map(this.toEtudiant)
+    );
+  }
+
+  private toEtudiant(r: EtudiantApiResponse): Etudiant {
+    return {
+      id: r.id,
+      matricule: r.matricule,
+      nom: r.nom,
+      prenom: r.prenom,
+      email: r.email,
+      telephone: r.telephone ?? '',
+      dateNaissance: r.dateInscription,
+      classeId: r.classeId
+    };
   }
 }

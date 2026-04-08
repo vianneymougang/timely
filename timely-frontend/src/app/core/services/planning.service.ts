@@ -3,6 +3,8 @@ import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
+  CampusGenerationRequest,
+  CampusGenerationResponse,
   ConflitResponse,
   CreneauRequest,
   CreneauResponse,
@@ -26,6 +28,23 @@ export class PlanningService {
    */
   generateSchedule(request: GeneratePlanningRequest): Observable<GeneratePlanningResponse> {
     return this.http.post<GeneratePlanningResponse>(`${this.baseUrl}/generate`, request);
+  }
+
+  /**
+   * Génère les emplois du temps pour tout le campus
+   */
+  generateCampusSchedule(request: CampusGenerationRequest): Observable<CampusGenerationResponse> {
+    return this.http.post<CampusGenerationResponse>(`${this.baseUrl}/generate/campus`, request);
+  }
+
+  /**
+   * Récupère les créneaux d'un enseignant pour une semaine donnée (toutes écoles)
+   */
+  getCreneauxByEnseignant(enseignantId: string, weekStart: string): Observable<CreneauResponse[]> {
+    const params = new HttpParams().set('weekStart', weekStart);
+    return this.http.get<CreneauResponse[]>(`${this.baseUrl}/enseignant/${enseignantId}`, {
+      params,
+    });
   }
 
   /**
