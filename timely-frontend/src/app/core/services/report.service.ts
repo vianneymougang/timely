@@ -69,8 +69,12 @@ export class ReportService {
    * Récupère les statistiques du tableau de bord
    * Inclut KPIs, activités récentes, alertes et données de graphiques
    */
-  getDashboardStats(): Observable<DashboardStats> {
-    return this.http.get<DashboardStats>(`${this.baseUrl}/dashboard`);
+  getDashboardStats(ecoleId?: string): Observable<DashboardStats> {
+    let params = new HttpParams();
+    if (ecoleId) {
+      params = params.set('ecoleId', ecoleId);
+    }
+    return this.http.get<DashboardStats>(`${this.baseUrl}/dashboard`, { params });
   }
 
   // ==================== Export PDF/Excel ====================

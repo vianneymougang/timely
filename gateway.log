@@ -1,0 +1,210 @@
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.5.9)
+
+2026-03-28T20:04:13.499Z  INFO 1 --- [api-gateway] [           main] c.t.apigateway.ApiGatewayApplication     : Starting ApiGatewayApplication v0.0.1-SNAPSHOT using Java 21.0.10 with PID 1 (/app/app.jar started by root in /app)
+2026-03-28T20:04:13.507Z DEBUG 1 --- [api-gateway] [           main] c.t.apigateway.ApiGatewayApplication     : Running with Spring Boot v3.5.9, Spring v6.2.15
+2026-03-28T20:04:13.509Z  INFO 1 --- [api-gateway] [           main] c.t.apigateway.ApiGatewayApplication     : The following 1 profile is active: "docker"
+2026-03-28T20:04:14.497Z  INFO 1 --- [api-gateway] [           main] o.s.c.c.c.ConfigServerConfigDataLoader   : Fetching config from server at : http://config-server:8888
+2026-03-28T20:04:14.497Z  INFO 1 --- [api-gateway] [           main] o.s.c.c.c.ConfigServerConfigDataLoader   : Located environment: name=application, profiles=[default], label=null, version=null, state=null
+2026-03-28T20:04:14.498Z  INFO 1 --- [api-gateway] [           main] o.s.c.c.c.ConfigServerConfigDataLoader   : Fetching config from server at : http://config-server:8888
+2026-03-28T20:04:14.498Z  INFO 1 --- [api-gateway] [           main] o.s.c.c.c.ConfigServerConfigDataLoader   : Located environment: name=api-gateway, profiles=[docker], label=null, version=null, state=null
+2026-03-28T20:04:14.498Z  INFO 1 --- [api-gateway] [           main] o.s.c.c.c.ConfigServerConfigDataLoader   : Fetching config from server at : http://config-server:8888
+2026-03-28T20:04:14.498Z  INFO 1 --- [api-gateway] [           main] o.s.c.c.c.ConfigServerConfigDataLoader   : Located environment: name=api-gateway, profiles=[default], label=null, version=null, state=null
+2026-03-28T20:04:30.601Z  INFO 1 --- [api-gateway] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Multiple Spring Data modules found, entering strict repository configuration mode
+2026-03-28T20:04:30.605Z  INFO 1 --- [api-gateway] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data Redis repositories in DEFAULT mode.
+2026-03-28T20:04:31.095Z  INFO 1 --- [api-gateway] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 111 ms. Found 0 Redis repository interfaces.
+2026-03-28T20:04:36.404Z  INFO 1 --- [api-gateway] [           main] o.s.cloud.context.scope.GenericScope     : BeanFactory id=ffb14996-fb25-35a3-860c-2a8d74cfadb6
+2026-03-28T20:04:39.707Z  INFO 1 --- [api-gateway] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8090 (http)
+2026-03-28T20:04:39.807Z  INFO 1 --- [api-gateway] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-03-28T20:04:39.808Z  INFO 1 --- [api-gateway] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.50]
+2026-03-28T20:04:40.399Z  INFO 1 --- [api-gateway] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-03-28T20:04:40.400Z  INFO 1 --- [api-gateway] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 23600 ms
+2026-03-28T20:04:47.394Z DEBUG 1 --- [api-gateway] [           main] c.t.a.filter.JwtAuthenticationFilter     : Filter 'jwtAuthenticationFilter' configured for use
+2026-03-28T20:04:47.396Z DEBUG 1 --- [api-gateway] [           main] c.t.a.filter.RateLimitingFilter          : Filter 'rateLimitingFilter' configured for use
+2026-03-28T20:04:52.502Z  INFO 1 --- [api-gateway] [           main] o.s.b.a.e.web.EndpointLinksResolver      : Exposing 3 endpoints beneath base path '/actuator'
+2026-03-28T20:04:52.997Z  WARN 1 --- [api-gateway] [           main] .s.s.UserDetailsServiceAutoConfiguration : 
+
+Using generated security password: 03945043-0ea1-456e-a843-3797e9a88809
+
+This generated password is for development use only. Your security configuration must be updated before running your application in production.
+
+2026-03-28T20:04:53.099Z  INFO 1 --- [api-gateway] [           main] r$InitializeUserDetailsManagerConfigurer : Global AuthenticationManager configured with UserDetailsService bean with name inMemoryUserDetailsManager
+2026-03-28T20:04:54.203Z DEBUG 1 --- [api-gateway] [           main] o.s.s.web.DefaultSecurityFilterChain     : Will secure any request with filters: DisableEncodeUrlFilter, WebAsyncManagerIntegrationFilter, SecurityContextHolderFilter, HeaderWriterFilter, CorsFilter, LogoutFilter, JwtAuthenticationFilter, RequestCacheAwareFilter, SecurityContextHolderAwareRequestFilter, AnonymousAuthenticationFilter, SessionManagementFilter, ExceptionTranslationFilter, AuthorizationFilter
+2026-03-28T20:04:59.701Z  INFO 1 --- [api-gateway] [           main] DiscoveryClientOptionalArgsConfiguration : Eureka HTTP Client uses RestTemplate.
+2026-03-28T20:05:01.706Z  WARN 1 --- [api-gateway] [           main] iguration$LoadBalancerCaffeineWarnLogger : Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
+2026-03-28T20:05:02.199Z  INFO 1 --- [api-gateway] [           main] o.s.c.n.eureka.InstanceInfoFactory       : Setting initial instance status as: STARTING
+2026-03-28T20:05:02.402Z  INFO 1 --- [api-gateway] [           main] com.netflix.discovery.DiscoveryClient    : Initializing Eureka in region us-east-1
+2026-03-28T20:05:02.494Z  INFO 1 --- [api-gateway] [           main] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2026-03-28T20:05:02.502Z  INFO 1 --- [api-gateway] [           main] com.netflix.discovery.DiscoveryClient    : Disable delta property : false
+2026-03-28T20:05:02.503Z  INFO 1 --- [api-gateway] [           main] com.netflix.discovery.DiscoveryClient    : Single vip registry refresh property : null
+2026-03-28T20:05:02.503Z  INFO 1 --- [api-gateway] [           main] com.netflix.discovery.DiscoveryClient    : Force full registry fetch : false
+2026-03-28T20:05:02.503Z  INFO 1 --- [api-gateway] [           main] com.netflix.discovery.DiscoveryClient    : Application is null : false
+2026-03-28T20:05:02.503Z  INFO 1 --- [api-gateway] [           main] com.netflix.discovery.DiscoveryClient    : Registered Applications size is zero : true
+2026-03-28T20:05:02.503Z  INFO 1 --- [api-gateway] [           main] com.netflix.discovery.DiscoveryClient    : Application version is -1: true
+2026-03-28T20:05:02.503Z  INFO 1 --- [api-gateway] [           main] com.netflix.discovery.DiscoveryClient    : Getting all instance registry info from the eureka server
+2026-03-28T20:05:04.499Z  INFO 1 --- [api-gateway] [           main] com.netflix.discovery.DiscoveryClient    : The response status is 200
+2026-03-28T20:05:04.502Z  INFO 1 --- [api-gateway] [           main] com.netflix.discovery.DiscoveryClient    : Starting heartbeat executor: renew interval is: 30
+2026-03-28T20:05:04.594Z  INFO 1 --- [api-gateway] [           main] c.n.discovery.InstanceInfoReplicator     : InstanceInfoReplicator onDemand update allowed rate per min is 4
+2026-03-28T20:05:04.597Z  INFO 1 --- [api-gateway] [           main] com.netflix.discovery.DiscoveryClient    : Discovery Client initialized at timestamp 1774728304596 with initial instances count: 7
+2026-03-28T20:05:04.600Z  INFO 1 --- [api-gateway] [           main] o.s.c.n.e.s.EurekaServiceRegistry        : Registering application API-GATEWAY with eureka with status UP
+2026-03-28T20:05:04.603Z  INFO 1 --- [api-gateway] [           main] com.netflix.discovery.DiscoveryClient    : Saw local status change event StatusChangeEvent [timestamp=1774728304602, current=UP, previous=STARTING]
+2026-03-28T20:05:04.605Z  INFO 1 --- [api-gateway] [foReplicator-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_API-GATEWAY/api-gateway:5607775099c21001dda43ab0bdb71f24: registering service...
+2026-03-28T20:05:04.996Z  INFO 1 --- [api-gateway] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8090 (http) with context path '/'
+2026-03-28T20:05:04.998Z  INFO 1 --- [api-gateway] [           main] .s.c.n.e.s.EurekaAutoServiceRegistration : Updating port to 8090
+2026-03-28T20:05:05.193Z  INFO 1 --- [api-gateway] [foReplicator-%d] com.netflix.discovery.DiscoveryClient    : DiscoveryClient_API-GATEWAY/api-gateway:5607775099c21001dda43ab0bdb71f24 - registration status: 204
+2026-03-28T20:05:05.297Z  INFO 1 --- [api-gateway] [           main] c.t.apigateway.ApiGatewayApplication     : Started ApiGatewayApplication in 64.793 seconds (process running for 72.91)
+2026-03-28T20:05:13.400Z  INFO 1 --- [api-gateway] [nio-8090-exec-1] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-03-28T20:05:13.400Z  INFO 1 --- [api-gateway] [nio-8090-exec-1] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-03-28T20:05:13.404Z  INFO 1 --- [api-gateway] [nio-8090-exec-1] o.s.web.servlet.DispatcherServlet        : Completed initialization in 4 ms
+2026-03-28T20:05:13.590Z DEBUG 1 --- [api-gateway] [nio-8090-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:05:13.698Z DEBUG 1 --- [api-gateway] [nio-8090-exec-1] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:05:13.793Z DEBUG 1 --- [api-gateway] [nio-8090-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:05:13.793Z DEBUG 1 --- [api-gateway] [nio-8090-exec-1] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:05:27.597Z DEBUG 1 --- [api-gateway] [nio-8090-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:05:27.598Z DEBUG 1 --- [api-gateway] [nio-8090-exec-2] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:05:27.599Z DEBUG 1 --- [api-gateway] [nio-8090-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:05:27.599Z DEBUG 1 --- [api-gateway] [nio-8090-exec-2] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:05:37.798Z DEBUG 1 --- [api-gateway] [nio-8090-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:05:37.799Z DEBUG 1 --- [api-gateway] [nio-8090-exec-4] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:05:37.800Z DEBUG 1 --- [api-gateway] [nio-8090-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:05:37.800Z DEBUG 1 --- [api-gateway] [nio-8090-exec-4] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:05:47.897Z DEBUG 1 --- [api-gateway] [nio-8090-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:05:47.898Z DEBUG 1 --- [api-gateway] [nio-8090-exec-6] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:05:47.899Z DEBUG 1 --- [api-gateway] [nio-8090-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:05:47.899Z DEBUG 1 --- [api-gateway] [nio-8090-exec-6] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:05:58.090Z DEBUG 1 --- [api-gateway] [nio-8090-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:05:58.091Z DEBUG 1 --- [api-gateway] [nio-8090-exec-8] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:05:58.091Z DEBUG 1 --- [api-gateway] [nio-8090-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:05:58.092Z DEBUG 1 --- [api-gateway] [nio-8090-exec-8] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:06:08.190Z DEBUG 1 --- [api-gateway] [io-8090-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:06:08.191Z DEBUG 1 --- [api-gateway] [io-8090-exec-10] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:06:08.192Z DEBUG 1 --- [api-gateway] [io-8090-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:06:08.193Z DEBUG 1 --- [api-gateway] [io-8090-exec-10] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:06:18.271Z DEBUG 1 --- [api-gateway] [nio-8090-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:06:18.272Z DEBUG 1 --- [api-gateway] [nio-8090-exec-2] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:06:18.273Z DEBUG 1 --- [api-gateway] [nio-8090-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:06:18.273Z DEBUG 1 --- [api-gateway] [nio-8090-exec-2] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:06:28.373Z DEBUG 1 --- [api-gateway] [nio-8090-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:06:28.385Z DEBUG 1 --- [api-gateway] [nio-8090-exec-4] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:06:28.386Z DEBUG 1 --- [api-gateway] [nio-8090-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:06:28.386Z DEBUG 1 --- [api-gateway] [nio-8090-exec-4] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:06:38.465Z DEBUG 1 --- [api-gateway] [nio-8090-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:06:38.465Z DEBUG 1 --- [api-gateway] [nio-8090-exec-6] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:06:38.466Z DEBUG 1 --- [api-gateway] [nio-8090-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:06:38.484Z DEBUG 1 --- [api-gateway] [nio-8090-exec-6] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:06:48.586Z DEBUG 1 --- [api-gateway] [nio-8090-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:06:48.586Z DEBUG 1 --- [api-gateway] [nio-8090-exec-8] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:06:48.587Z DEBUG 1 --- [api-gateway] [nio-8090-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:06:48.587Z DEBUG 1 --- [api-gateway] [nio-8090-exec-8] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:06:58.682Z DEBUG 1 --- [api-gateway] [io-8090-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:06:58.683Z DEBUG 1 --- [api-gateway] [io-8090-exec-10] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:06:58.683Z DEBUG 1 --- [api-gateway] [io-8090-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:06:58.683Z DEBUG 1 --- [api-gateway] [io-8090-exec-10] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:07:08.767Z DEBUG 1 --- [api-gateway] [nio-8090-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:07:08.768Z DEBUG 1 --- [api-gateway] [nio-8090-exec-2] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:07:08.769Z DEBUG 1 --- [api-gateway] [nio-8090-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:07:08.769Z DEBUG 1 --- [api-gateway] [nio-8090-exec-2] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:07:18.883Z DEBUG 1 --- [api-gateway] [nio-8090-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:07:18.884Z DEBUG 1 --- [api-gateway] [nio-8090-exec-4] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:07:18.885Z DEBUG 1 --- [api-gateway] [nio-8090-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:07:18.886Z DEBUG 1 --- [api-gateway] [nio-8090-exec-4] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:07:28.985Z DEBUG 1 --- [api-gateway] [nio-8090-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:07:28.986Z DEBUG 1 --- [api-gateway] [nio-8090-exec-6] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:07:28.987Z DEBUG 1 --- [api-gateway] [nio-8090-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:07:28.988Z DEBUG 1 --- [api-gateway] [nio-8090-exec-6] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:07:39.084Z DEBUG 1 --- [api-gateway] [nio-8090-exec-7] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:07:39.084Z DEBUG 1 --- [api-gateway] [nio-8090-exec-7] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:07:39.085Z DEBUG 1 --- [api-gateway] [nio-8090-exec-7] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:07:39.085Z DEBUG 1 --- [api-gateway] [nio-8090-exec-7] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:07:49.176Z DEBUG 1 --- [api-gateway] [nio-8090-exec-9] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:07:49.177Z DEBUG 1 --- [api-gateway] [nio-8090-exec-9] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:07:49.178Z DEBUG 1 --- [api-gateway] [nio-8090-exec-9] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:07:49.178Z DEBUG 1 --- [api-gateway] [nio-8090-exec-9] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:07:59.283Z DEBUG 1 --- [api-gateway] [nio-8090-exec-1] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:07:59.284Z DEBUG 1 --- [api-gateway] [nio-8090-exec-1] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:07:59.284Z DEBUG 1 --- [api-gateway] [nio-8090-exec-1] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:07:59.285Z DEBUG 1 --- [api-gateway] [nio-8090-exec-1] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:08:09.367Z DEBUG 1 --- [api-gateway] [nio-8090-exec-3] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:08:09.368Z DEBUG 1 --- [api-gateway] [nio-8090-exec-3] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:08:09.368Z DEBUG 1 --- [api-gateway] [nio-8090-exec-3] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:08:09.368Z DEBUG 1 --- [api-gateway] [nio-8090-exec-3] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:08:19.482Z DEBUG 1 --- [api-gateway] [nio-8090-exec-5] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:08:19.483Z DEBUG 1 --- [api-gateway] [nio-8090-exec-5] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:08:19.484Z DEBUG 1 --- [api-gateway] [nio-8090-exec-5] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:08:19.485Z DEBUG 1 --- [api-gateway] [nio-8090-exec-5] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:08:29.578Z DEBUG 1 --- [api-gateway] [nio-8090-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:08:29.578Z DEBUG 1 --- [api-gateway] [nio-8090-exec-6] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:08:29.579Z DEBUG 1 --- [api-gateway] [nio-8090-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:08:29.579Z DEBUG 1 --- [api-gateway] [nio-8090-exec-6] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:08:39.676Z DEBUG 1 --- [api-gateway] [nio-8090-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:08:39.677Z DEBUG 1 --- [api-gateway] [nio-8090-exec-8] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:08:39.678Z DEBUG 1 --- [api-gateway] [nio-8090-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:08:39.678Z DEBUG 1 --- [api-gateway] [nio-8090-exec-8] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:08:49.760Z DEBUG 1 --- [api-gateway] [io-8090-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:08:49.761Z DEBUG 1 --- [api-gateway] [io-8090-exec-10] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:08:49.761Z DEBUG 1 --- [api-gateway] [io-8090-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:08:49.762Z DEBUG 1 --- [api-gateway] [io-8090-exec-10] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:08:59.874Z DEBUG 1 --- [api-gateway] [nio-8090-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:08:59.875Z DEBUG 1 --- [api-gateway] [nio-8090-exec-2] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:08:59.876Z DEBUG 1 --- [api-gateway] [nio-8090-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:08:59.876Z DEBUG 1 --- [api-gateway] [nio-8090-exec-2] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:09:09.977Z DEBUG 1 --- [api-gateway] [nio-8090-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:09:09.977Z DEBUG 1 --- [api-gateway] [nio-8090-exec-4] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:09:09.978Z DEBUG 1 --- [api-gateway] [nio-8090-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:09:09.978Z DEBUG 1 --- [api-gateway] [nio-8090-exec-4] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:09:20.035Z DEBUG 1 --- [api-gateway] [nio-8090-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:09:20.069Z DEBUG 1 --- [api-gateway] [nio-8090-exec-6] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:09:20.070Z DEBUG 1 --- [api-gateway] [nio-8090-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:09:20.070Z DEBUG 1 --- [api-gateway] [nio-8090-exec-6] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:09:30.192Z DEBUG 1 --- [api-gateway] [nio-8090-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:09:30.193Z DEBUG 1 --- [api-gateway] [nio-8090-exec-8] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:09:30.194Z DEBUG 1 --- [api-gateway] [nio-8090-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:09:30.194Z DEBUG 1 --- [api-gateway] [nio-8090-exec-8] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:09:40.374Z DEBUG 1 --- [api-gateway] [io-8090-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:09:40.375Z DEBUG 1 --- [api-gateway] [io-8090-exec-10] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:09:40.375Z DEBUG 1 --- [api-gateway] [io-8090-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:09:40.375Z DEBUG 1 --- [api-gateway] [io-8090-exec-10] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:09:50.467Z DEBUG 1 --- [api-gateway] [nio-8090-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:09:50.467Z DEBUG 1 --- [api-gateway] [nio-8090-exec-2] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:09:50.468Z DEBUG 1 --- [api-gateway] [nio-8090-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:09:50.468Z DEBUG 1 --- [api-gateway] [nio-8090-exec-2] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:10:00.583Z DEBUG 1 --- [api-gateway] [nio-8090-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:10:00.584Z DEBUG 1 --- [api-gateway] [nio-8090-exec-4] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:10:00.585Z DEBUG 1 --- [api-gateway] [nio-8090-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:10:00.586Z DEBUG 1 --- [api-gateway] [nio-8090-exec-4] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:10:02.481Z  INFO 1 --- [api-gateway] [rap-executor-%d] c.n.d.s.r.aws.ConfigClusterResolver      : Resolving eureka endpoints via configuration
+2026-03-28T20:10:10.745Z DEBUG 1 --- [api-gateway] [nio-8090-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:10:10.745Z DEBUG 1 --- [api-gateway] [nio-8090-exec-6] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:10:10.746Z DEBUG 1 --- [api-gateway] [nio-8090-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:10:10.746Z DEBUG 1 --- [api-gateway] [nio-8090-exec-6] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:10:20.838Z DEBUG 1 --- [api-gateway] [nio-8090-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:10:20.838Z DEBUG 1 --- [api-gateway] [nio-8090-exec-8] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:10:20.838Z DEBUG 1 --- [api-gateway] [nio-8090-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:10:20.838Z DEBUG 1 --- [api-gateway] [nio-8090-exec-8] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:10:30.928Z DEBUG 1 --- [api-gateway] [io-8090-exec-10] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:10:30.928Z DEBUG 1 --- [api-gateway] [io-8090-exec-10] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:10:30.965Z DEBUG 1 --- [api-gateway] [io-8090-exec-10] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:10:30.965Z DEBUG 1 --- [api-gateway] [io-8090-exec-10] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:10:41.024Z DEBUG 1 --- [api-gateway] [nio-8090-exec-2] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:10:41.025Z DEBUG 1 --- [api-gateway] [nio-8090-exec-2] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:10:41.025Z DEBUG 1 --- [api-gateway] [nio-8090-exec-2] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:10:41.025Z DEBUG 1 --- [api-gateway] [nio-8090-exec-2] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:10:51.134Z DEBUG 1 --- [api-gateway] [nio-8090-exec-4] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:10:51.134Z DEBUG 1 --- [api-gateway] [nio-8090-exec-4] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:10:51.135Z DEBUG 1 --- [api-gateway] [nio-8090-exec-4] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:10:51.135Z DEBUG 1 --- [api-gateway] [nio-8090-exec-4] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:11:01.245Z DEBUG 1 --- [api-gateway] [nio-8090-exec-6] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:11:01.246Z DEBUG 1 --- [api-gateway] [nio-8090-exec-6] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:11:01.246Z DEBUG 1 --- [api-gateway] [nio-8090-exec-6] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:11:01.246Z DEBUG 1 --- [api-gateway] [nio-8090-exec-6] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1
+2026-03-28T20:11:11.356Z DEBUG 1 --- [api-gateway] [nio-8090-exec-8] o.s.security.web.FilterChainProxy        : Securing GET /actuator/health
+2026-03-28T20:11:11.357Z DEBUG 1 --- [api-gateway] [nio-8090-exec-8] o.s.s.w.a.AnonymousAuthenticationFilter  : Set SecurityContextHolder to anonymous SecurityContext
+2026-03-28T20:11:11.357Z DEBUG 1 --- [api-gateway] [nio-8090-exec-8] o.s.security.web.FilterChainProxy        : Secured GET /actuator/health
+2026-03-28T20:11:11.357Z DEBUG 1 --- [api-gateway] [nio-8090-exec-8] c.t.apigateway.config.RateLimiterConfig  : Rate limiting by IP: 0:0:0:0:0:0:0:1

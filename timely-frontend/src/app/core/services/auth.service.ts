@@ -2,7 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { Observable, throwError } from 'rxjs';
-import { catchError, tap } from 'rxjs/operators';
+import { catchError, finalize, shareReplay, tap } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
 import { AuthResponse } from '../models/auth-response.model';
 import { LoginRequest } from '../models/login-request.model';
@@ -22,6 +22,9 @@ export class AuthService {
   private readonly ACCESS_TOKEN_KEY = 'accessToken';
   private readonly REFRESH_TOKEN_KEY = 'refreshToken';
   private readonly USER_KEY = 'user';
+
+  /** One in-flight refresh so parallel 401s do not rotate the refresh token twice (backend invalidates old token). */
+  private refreshInFlight$: Observable<AuthResponse> | null = null;
 
   constructor() {
     this.checkStoredAuth();
@@ -54,18 +57,97 @@ export class AuthService {
       return throwError(() => new Error('No refresh token available'));
     }
 
-    return this.http.post<AuthResponse>(`${this.AUTH_API}/refresh`, { refreshToken }).pipe(
+    if (this.refreshInFlight$) {
+      // #region agent log
+      fetch('http://127.0.0.1:7648/ingest/353df7e9-5a1e-4ad8-a917-59345810afdc', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '4f933b' },
+        body: JSON.stringify({
+          sessionId: '4f933b',
+          location: 'auth.service.ts:refreshToken:reuse',
+          message: 'reusing in-flight refresh (single-flight)',
+          data: { hypothesisId: 'H4-verify', runId: 'post-fix' },
+          timestamp: Date.now(),
+          hypothesisId: 'H4-verify',
+        }),
+      }).catch(() => {});
+      // #endregion
+      return this.refreshInFlight$;
+    }
+
+    // #region agent log
+    fetch('http://127.0.0.1:7648/ingest/353df7e9-5a1e-4ad8-a917-59345810afdc', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '4f933b' },
+      body: JSON.stringify({
+        sessionId: '4f933b',
+        location: 'auth.service.ts:refreshToken:start',
+        message: 'refresh API call starting',
+        data: {
+          hypothesisId: 'H2-H4',
+          refreshTokenLen: refreshToken.length,
+          runId: 'post-fix',
+        },
+        timestamp: Date.now(),
+        hypothesisId: 'H2-H4',
+      }),
+    }).catch(() => {});
+    // #endregion
+
+    this.refreshInFlight$ = this.http.post<AuthResponse>(`${this.AUTH_API}/refresh`, { refreshToken }).pipe(
       tap((response) => {
         // Update tokens
         localStorage.setItem(this.ACCESS_TOKEN_KEY, response.accessToken);
         localStorage.setItem(this.REFRESH_TOKEN_KEY, response.refreshToken);
+        // #region agent log
+        fetch('http://127.0.0.1:7648/ingest/353df7e9-5a1e-4ad8-a917-59345810afdc', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '4f933b' },
+          body: JSON.stringify({
+            sessionId: '4f933b',
+            location: 'auth.service.ts:refreshToken:ok',
+            message: 'refresh API success',
+            data: {
+              hypothesisId: 'H2-H4',
+              hasNewAccess: !!response?.accessToken,
+              runId: 'post-fix',
+            },
+            timestamp: Date.now(),
+            hypothesisId: 'H2-H4',
+          }),
+        }).catch(() => {});
+        // #endregion
       }),
       catchError((error) => {
         console.error('Token refresh error:', error);
+        // #region agent log
+        fetch('http://127.0.0.1:7648/ingest/353df7e9-5a1e-4ad8-a917-59345810afdc', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '4f933b' },
+          body: JSON.stringify({
+            sessionId: '4f933b',
+            location: 'auth.service.ts:refreshToken:err',
+            message: 'refresh API error, logout from service',
+            data: {
+              hypothesisId: 'H2-H4',
+              status: error?.status,
+              runId: 'post-fix',
+            },
+            timestamp: Date.now(),
+            hypothesisId: 'H2-H4',
+          }),
+        }).catch(() => {});
+        // #endregion
         this.logout();
         return throwError(() => error);
-      })
+      }),
+      finalize(() => {
+        this.refreshInFlight$ = null;
+      }),
+      shareReplay({ bufferSize: 1, refCount: true })
     );
+
+    return this.refreshInFlight$;
   }
 
   /**
@@ -132,21 +214,48 @@ export class AuthService {
   logout(): void {
     const refreshToken = this.getRefreshToken();
 
+    // #region agent log
+    fetch('http://127.0.0.1:7648/ingest/353df7e9-5a1e-4ad8-a917-59345810afdc', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Debug-Session-Id': '4f933b' },
+      body: JSON.stringify({
+        sessionId: '4f933b',
+        location: 'auth.service.ts:logout:entry',
+        message: 'logout() entry',
+        data: {
+          hypothesisId: 'H1-H2',
+          hasRefresh: !!refreshToken,
+          hasAccessBefore: !!this.getAccessToken(),
+        },
+        timestamp: Date.now(),
+        hypothesisId: 'H1-H2',
+      }),
+    }).catch(() => {});
+    // #endregion
+
+    const clearSessionAndNavigate = () => {
+      // Clear local storage
+      localStorage.removeItem(this.ACCESS_TOKEN_KEY);
+      localStorage.removeItem(this.REFRESH_TOKEN_KEY);
+      localStorage.removeItem(this.USER_KEY);
+
+      this.currentUser.set(null);
+      this.isAuthenticated.set(false);
+      this.router.navigate(['/auth/login']);
+    };
+
     // Call backend logout endpoint if refresh token exists
     if (refreshToken) {
       this.http.post(`${this.AUTH_API}/logout`, { refreshToken }).subscribe({
-        error: (error) => console.error('Logout error:', error),
+        next: () => clearSessionAndNavigate(),
+        error: (error) => {
+          console.error('Logout error:', error);
+          clearSessionAndNavigate();
+        }
       });
+    } else {
+      clearSessionAndNavigate();
     }
-
-    // Clear local storage
-    localStorage.removeItem(this.ACCESS_TOKEN_KEY);
-    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
-    localStorage.removeItem(this.USER_KEY);
-
-    this.currentUser.set(null);
-    this.isAuthenticated.set(false);
-    this.router.navigate(['/auth/login']);
   }
 
   /**
