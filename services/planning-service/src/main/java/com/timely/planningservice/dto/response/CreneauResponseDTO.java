@@ -30,4 +30,11 @@ public class CreneauResponseDTO {
     private UUID salleId;
     private UUID groupeId;
     private UUID coursId;
+    
+    // Enriched fields for the frontend grid viewer
+    private String coursIntitule;
+    private String coursType;
+    private String enseignantNom;
+    private String salleNom;
+    private String groupeNom;
 }

@@ -80,7 +80,7 @@ public class EmploiDuTemps {
         this.dateDebut = dateDebut;
         this.dateFin = dateFin;
         this.periode = periode;
-        this.statut = StatutEmploi.BROUILLON;
+        this.statut = StatutEmploi.DRAFT;
         this.dateCreation = LocalDateTime.now();
     }
 }

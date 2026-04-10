@@ -1,26 +1,19 @@
-import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, inject, OnDestroy, OnInit, signal } from '@angular/core';
 import { interval, Subscription } from 'rxjs';
-import { switchMap, startWith, catchError } from 'rxjs/operators';
-import { StatCardComponent } from '../../../shared/components/stat-card/stat-card.component';
-import { AlertCardComponent } from '../../../shared/components/alert-card/alert-card.component';
+import { catchError, switchMap } from 'rxjs/operators';
+import { Alert, AuditEntry, DashboardStats, GlobalKPIs } from '../../../core/models/report.model';
+import { ReportService } from '../../../core/services/report.service';
+import { AlertsWidgetComponent } from './widgets/alerts-widget.component';
 import { KpiCardComponent } from './widgets/kpi-card.component';
 import { RecentActivityComponent } from './widgets/recent-activity.component';
-import { AlertsWidgetComponent } from './widgets/alerts-widget.component';
-import { ReportService } from '../../../core/services/report.service';
-import { DashboardStats, GlobalKPIs, Alert, AuditEntry } from '../../../core/models/report.model';
 
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [
-    CommonModule,
-    KpiCardComponent,
-    RecentActivityComponent,
-    AlertsWidgetComponent
-  ],
+  imports: [CommonModule, KpiCardComponent, RecentActivityComponent, AlertsWidgetComponent],
   templateUrl: './dashboard.component.html',
-  styleUrls: ['./dashboard.component.scss']
+  styleUrls: ['./dashboard.component.scss'],
 })
 export class DashboardComponent implements OnInit, OnDestroy {
   private reportService = inject(ReportService);
@@ -40,7 +33,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
     { day: 'Mer', coord: 90, avail: 106, limited: 80 },
     { day: 'Jeu', coord: 100, avail: 114, limited: 85 },
     { day: 'Ven', coord: 110, avail: 122, limited: 90 },
-    { day: 'Sam', coord: 120, avail: 130, limited: 95 }
+    { day: 'Sam', coord: 120, avail: 130, limited: 95 },
   ]);
 
   ngOnInit(): void {
@@ -59,14 +52,15 @@ export class DashboardComponent implements OnInit, OnDestroy {
     this.isLoading.set(true);
     this.error.set(null);
 
-    this.reportService.getDashboardStats()
+    this.reportService
+      .getDashboardStats()
       .pipe(
-        catchError(err => {
+        catchError((err) => {
           this.error.set('Erreur lors du chargement des données');
           console.error('Dashboard loading error:', err);
           this.isLoading.set(false);
           throw err;
-        })
+        }),
       )
       .subscribe({
         next: (stats: DashboardStats) => {
@@ -78,7 +72,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         },
         error: () => {
           this.isLoading.set(false);
-        }
+        },
       });
   }
 
@@ -87,11 +81,9 @@ export class DashboardComponent implements OnInit, OnDestroy {
    */
   private setupAutoRefresh(): void {
     // Rafraîchir toutes les 5 minutes (300000 ms)
+    // Note: l'appel initial est géré par loadDashboardData() — pas de startWith(0) ici
     this.refreshSubscription = interval(300000)
-      .pipe(
-        startWith(0),
-        switchMap(() => this.reportService.getDashboardStats())
-      )
+      .pipe(switchMap(() => this.reportService.getDashboardStats()))
       .subscribe({
         next: (stats: DashboardStats) => {
           this.kpis.set(stats.kpis);
@@ -101,7 +93,7 @@ export class DashboardComponent implements OnInit, OnDestroy {
         },
         error: (err) => {
           console.error('Auto-refresh error:', err);
-        }
+        },
       });
   }
 

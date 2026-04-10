@@ -107,7 +107,8 @@ export class UserService {
    * Récupérer tous les utilisateurs
    */
   getAllUsers(): Observable<UserDto[]> {
-    return this.apiService.get<UserDto[]>(this.USERS_API).pipe(
+    return this.apiService.get<{ content: UserDto[] }>(this.USERS_API).pipe(
+      map((response) => response.content),
       catchError((error) => {
         console.error('Error fetching users:', error);
         return throwError(

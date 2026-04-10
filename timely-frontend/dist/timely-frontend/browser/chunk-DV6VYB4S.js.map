@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/features/teacher/notifications/teacher-notifications.component.ts", "src/app/features/teacher/notifications/teacher-notifications.component.html"],
+  "sourcesContent": ["import { Component } from '@angular/core';\n\n@Component({\n  selector: 'app-teacher-notifications.component',\n  imports: [],\n  templateUrl: './teacher-notifications.component.html',\n  styleUrl: './teacher-notifications.component.scss',\n})\nexport class TeacherNotificationsComponent {\n\n}\n", "<p>teacher-notifications.component works!</p>\n"],
+  "mappings": ";;;;;;;;;;;;;AAQM,IAAO,gCAAP,MAAO,+BAA6B;;qCAA7B,gCAA6B;EAAA;yEAA7B,gCAA6B,WAAA,CAAA,CAAA,6BAAA,GAAA,WAAA,CAAA,GAAA,OAAA,KAAA,OAAA,GAAA,MAAA,GAAA,UAAA,SAAA,uCAAA,IAAA,KAAA;AAAA,QAAA,KAAA,GAAA;ACR1C,MAAA,4BAAA,GAAA,GAAA;AAAG,MAAA,iBAAA,GAAA,wCAAA;AAAsC,MAAA,0BAAA;;;;;sEDQ5B,+BAA6B,CAAA;UANzC;uBACW,uCAAqC,SACtC,CAAA,GAAE,UAAA,kDAAA,CAAA;;;;6EAIA,+BAA6B,EAAA,WAAA,iCAAA,UAAA,6EAAA,YAAA,EAAA,CAAA;AAAA,GAAA;",
+  "names": []
+}

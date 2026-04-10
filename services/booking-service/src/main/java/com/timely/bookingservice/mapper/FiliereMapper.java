@@ -16,6 +16,7 @@ public interface FiliereMapper {
 
     @Mapping(source = "ecole.id", target = "ecoleId")
     @Mapping(source = "ecole.nom", target = "ecoleNom")
+    @Mapping(expression = "java(filiere.getCycleType() != null ? filiere.getCycleType().name() : null)", target = "cycleType")
     FiliereResponse toResponse(Filiere filiere);
 
     @Mapping(target = "ecole", ignore = true)

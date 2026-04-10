@@ -1,6 +1,7 @@
 package com.timely.planningservice.repository;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
@@ -22,6 +23,8 @@ public interface CreneauRepository extends JpaRepository<Creneau, UUID> {
     Page<Creneau> findByEmploiDuTempsId(UUID emploiDuTempsId, Pageable pageable);
 
     List<Creneau> findByEnseignantId(UUID enseignantId);
+
+    List<Creneau> findByEnseignantIdAndDateCreneauBetween(UUID enseignantId, LocalDate start, LocalDate end);
 
     List<Creneau> findBySalleId(UUID salleId);
 

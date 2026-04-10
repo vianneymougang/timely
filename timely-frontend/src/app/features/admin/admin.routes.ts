@@ -25,8 +25,8 @@ export const ADMIN_ROUTES: Routes = [
   },
   {
     path: 'schedule',
-    loadComponent: () =>
-      import('./schedule/schedule.component').then((m) => m.ScheduleComponent),
+    loadChildren: () =>
+      import('./schedule/schedule.routes').then((m) => m.routes),
   },
   {
     path: 'reservations',

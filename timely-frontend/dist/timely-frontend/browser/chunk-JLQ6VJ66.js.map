@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/features/teacher/profile/teacher-profile.component.ts", "src/app/features/teacher/profile/teacher-profile.component.html"],
+  "sourcesContent": ["import { Component } from '@angular/core';\n\n@Component({\n  selector: 'app-teacher-profile.component',\n  imports: [],\n  templateUrl: './teacher-profile.component.html',\n  styleUrl: './teacher-profile.component.scss',\n})\nexport class TeacherProfileComponent {\n\n}\n", "<p>teacher-profile.component works!</p>\n"],
+  "mappings": ";;;;;;;;;;;;;AAQM,IAAO,0BAAP,MAAO,yBAAuB;;qCAAvB,0BAAuB;EAAA;yEAAvB,0BAAuB,WAAA,CAAA,CAAA,uBAAA,GAAA,WAAA,CAAA,GAAA,OAAA,KAAA,OAAA,GAAA,MAAA,GAAA,UAAA,SAAA,iCAAA,IAAA,KAAA;AAAA,QAAA,KAAA,GAAA;ACRpC,MAAA,4BAAA,GAAA,GAAA;AAAG,MAAA,iBAAA,GAAA,kCAAA;AAAgC,MAAA,0BAAA;;;;;sEDQtB,yBAAuB,CAAA;UANnC;uBACW,iCAA+B,SAChC,CAAA,GAAE,UAAA,4CAAA,CAAA;;;;6EAIA,yBAAuB,EAAA,WAAA,2BAAA,UAAA,iEAAA,YAAA,EAAA,CAAA;AAAA,GAAA;",
+  "names": []
+}

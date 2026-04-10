@@ -16,6 +16,6 @@ public interface PlanningServiceClient {
             @RequestParam(required = false) String statut
     );
 
-    @GetMapping("/api/planning/conflits")
-    List<Object> getConflits(@RequestParam(required = false) UUID emploiId);
+    @GetMapping("/internal/conflits")
+    List<Object> getConflits();
 }

@@ -93,6 +93,15 @@ public class ConflitService {
         return conflitRepository.countNonResolusParEmploi(emploiDuTempsId);
     }
 
+    @Transactional(readOnly = true)
+    public List<ConflitResponseDTO> getAllConflits() {
+        log.debug("Fetching all Conflits");
+        return conflitRepository.findAll()
+                .stream()
+                .map(conflitMapper::toResponseDTO)
+                .toList();
+    }
+
     @Transactional
     public ConflitResponseDTO resolveConflit(UUID id, String resolution) {
         log.info("Resolving Conflit with ID: {}", id);
@@ -145,7 +154,7 @@ public class ConflitService {
 
                 Conflit conflit = new Conflit(
                         creneau.getEmploiDuTemps(),
-                        TypeConflit.ENSEIGNANT_OCCUPE,
+                        TypeConflit.ENSEIGNANT,
                         "L'enseignant est déjà assigné à un autre créneau au même horaire",
                         Severite.CRITIQUE
                 );
@@ -170,9 +179,9 @@ public class ConflitService {
             if (!disponible) {
                 Conflit conflit = new Conflit(
                         creneau.getEmploiDuTemps(),
-                        TypeConflit.CHEVAUCHEMENT_DISPONIBILITE,
+                        TypeConflit.HORAIRE,
                         "Le créneau ne correspond pas aux disponibilités de l'enseignant",
-                        Severite.MAJEURE
+                        Severite.MOYENNE
                 );
                 conflit.setReservation1Id(creneau.getReservationId());
 
@@ -196,7 +205,7 @@ public class ConflitService {
 
                 Conflit conflit = new Conflit(
                         creneau.getEmploiDuTemps(),
-                        TypeConflit.SALLE_OCCUPEE,
+                        TypeConflit.SALLE,
                         "La salle est déjà réservée à cet horaire",
                         Severite.CRITIQUE
                 );
@@ -223,7 +232,7 @@ public class ConflitService {
 
                 Conflit conflit = new Conflit(
                         creneau.getEmploiDuTemps(),
-                        TypeConflit.GROUPE_OCCUPE,
+                        TypeConflit.GROUPE,
                         "Le groupe d'étudiants a déjà un cours à cet horaire",
                         Severite.CRITIQUE
                 );

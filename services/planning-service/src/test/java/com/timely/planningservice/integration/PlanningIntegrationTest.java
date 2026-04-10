@@ -138,24 +138,24 @@ class PlanningIntegrationTest extends AbstractPlanningIntegrationTest {
     @DisplayName("F3.1 - Advanced search with multiple filters returns correct results")
     void searchAdvanced_realDB_multipleFilters_returnsCorrect() {
         // Given: Create test data with different filters
-        EmploiDuTemps emploi1 = createTestEmploi(ecoleId, LocalDate.of(2025, 2, 10), StatutEmploi.PUBLIE);
+        EmploiDuTemps emploi1 = createTestEmploi(ecoleId, LocalDate.of(2025, 2, 10), StatutEmploi.PUBLISHED);
         Creneau creneau1 = createTestCreneau(emploi1, DayOfWeek.MONDAY, enseignantId1, salleId1, groupeId1);
         emploi1.getCreneaux().add(creneau1);
         emploiDuTempsRepository.save(emploi1);
 
-        EmploiDuTemps emploi2 = createTestEmploi(ecoleId, LocalDate.of(2025, 2, 17), StatutEmploi.VALIDE);
+        EmploiDuTemps emploi2 = createTestEmploi(ecoleId, LocalDate.of(2025, 2, 17), StatutEmploi.VALIDATED);
         Creneau creneau2 = createTestCreneau(emploi2, DayOfWeek.TUESDAY, enseignantId2, salleId2, groupeId1);
         emploi2.getCreneaux().add(creneau2);
         emploiDuTempsRepository.save(emploi2);
 
-        EmploiDuTemps emploi3 = createTestEmploi(UUID.randomUUID(), LocalDate.of(2025, 2, 24), StatutEmploi.PUBLIE);
+        EmploiDuTemps emploi3 = createTestEmploi(UUID.randomUUID(), LocalDate.of(2025, 2, 24), StatutEmploi.PUBLISHED);
         emploiDuTempsRepository.save(emploi3);
 
         // When: Search with multiple filters
         SearchPlanningRequest request = new SearchPlanningRequest();
         request.setEcoleId(ecoleId);
         request.setEnseignantId(enseignantId1);
-        request.setStatut(StatutEmploi.PUBLIE);
+        request.setStatut(StatutEmploi.PUBLISHED);
         request.setPage(0);
         request.setSize(10);
         request.setSortBy("dateDebut");
@@ -168,7 +168,7 @@ class PlanningIntegrationTest extends AbstractPlanningIntegrationTest {
         assertThat(result.getTotalElements()).isEqualTo(1);
         assertThat(result.getContent()).hasSize(1);
         assertThat(result.getContent().get(0).getId()).isEqualTo(emploi1.getId());
-        assertThat(result.getContent().get(0).getStatut()).isEqualTo(StatutEmploi.PUBLIE);
+        assertThat(result.getContent().get(0).getStatut()).isEqualTo(StatutEmploi.PUBLISHED);
     }
 
     @Test
@@ -177,7 +177,7 @@ class PlanningIntegrationTest extends AbstractPlanningIntegrationTest {
         // Given: Create multiple emplois for pagination test
         LocalDate baseDate = LocalDate.of(2025, 2, 10);
         for (int i = 0; i < 15; i++) {
-            EmploiDuTemps emploi = createTestEmploi(ecoleId, baseDate.plusWeeks(i), StatutEmploi.PUBLIE);
+            EmploiDuTemps emploi = createTestEmploi(ecoleId, baseDate.plusWeeks(i), StatutEmploi.PUBLISHED);
             emploiDuTempsRepository.save(emploi);
         }
 
@@ -224,7 +224,7 @@ class PlanningIntegrationTest extends AbstractPlanningIntegrationTest {
     @DisplayName("F3.4 - Publish emploi changes status and sends event to RabbitMQ")
     void publish_realDB_statusChangesAndEventSent() {
         // Given: Create a validated emploi
-        EmploiDuTemps emploi = createTestEmploi(ecoleId, LocalDate.of(2025, 2, 10), StatutEmploi.VALIDE);
+        EmploiDuTemps emploi = createTestEmploi(ecoleId, LocalDate.of(2025, 2, 10), StatutEmploi.VALIDATED);
         emploi = emploiDuTempsRepository.save(emploi);
 
         // When: Publish the emploi
@@ -233,13 +233,13 @@ class PlanningIntegrationTest extends AbstractPlanningIntegrationTest {
 
         // Then: Status should be PUBLIE
         assertThat(result).isNotNull();
-        assertThat(result.getStatut()).isEqualTo(StatutEmploi.PUBLIE);
+        assertThat(result.getStatut()).isEqualTo(StatutEmploi.PUBLISHED);
         assertThat(result.getDatePublication()).isNotNull();
         assertThat(result.getUtilisateurValidation()).isEqualTo(publisherEmail);
 
         // Verify in database
         EmploiDuTemps updatedEmploi = emploiDuTempsRepository.findById(emploi.getId()).orElseThrow();
-        assertThat(updatedEmploi.getStatut()).isEqualTo(StatutEmploi.PUBLIE);
+        assertThat(updatedEmploi.getStatut()).isEqualTo(StatutEmploi.PUBLISHED);
         assertThat(updatedEmploi.getDatePublication()).isNotNull();
         assertThat(updatedEmploi.getDatePublication()).isBeforeOrEqualTo(LocalDateTime.now());
     }
@@ -248,7 +248,7 @@ class PlanningIntegrationTest extends AbstractPlanningIntegrationTest {
     @DisplayName("F3.4 - Publish emploi sends RabbitMQ message with correct structure")
     void publish_rabbitMQReceivesMessage() throws Exception {
         // Given: Create a validated emploi
-        EmploiDuTemps emploi = createTestEmploi(ecoleId, LocalDate.of(2025, 2, 10), StatutEmploi.VALIDE);
+        EmploiDuTemps emploi = createTestEmploi(ecoleId, LocalDate.of(2025, 2, 10), StatutEmploi.VALIDATED);
         emploi = emploiDuTempsRepository.save(emploi);
         UUID emploiId = emploi.getId();
 
@@ -259,7 +259,7 @@ class PlanningIntegrationTest extends AbstractPlanningIntegrationTest {
         // Note: In a real scenario, you'd use a test consumer or @RabbitListener
         // Here we verify the emploi was published (status changed)
         EmploiDuTemps publishedEmploi = emploiDuTempsRepository.findById(emploiId).orElseThrow();
-        assertThat(publishedEmploi.getStatut()).isEqualTo(StatutEmploi.PUBLIE);
+        assertThat(publishedEmploi.getStatut()).isEqualTo(StatutEmploi.PUBLISHED);
 
         // Verify the event would contain correct data
         EmploiDuTempsPublieEvent expectedEvent = new EmploiDuTempsPublieEvent(
@@ -279,7 +279,7 @@ class PlanningIntegrationTest extends AbstractPlanningIntegrationTest {
     @DisplayName("F5.1 - Export PDF returns valid PDF bytes for real planning")
     void exportPdf_realPlanning_returnsPdfBytes() {
         // Given: Create emploi with creneaux
-        EmploiDuTemps emploi = createTestEmploi(ecoleId, LocalDate.of(2025, 2, 10), StatutEmploi.PUBLIE);
+        EmploiDuTemps emploi = createTestEmploi(ecoleId, LocalDate.of(2025, 2, 10), StatutEmploi.PUBLISHED);
 
         Creneau creneau1 = createTestCreneau(emploi, DayOfWeek.MONDAY, enseignantId1, salleId1, groupeId1);
         creneau1.setCoursId(coursId1);
@@ -314,7 +314,7 @@ class PlanningIntegrationTest extends AbstractPlanningIntegrationTest {
     @DisplayName("F5.1 - Export iCal returns valid ICS format for real planning")
     void exportICal_realPlanning_returnsValidIcs() {
         // Given: Create emploi with creneaux
-        EmploiDuTemps emploi = createTestEmploi(ecoleId, LocalDate.of(2025, 2, 10), StatutEmploi.PUBLIE);
+        EmploiDuTemps emploi = createTestEmploi(ecoleId, LocalDate.of(2025, 2, 10), StatutEmploi.PUBLISHED);
 
         Creneau creneau1 = createTestCreneau(emploi, DayOfWeek.MONDAY, enseignantId1, salleId1, groupeId1);
         creneau1.setCoursId(coursId1);
@@ -367,7 +367,7 @@ class PlanningIntegrationTest extends AbstractPlanningIntegrationTest {
         emploi.setPeriode(PeriodeEmploi.SEMAINE);
         emploi.setStatut(statut);
         emploi.setDateCreation(LocalDateTime.now());
-        if (statut == StatutEmploi.PUBLIE) {
+        if (statut == StatutEmploi.PUBLISHED) {
             emploi.setDatePublication(LocalDateTime.now());
         }
         return emploi;
@@ -386,7 +386,7 @@ class PlanningIntegrationTest extends AbstractPlanningIntegrationTest {
         creneau.setHeureDebut(LocalTime.of(8, 0));
         creneau.setHeureFin(LocalTime.of(10, 0));
         creneau.setTypeRecurrence(TypeRecurrence.HEBDOMADAIRE);
-        creneau.setStatutCreneau(StatutCreneau.ACTIF);
+        creneau.setStatutCreneau(StatutCreneau.RESERVE);
         creneau.setEnseignantId(enseignantId);
         creneau.setSalleId(salleId);
         creneau.setGroupeId(groupeId);

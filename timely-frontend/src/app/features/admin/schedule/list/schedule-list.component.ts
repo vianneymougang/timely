@@ -1,27 +1,29 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { PlanningService } from '../../../../core/services/planning.service';
+import { Router } from '@angular/router';
+import { of } from 'rxjs';
+import { catchError, finalize } from 'rxjs/operators';
 import {
   EmploiDuTempsResponse,
   SearchPlanningRequest,
   StatutEmploi,
-  StatutEmploiLabels
+  StatutEmploiLabels,
 } from '../../../../core/models/planning.model';
-import { catchError, finalize } from 'rxjs/operators';
-import { of } from 'rxjs';
+import { EcoleDto, EcoleService } from '../../../../core/services/ecole.service';
+import { PlanningService } from '../../../../core/services/planning.service';
 
 @Component({
   selector: 'app-schedule-list',
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './schedule-list.component.html',
-  styleUrl: './schedule-list.component.scss'
+  styleUrl: './schedule-list.component.scss',
 })
 export class ScheduleListComponent implements OnInit {
   private planningService = inject(PlanningService);
   private router = inject(Router);
+  private ecoleService = inject(EcoleService);
 
   emploisDuTemps = signal<EmploiDuTempsResponse[]>([]);
   isLoading = signal(false);
@@ -32,9 +34,13 @@ export class ScheduleListComponent implements OnInit {
   totalPages = signal(0);
   totalElements = signal(0);
 
+  ecoles = signal<EcoleDto[]>([]);
+  ecolesMap = signal<Map<string, string>>(new Map());
+  selectedEcoleId = signal<string>('');
+
   searchRequest: SearchPlanningRequest = {
     page: 0,
-    size: 20
+    size: 20,
   };
 
   statutOptions: { value: StatutEmploi | ''; label: string }[] = [
@@ -42,13 +48,20 @@ export class ScheduleListComponent implements OnInit {
     { value: 'DRAFT', label: 'Brouillon' },
     { value: 'VALIDATED', label: 'Validé' },
     { value: 'PUBLISHED', label: 'Publié' },
-    { value: 'ARCHIVED', label: 'Archivé' }
+    { value: 'ARCHIVED', label: 'Archivé' },
   ];
 
   statutLabels = StatutEmploiLabels;
 
   ngOnInit(): void {
     this.loadEmploisDuTemps();
+    this.ecoleService
+      .fetchEcolesFromApi()
+      .pipe(catchError(() => of([])))
+      .subscribe((ecoles) => {
+        this.ecoles.set(ecoles);
+        this.ecolesMap.set(new Map(ecoles.map((e) => [e.id, e.nom])));
+      });
   }
 
   loadEmploisDuTemps(): void {
@@ -58,20 +71,30 @@ export class ScheduleListComponent implements OnInit {
     this.searchRequest.page = this.currentPage();
     this.searchRequest.size = this.pageSize();
 
-    const observable = this.searchRequest.dateDebut || this.searchRequest.statut
-      ? this.planningService.searchEmploisDuTemps(this.searchRequest)
-      : this.planningService.getAllEmploisDuTemps(this.currentPage(), this.pageSize());
+    const observable =
+      this.searchRequest.dateDebut || this.searchRequest.statut || this.searchRequest.ecoleId
+        ? this.planningService.searchEmploisDuTemps(this.searchRequest)
+        : this.planningService.getAllEmploisDuTemps(this.currentPage(), this.pageSize());
 
     observable
       .pipe(
-        catchError(error => {
+        catchError((error) => {
           console.error('Erreur lors du chargement:', error);
           this.errorMessage.set('Impossible de charger les emplois du temps');
-          return of({ content: [], totalElements: 0, totalPages: 0, size: 20, number: 0, first: true, last: true, empty: true });
+          return of({
+            content: [],
+            totalElements: 0,
+            totalPages: 0,
+            size: 20,
+            number: 0,
+            first: true,
+            last: true,
+            empty: true,
+          });
         }),
-        finalize(() => this.isLoading.set(false))
+        finalize(() => this.isLoading.set(false)),
       )
-      .subscribe(page => {
+      .subscribe((page) => {
         this.emploisDuTemps.set(page.content);
         this.totalPages.set(page.totalPages);
         this.totalElements.set(page.totalElements);
@@ -106,17 +129,55 @@ export class ScheduleListComponent implements OnInit {
       return;
     }
 
-    this.planningService.deleteEmploiDuTemps(id)
+    this.planningService
+      .deleteEmploiDuTemps(id)
       .pipe(
-        catchError(error => {
+        catchError((error) => {
           console.error('Erreur lors de la suppression:', error);
           alert('Erreur lors de la suppression');
           return of(null);
-        })
+        }),
       )
       .subscribe(() => {
         this.loadEmploisDuTemps();
       });
+  }
+
+  getEcoleNom(ecoleId: string): string {
+    return this.ecolesMap().get(ecoleId) ?? 'École ' + ecoleId.substring(0, 8) + '…';
+  }
+
+  onEcoleFilter(): void {
+    const ecoleId = this.searchRequest.ecoleId ?? '';
+    if (ecoleId) {
+      this.searchRequest = { ...this.searchRequest, ecoleId, page: 0 };
+    } else {
+      const { ecoleId: _removed, ...rest } = this.searchRequest;
+      this.searchRequest = { ...rest, page: 0 };
+    }
+    this.currentPage.set(0);
+    this.loadEmploisDuTemps();
+  }
+
+  getWeekLabel(dateDebut: string): string {
+    if (!dateDebut) return '';
+    const d = new Date(dateDebut);
+    return (
+      'Semaine du ' +
+      d.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' })
+    );
+  }
+
+  get groupedByWeek(): { weekLabel: string; emplois: EmploiDuTempsResponse[] }[] {
+    const groups = new Map<string, EmploiDuTempsResponse[]>();
+    for (const emploi of this.emploisDuTemps()) {
+      const key = emploi.dateDebut ?? '';
+      if (!groups.has(key)) groups.set(key, []);
+      groups.get(key)!.push(emploi);
+    }
+    return Array.from(groups.entries())
+      .sort(([a], [b]) => b.localeCompare(a))
+      .map(([key, emplois]) => ({ weekLabel: this.getWeekLabel(key), emplois }));
   }
 
   getStatutColor(statut: StatutEmploi): string {

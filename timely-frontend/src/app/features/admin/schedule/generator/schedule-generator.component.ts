@@ -1,18 +1,21 @@
-import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, inject, signal } from '@angular/core';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
-import { PlanningService } from '../../../../core/services/planning.service';
-import { GeneratePlanningRequest, GeneratePlanningResponse, PeriodeEmploi } from '../../../../core/models/planning.model';
-import { catchError, finalize } from 'rxjs/operators';
 import { of } from 'rxjs';
+import { catchError, finalize } from 'rxjs/operators';
+import {
+  CampusGenerationRequest,
+  CampusGenerationResponse,
+} from '../../../../core/models/planning.model';
+import { PlanningService } from '../../../../core/services/planning.service';
 
 @Component({
   selector: 'app-schedule-generator',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule],
   templateUrl: './schedule-generator.component.html',
-  styleUrl: './schedule-generator.component.scss'
+  styleUrl: './schedule-generator.component.scss',
 })
 export class ScheduleGeneratorComponent {
   private fb = inject(FormBuilder);
@@ -22,26 +25,18 @@ export class ScheduleGeneratorComponent {
   generatorForm: FormGroup;
   isLoading = signal(false);
   errorMessage = signal<string | null>(null);
-  generationResult = signal<GeneratePlanningResponse | null>(null);
-
-  periodeOptions: { value: PeriodeEmploi; label: string }[] = [
-    { value: 'SEMESTRE_1', label: 'Semestre 1' },
-    { value: 'SEMESTRE_2', label: 'Semestre 2' },
-    { value: 'ANNUEL', label: 'Annuel' }
-  ];
+  generationResult = signal<CampusGenerationResponse | null>(null);
 
   constructor() {
     this.generatorForm = this.fb.group({
-      ecoleId: ['', Validators.required],
-      dateDebut: ['', Validators.required],
-      dateFin: ['', Validators.required],
-      periode: ['SEMESTRE_1', Validators.required],
-      creneauxParJour: [6, [Validators.required, Validators.min(1), Validators.max(12)]],
-      heureDebutJournee: ['08:00', Validators.required],
-      heureFinJournee: ['18:00', Validators.required],
-      dureeCreneauMinutes: [90, [Validators.required, Validators.min(30), Validators.max(240)]],
-      pauseEntreCreneauxMinutes: [15, [Validators.required, Validators.min(0), Validators.max(60)]]
+      weekStart: ['', [Validators.required, this.mondayValidator]],
     });
+  }
+
+  private mondayValidator(control: import('@angular/forms').AbstractControl) {
+    if (!control.value) return null;
+    const date = new Date(control.value);
+    return date.getDay() === 1 ? null : { notMonday: true };
   }
 
   onSubmit(): void {
@@ -54,54 +49,57 @@ export class ScheduleGeneratorComponent {
     this.errorMessage.set(null);
     this.generationResult.set(null);
 
-    const request: GeneratePlanningRequest = this.generatorForm.value;
+    const request: CampusGenerationRequest = { weekStart: this.generatorForm.value.weekStart };
 
-    this.planningService.generateSchedule(request)
+    this.planningService
+      .generateCampusSchedule(request)
       .pipe(
-        catchError(error => {
-          console.error('Erreur lors de la génération:', error);
+        catchError((error) => {
           this.errorMessage.set(
             error.error?.message ||
-            'Une erreur est survenue lors de la génération de l\'emploi du temps'
+              'Une erreur est survenue lors de la génération des emplois du temps',
           );
           return of(null);
         }),
-        finalize(() => this.isLoading.set(false))
+        finalize(() => this.isLoading.set(false)),
       )
-      .subscribe(response => {
+      .subscribe((response) => {
         if (response) {
           this.generationResult.set(response);
-          console.log('Génération réussie:', response);
         }
       });
   }
 
-  viewSchedule(): void {
-    const result = this.generationResult();
-    if (result) {
-      this.router.navigate(['/admin/schedule/viewer', result.emploiDuTempsId]);
-    }
+  viewSchedule(emploiDuTempsId: string): void {
+    this.router.navigate(['/admin/schedule/viewer', emploiDuTempsId]);
   }
 
   resetForm(): void {
-    this.generatorForm.reset({
-      periode: 'SEMESTRE_1',
-      creneauxParJour: 6,
-      heureDebutJournee: '08:00',
-      heureFinJournee: '18:00',
-      dureeCreneauMinutes: 90,
-      pauseEntreCreneauxMinutes: 15
-    });
+    this.generatorForm.reset();
     this.errorMessage.set(null);
     this.generationResult.set(null);
   }
 
-  getSeverityClass(): string {
-    const result = this.generationResult();
-    if (!result) return '';
-
-    if (result.tauxReussite >= 90) return 'text-green-600';
-    if (result.tauxReussite >= 70) return 'text-yellow-600';
+  getSuccessRateClass(rate: number): string {
+    if (rate >= 90) return 'text-green-600';
+    if (rate >= 70) return 'text-yellow-600';
     return 'text-red-600';
+  }
+
+  getSuccessRateBg(rate: number): string {
+    if (rate >= 90) return 'bg-green-50 border-green-200';
+    if (rate >= 70) return 'bg-yellow-50 border-yellow-200';
+    return 'bg-red-50 border-red-200';
+  }
+
+  formatDuration(ms: number): string {
+    return (ms / 1000).toFixed(2) + 's';
+  }
+
+  getWeekLabel(): string {
+    const ws = this.generatorForm.get('weekStart')?.value;
+    if (!ws) return '';
+    const date = new Date(ws);
+    return date.toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
   }
 }

@@ -1,11 +1,9 @@
 <div class="p-8 max-w-7xl mx-auto">
-  <!-- En-tête -->
   <div class="mb-8">
     <h1 class="text-3xl font-bold text-slate-800 mb-2">Gestion Académique</h1>
     <p class="text-slate-600">Gérez les écoles, filières et classes</p>
   </div>
 
-  <!-- Tabs de navigation -->
   <div class="flex gap-4 mb-6 border-b border-slate-200">
     <button
       (click)="setActiveSection('ecole')"
@@ -45,10 +43,8 @@
     </button>
   </div>
 
-  <!-- Section Écoles -->
   @if (activeSection() === 'ecole') {
     <div>
-      <!-- Bouton d'ajout -->
       <div class="mb-6 flex justify-between items-center">
         <div class="text-slate-600">
           <span class="font-medium">{{ ecoles().length }}</span> écoles au total
@@ -62,11 +58,9 @@
         </button>
       </div>
 
-      <!-- Grille de cartes d'écoles -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @for (ecole of ecoles(); track ecole.id) {
           <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border border-slate-200">
-            <!-- En-tête de la carte -->
             <div class="flex items-start gap-3 mb-4">
               <div class="bg-teal-100 rounded-lg p-3">
                 <span class="material-icons text-teal-600 text-2xl">apartment</span>
@@ -79,11 +73,7 @@
                 </p>
               </div>
             </div>
-
-            <!-- Description -->
             <p class="text-sm text-slate-600 mb-4 line-clamp-3">{{ ecole.description }}</p>
-
-            <!-- Actions -->
             <div class="flex gap-2 pt-4 border-t border-slate-200">
               <button
                 (click)="openEcoleModal(ecole)"
@@ -104,10 +94,7 @@
           <div class="col-span-3 text-center py-12">
             <span class="material-icons text-6xl text-slate-300 mb-4">apartment</span>
             <p class="text-slate-500">Aucune école pour le moment</p>
-            <button
-              (click)="openEcoleModal()"
-              class="mt-4 text-teal-600 hover:text-teal-700 font-medium"
-            >
+            <button (click)="openEcoleModal()" class="mt-4 text-teal-600 hover:text-teal-700 font-medium">
               Créer votre première école
             </button>
           </div>
@@ -116,10 +103,8 @@
     </div>
   }
 
-  <!-- Section Filières -->
   @if (activeSection() === 'filiere') {
     <div>
-      <!-- Bouton d'ajout -->
       <div class="mb-6 flex justify-between items-center">
         <div class="text-slate-600">
           <span class="font-medium">{{ filieres().length }}</span> filières au total
@@ -133,11 +118,9 @@
         </button>
       </div>
 
-      <!-- Grille de cartes de filières -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @for (filiere of filieres(); track filiere.id) {
           <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border border-slate-200">
-            <!-- En-tête de la carte -->
             <div class="flex items-start gap-3 mb-4">
               <div class="bg-blue-100 rounded-lg p-3">
                 <span class="material-icons text-blue-600 text-2xl">account_tree</span>
@@ -150,11 +133,11 @@
                 </p>
               </div>
             </div>
-
-            <!-- Description -->
-            <p class="text-sm text-slate-600 mb-4 line-clamp-3">{{ filiere.description }}</p>
-
-            <!-- Actions -->
+            <div class="bg-slate-50 rounded-lg p-3 mb-4">
+              <div class="text-xs text-slate-500 mb-1">Cycle</div>
+              <div class="text-sm font-semibold text-slate-700">{{ getCycleTypeLabel(filiere.cycleType) }}</div>
+            </div>
+            <p class="text-sm text-slate-600 mb-4 line-clamp-2">{{ filiere.description }}</p>
             <div class="flex gap-2 pt-4 border-t border-slate-200">
               <button
                 (click)="openFiliereModal(filiere)"
@@ -175,10 +158,7 @@
           <div class="col-span-3 text-center py-12">
             <span class="material-icons text-6xl text-slate-300 mb-4">account_tree</span>
             <p class="text-slate-500">Aucune filière pour le moment</p>
-            <button
-              (click)="openFiliereModal()"
-              class="mt-4 text-teal-600 hover:text-teal-700 font-medium"
-            >
+            <button (click)="openFiliereModal()" class="mt-4 text-teal-600 hover:text-teal-700 font-medium">
               Créer votre première filière
             </button>
           </div>
@@ -187,10 +167,8 @@
     </div>
   }
 
-  <!-- Section Classes -->
   @if (activeSection() === 'classe') {
     <div>
-      <!-- Bouton d'ajout -->
       <div class="mb-6 flex justify-between items-center">
         <div class="text-slate-600">
           <span class="font-medium">{{ classes().length }}</span> classes au total
@@ -204,11 +182,9 @@
         </button>
       </div>
 
-      <!-- Grille de cartes de classes -->
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         @for (classe of classes(); track classe.id) {
           <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border border-slate-200">
-            <!-- En-tête de la carte -->
             <div class="flex items-start gap-3 mb-4">
               <div class="bg-purple-100 rounded-lg p-3">
                 <span class="material-icons text-purple-600 text-2xl">group</span>
@@ -221,14 +197,10 @@
                 </p>
               </div>
             </div>
-
-            <!-- Informations -->
             <div class="bg-slate-50 rounded-lg p-3 mb-4">
               <div class="text-xs text-slate-500 mb-1">Niveau</div>
-              <div class="text-sm font-semibold text-slate-700">{{ classe.niveau }}</div>
+              <div class="text-sm font-semibold text-slate-700">{{ classe.displayLevel }}</div>
             </div>
-
-            <!-- Actions -->
             <div class="flex gap-2 pt-4 border-t border-slate-200">
               <button
                 (click)="openClasseModal(classe)"
@@ -249,10 +221,7 @@
           <div class="col-span-3 text-center py-12">
             <span class="material-icons text-6xl text-slate-300 mb-4">group</span>
             <p class="text-slate-500">Aucune classe pour le moment</p>
-            <button
-              (click)="openClasseModal()"
-              class="mt-4 text-teal-600 hover:text-teal-700 font-medium"
-            >
+            <button (click)="openClasseModal()" class="mt-4 text-teal-600 hover:text-teal-700 font-medium">
               Créer votre première classe
             </button>
           </div>
@@ -261,31 +230,21 @@
     </div>
   }
 
-  <!-- Modal École -->
   @if (showEcoleModal()) {
     <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <!-- En-tête du modal -->
         <div class="flex justify-between items-center p-6 border-b border-slate-200">
           <h2 class="text-2xl font-bold text-slate-800">
             {{ editingEcole() ? 'Modifier l\'école' : 'Nouvelle école' }}
           </h2>
-          <button
-            (click)="closeEcoleModal()"
-            class="text-slate-400 hover:text-slate-600 transition-colors"
-          >
+          <button (click)="closeEcoleModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
             <span class="material-icons">close</span>
           </button>
         </div>
-
-        <!-- Formulaire -->
         <form [formGroup]="ecoleForm" (ngSubmit)="saveEcole()" class="p-6">
           <div class="space-y-4">
-            <!-- Nom -->
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">
-                Nom de l'école *
-              </label>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Nom de l'école *</label>
               <input
                 type="text"
                 formControlName="nom"
@@ -296,12 +255,8 @@
                 <p class="text-red-600 text-sm mt-1">Le nom est requis (min. 3 caractères)</p>
               }
             </div>
-
-            <!-- Directeur -->
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">
-                Directeur *
-              </label>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Directeur *</label>
               <input
                 type="text"
                 formControlName="directeur"
@@ -312,12 +267,8 @@
                 <p class="text-red-600 text-sm mt-1">Le nom du directeur est requis (min. 3 caractères)</p>
               }
             </div>
-
-            <!-- Description -->
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">
-                Description *
-              </label>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Description *</label>
               <textarea
                 formControlName="description"
                 rows="4"
@@ -329,8 +280,6 @@
               }
             </div>
           </div>
-
-          <!-- Actions -->
           <div class="flex gap-3 mt-6 pt-6 border-t border-slate-200">
             <button
               type="button"
@@ -354,31 +303,21 @@
     </div>
   }
 
-  <!-- Modal Filière -->
   @if (showFiliereModal()) {
     <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <!-- En-tête du modal -->
         <div class="flex justify-between items-center p-6 border-b border-slate-200">
           <h2 class="text-2xl font-bold text-slate-800">
             {{ editingFiliere() ? 'Modifier la filière' : 'Nouvelle filière' }}
           </h2>
-          <button
-            (click)="closeFiliereModal()"
-            class="text-slate-400 hover:text-slate-600 transition-colors"
-          >
+          <button (click)="closeFiliereModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
             <span class="material-icons">close</span>
           </button>
         </div>
-
-        <!-- Formulaire -->
         <form [formGroup]="filiereForm" (ngSubmit)="saveFiliere()" class="p-6">
           <div class="space-y-4">
-            <!-- Nom -->
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">
-                Nom de la filière *
-              </label>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Nom de la filière *</label>
               <input
                 type="text"
                 formControlName="nom"
@@ -389,12 +328,23 @@
                 <p class="text-red-600 text-sm mt-1">Le nom est requis (min. 3 caractères)</p>
               }
             </div>
-
-            <!-- École -->
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">
-                École *
-              </label>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Type de cycle *</label>
+              <select
+                formControlName="cycleType"
+                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
+              >
+                <option value="">Sélectionnez un cycle</option>
+                @for (option of cycleTypeOptions; track option.value) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+              @if (filiereForm.get('cycleType')?.invalid && filiereForm.get('cycleType')?.touched) {
+                <p class="text-red-600 text-sm mt-1">Veuillez sélectionner un type de cycle</p>
+              }
+            </div>
+            <div>
+              <label class="block text-sm font-medium text-slate-700 mb-1">École *</label>
               <select
                 formControlName="ecoleId"
                 class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
@@ -408,12 +358,8 @@
                 <p class="text-red-600 text-sm mt-1">Veuillez sélectionner une école</p>
               }
             </div>
-
-            <!-- Description -->
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">
-                Description *
-              </label>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Description *</label>
               <textarea
                 formControlName="description"
                 rows="4"
@@ -425,8 +371,6 @@
               }
             </div>
           </div>
-
-          <!-- Actions -->
           <div class="flex gap-3 mt-6 pt-6 border-t border-slate-200">
             <button
               type="button"
@@ -450,31 +394,21 @@
     </div>
   }
 
-  <!-- Modal Classe -->
   @if (showClasseModal()) {
     <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
       <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <!-- En-tête du modal -->
         <div class="flex justify-between items-center p-6 border-b border-slate-200">
           <h2 class="text-2xl font-bold text-slate-800">
             {{ editingClasse() ? 'Modifier la classe' : 'Nouvelle classe' }}
           </h2>
-          <button
-            (click)="closeClasseModal()"
-            class="text-slate-400 hover:text-slate-600 transition-colors"
-          >
+          <button (click)="closeClasseModal()" class="text-slate-400 hover:text-slate-600 transition-colors">
             <span class="material-icons">close</span>
           </button>
         </div>
-
-        <!-- Formulaire -->
         <form [formGroup]="classeForm" (ngSubmit)="saveClasse()" class="p-6">
           <div class="space-y-4">
-            <!-- Nom -->
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">
-                Nom de la classe *
-              </label>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Nom de la classe *</label>
               <input
                 type="text"
                 formControlName="nom"
@@ -485,35 +419,30 @@
                 <p class="text-red-600 text-sm mt-1">Le nom est requis (min. 2 caractères)</p>
               }
             </div>
-
-            <!-- Niveau -->
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">
-                Niveau *
-              </label>
-              <input
-                type="text"
-                formControlName="niveau"
+              <label class="block text-sm font-medium text-slate-700 mb-1">Année *</label>
+              <select
+                formControlName="yearIndex"
                 class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                placeholder="Ex: Licence 3"
-              />
-              @if (classeForm.get('niveau')?.invalid && classeForm.get('niveau')?.touched) {
-                <p class="text-red-600 text-sm mt-1">Le niveau est requis (min. 2 caractères)</p>
+              >
+                <option [value]="null">Sélectionnez une année</option>
+                @for (year of yearIndexOptions; track year) {
+                  <option [value]="year">Année {{ year }}</option>
+                }
+              </select>
+              @if (classeForm.get('yearIndex')?.invalid && classeForm.get('yearIndex')?.touched) {
+                <p class="text-red-600 text-sm mt-1">Veuillez sélectionner une année</p>
               }
             </div>
-
-            <!-- Filière -->
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">
-                Filière *
-              </label>
+              <label class="block text-sm font-medium text-slate-700 mb-1">Filière *</label>
               <select
                 formControlName="filiereId"
                 class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
               >
                 <option value="">Sélectionnez une filière</option>
                 @for (filiere of filieres(); track filiere.id) {
-                  <option [value]="filiere.id">{{ filiere.nom }} - {{ getEcoleName(filiere.ecoleId) }}</option>
+                  <option [value]="filiere.id">{{ filiere.nom }} — {{ getCycleTypeLabel(filiere.cycleType) }} — {{ getEcoleName(filiere.ecoleId) }}</option>
                 }
               </select>
               @if (classeForm.get('filiereId')?.invalid && classeForm.get('filiereId')?.touched) {
@@ -521,8 +450,6 @@
               }
             </div>
           </div>
-
-          <!-- Actions -->
           <div class="flex gap-3 mt-6 pt-6 border-t border-slate-200">
             <button
               type="button"

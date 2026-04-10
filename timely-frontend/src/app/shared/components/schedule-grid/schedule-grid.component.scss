@@ -4,13 +4,13 @@ table {
 
   th:first-child,
   td:first-child {
-    width: 100px;
-    min-width: 100px;
+    width: 115px;
+    min-width: 115px;
   }
 
   th:not(:first-child),
   td:not(:first-child) {
-    width: calc((100% - 100px) / 5);
+    width: calc((100% - 115px) / 6);
     min-width: 150px;
   }
 }

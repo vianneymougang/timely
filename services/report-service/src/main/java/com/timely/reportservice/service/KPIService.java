@@ -54,7 +54,7 @@ public class KPIService {
             saveKPI("nombre_enseignants", new BigDecimal(enseignants.size()), "enseignants", dateDebut, "PERIODE");
 
             // Calcul du nombre de conflits
-            List<Object> conflits = planningServiceClient.getConflits(null);
+            List<Object> conflits = planningServiceClient.getConflits();
             saveKPI("nombre_conflits", new BigDecimal(conflits.size()), "conflits", dateDebut, "PERIODE");
 
             log.info("Calcul des KPIs terminé avec succès");
@@ -105,7 +105,7 @@ public class KPIService {
             int nombreEnseignants = enseignants.size();
 
             // Nombre de conflits
-            List<Object> conflits = planningServiceClient.getConflits(null);
+            List<Object> conflits = planningServiceClient.getConflits();
             int nombreConflits = conflits.size();
 
             // KPIs récents (30 derniers jours)
@@ -136,7 +136,7 @@ public class KPIService {
 
         try {
             List<Object> salles = bookingServiceClient.getSalles();
-            List<Object> reservations = bookingServiceClient.getReservations(ecoleId, null, null);
+            List<Object> reservations = bookingServiceClient.getReservations(null, null);
 
             int nombreSallesTotal = salles.size();
             int nombreSallesOccupees = (int) reservations.stream()
@@ -267,7 +267,7 @@ public class KPIService {
     private BigDecimal calculateTauxOccupationSalles(UUID ecoleId, LocalDate dateDebut, LocalDate dateFin) {
         try {
             List<Object> salles = bookingServiceClient.getSalles();
-            List<Object> reservations = bookingServiceClient.getReservations(ecoleId, dateDebut, dateFin);
+            List<Object> reservations = bookingServiceClient.getReservations(dateDebut, dateFin);
 
             if (salles.isEmpty()) {
                 return BigDecimal.ZERO;

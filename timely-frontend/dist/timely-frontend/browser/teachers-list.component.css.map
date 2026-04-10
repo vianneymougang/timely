@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/features/admin/teachers/teachers-list/teachers-list.component.scss"],
+  "sourcesContent": [".search-wrapper {\n    position: relative;\n    width: 260px;\n    margin-bottom: 25px;\n}\n\n.search-wrapper input {\n    width: 100%;\n    padding: 10px 40px 10px 15px;\n    border-radius: 8px;\n    border: 1px solid #ddd;\n}\n\n.search-wrapper i {\n    position: absolute;\n    right: 12px;\n    top: 50%;\n    transform: translateY(-50%);\n    color: #666;\n}\n"],
+  "mappings": ";AAAA,CAAA;AACI,YAAA;AACA,SAAA;AACA,iBAAA;;AAGJ,CANA,eAMA;AACI,SAAA;AACA,WAAA,KAAA,KAAA,KAAA;AACA,iBAAA;AACA,UAAA,IAAA,MAAA;;AAGJ,CAbA,eAaA;AACI,YAAA;AACA,SAAA;AACA,OAAA;AACA,aAAA,WAAA;AACA,SAAA;;",
+  "names": []
+}

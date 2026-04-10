@@ -69,7 +69,7 @@ public class ICalExportService {
 
             // Add events for each active creneau
             for (Creneau creneau : emploi.getCreneaux()) {
-                if (creneau.getStatutCreneau() == StatutCreneau.ACTIF) {
+                if (creneau.getStatutCreneau() == StatutCreneau.RESERVE) {
                     addEventFromCreneau(calendar, creneau, emploi);
                 }
             }
