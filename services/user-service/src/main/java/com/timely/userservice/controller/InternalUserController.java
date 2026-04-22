@@ -13,9 +13,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.timely.userservice.dto.ChargeHoraireResponse;
 import com.timely.userservice.dto.InternalUserDto;
 import com.timely.userservice.dto.TeacherDto;
 import com.timely.userservice.dto.UpdatePasswordRequest;
+import com.timely.userservice.service.ChargeHoraireService;
 import com.timely.userservice.service.UserService;
 
 import jakarta.validation.Valid;
@@ -27,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 public class InternalUserController {
 
     private final UserService userService;
+    private final ChargeHoraireService chargeHoraireService;
 
     /**
      * Get user by email with password (for auth-service)
@@ -53,6 +56,12 @@ public class InternalUserController {
     public ResponseEntity<List<TeacherDto>> getAllTeachers() {
         List<TeacherDto> teachers = userService.getAllTeachers(Pageable.unpaged()).getContent();
         return ResponseEntity.ok(teachers);
+    }
+
+    @GetMapping("/{enseignantId}/charge-horaire")
+    public ResponseEntity<ChargeHoraireResponse> getChargeHoraire(@PathVariable UUID enseignantId) {
+        ChargeHoraireResponse charge = chargeHoraireService.calculateChargeHoraire(enseignantId);
+        return ResponseEntity.ok(charge);
     }
 
     /**
