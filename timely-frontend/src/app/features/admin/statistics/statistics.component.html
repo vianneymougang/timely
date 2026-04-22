@@ -328,8 +328,14 @@
       {icon:'bar_chart',      label:'Charge Horaire',     type:'WORKLOAD'},
       {icon:'manage_search',  label:'Audit',              type:'AUDIT'}
       ]; track btn.type) {
-      <button class="generate-btn flex items-center gap-1.5 px-3 py-2 text-xs rounded-xl border border-slate-200 text-slate-600 hover:border-teal-300 hover:text-teal-700 hover:bg-teal-50 transition-colors">
-        <span class="material-icons text-sm">{{ btn.icon }}</span>{{ btn.label }}
+      <button
+        class="generate-btn flex items-center gap-1.5 px-3 py-2 text-xs rounded-xl border border-slate-200 text-slate-600 hover:border-teal-300 hover:text-teal-700 hover:bg-teal-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+        (click)="generateReport($any(btn.type))"
+        [disabled]="generatingType() === btn.type"
+      >
+        <span class="material-icons text-sm" [class.spinning]="generatingType() === btn.type">
+          {{ generatingType() === btn.type ? 'autorenew' : btn.icon }}
+        </span>{{ btn.label }}
       </button>
       }
     </div>

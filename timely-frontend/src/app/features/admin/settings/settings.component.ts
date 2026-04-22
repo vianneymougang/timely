@@ -5,11 +5,17 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserService, UpdateUserRequest } from '../../../core/services/user.service';
 import { EcoleService, EcoleDto } from '../../../core/services/ecole.service';
+import { UpdateEcoleDTO } from '../../../core/models/academic.model';
 import { catchError, of, Subscription } from 'rxjs';
 
 export type SettingsTab = 'profil' | 'securite' | 'etablissement' | 'notifications' | 'systeme';
 
 export interface Toast { id: number; type: 'success' | 'error'; message: string; }
+
+type NotifSettings = {
+  conflits: boolean; reservations: boolean; rappels: boolean; rapports: boolean;
+  connexions: boolean; emailConflits: boolean; emailRapports: boolean;
+};
 
 @Component({
   selector: 'app-settings',
@@ -91,8 +97,8 @@ export class SettingsComponent implements OnInit, OnDestroy {
     ];
   }
 
-  getNotif(key: string): boolean {
-    return this.notifications()[key as keyof ReturnType<typeof this.notifications>];
+  getNotif(key: keyof NotifSettings): boolean {
+    return this.notifications()[key];
   }
 
   // ── Établissement ─────────────────────────────────────────────────────────
@@ -108,8 +114,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
     contactResponsable: '',
   });
 
+  private static readonly NOTIF_KEY = 'timely_notif_prefs';
+  private static readonly SYSTEM_KEY = 'timely_system_prefs';
+
   // ── Notifications ─────────────────────────────────────────────────────────
-  notifications = signal({
+  notifications = signal<NotifSettings>({
     conflits:       true,
     reservations:   true,
     rappels:        false,
@@ -134,6 +143,7 @@ export class SettingsComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.loadProfil();
     this.loadEcoles();
+    this.loadSavedPrefs();
   }
 
   ngOnDestroy(): void {
@@ -151,6 +161,17 @@ export class SettingsComponent implements OnInit, OnDestroy {
         role:  user.role ?? '',
       }));
     }
+  }
+
+  private loadSavedPrefs(): void {
+    try {
+      const notif = localStorage.getItem(SettingsComponent.NOTIF_KEY);
+      if (notif) this.notifications.set(JSON.parse(notif) as NotifSettings);
+    } catch { /* ignore */ }
+    try {
+      const sys = localStorage.getItem(SettingsComponent.SYSTEM_KEY);
+      if (sys) this.systeme.set(JSON.parse(sys));
+    } catch { /* ignore */ }
   }
 
   private loadEcoles(): void {
@@ -232,13 +253,20 @@ export class SettingsComponent implements OnInit, OnDestroy {
     if (next !== confirm) { this.toast('error', 'Les mots de passe ne correspondent pas.'); return; }
 
     this.savingPassword.set(true);
-    // Appel API à brancher sur ton endpoint dédié
-    setTimeout(() => {
-      this.savingPassword.set(false);
-      this.password.set({ current: '', next: '', confirm: '' });
-      this.passwordStrength.set(0);
-      this.toast('success', 'Mot de passe modifié avec succès.');
-    }, 900);
+    const sub = this.authService.changePassword(current, next)
+      .pipe(catchError((e: unknown) => {
+        this.toast('error', this.httpMsg(e));
+        return of(null);
+      }))
+      .subscribe(res => {
+        this.savingPassword.set(false);
+        if (res !== null) {
+          this.password.set({ current: '', next: '', confirm: '' });
+          this.passwordStrength.set(0);
+          this.toast('success', 'Mot de passe modifié avec succès.');
+        }
+      });
+    this.subs.push(sub);
   }
 
   // ── Établissement ─────────────────────────────────────────────────────────
@@ -252,7 +280,13 @@ export class SettingsComponent implements OnInit, OnDestroy {
     const ecole = this.ecoles()[0];
     if (!ecole?.id) { this.savingEtab.set(false); return; }
 
-    const sub = this.ecoleService.updateEcole({ id: ecole.id, ...this.etablissement() as any })
+    const payload: UpdateEcoleDTO = {
+      id:        ecole.id,
+      nom:       this.etablissement().nom,
+      directeur: this.etablissement().contactResponsable,
+      description: this.etablissement().adresse,
+    };
+    const sub = this.ecoleService.updateEcole(payload)
       .pipe(catchError((e: unknown) => { this.toast('error', this.httpMsg(e)); return of(null); }))
       .subscribe(res => {
         this.savingEtab.set(false);
@@ -262,19 +296,15 @@ export class SettingsComponent implements OnInit, OnDestroy {
   }
 
   // ── Notifications ─────────────────────────────────────────────────────────
-  toggleNotif(key: any): void {
-    this.notifications.update(n => ({
-      ...n,
-      [key]: !n[key as keyof typeof n]
-    }));
+  toggleNotif(key: keyof NotifSettings): void {
+    this.notifications.update(n => ({ ...n, [key]: !n[key] }));
   }
 
   saveNotifications(): void {
     this.savingNotifications.set(true);
-    setTimeout(() => {
-      this.savingNotifications.set(false);
-      this.toast('success', 'Préférences de notifications sauvegardées.');
-    }, 700);
+    localStorage.setItem(SettingsComponent.NOTIF_KEY, JSON.stringify(this.notifications()));
+    this.savingNotifications.set(false);
+    this.toast('success', 'Préférences de notifications sauvegardées.');
   }
 
   // ── Système ───────────────────────────────────────────────────────────────
@@ -284,10 +314,9 @@ export class SettingsComponent implements OnInit, OnDestroy {
 
   saveSysteme(): void {
     this.savingSysteme.set(true);
-    setTimeout(() => {
-      this.savingSysteme.set(false);
-      this.toast('success', 'Paramètres système enregistrés.');
-    }, 700);
+    localStorage.setItem(SettingsComponent.SYSTEM_KEY, JSON.stringify(this.systeme()));
+    this.savingSysteme.set(false);
+    this.toast('success', 'Paramètres système enregistrés.');
   }
 
   // ── Toast helpers ─────────────────────────────────────────────────────────

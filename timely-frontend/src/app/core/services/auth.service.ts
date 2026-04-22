@@ -247,4 +247,12 @@ export class AuthService {
         })
       );
   }
+
+  changePassword(currentPassword: string, newPassword: string): Observable<{ message: string }> {
+    return this.http
+      .post<{ message: string }>(`${this.AUTH_API}/change-password`, { currentPassword, newPassword })
+      .pipe(
+        catchError((error) => throwError(() => error))
+      );
+  }
 }

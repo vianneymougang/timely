@@ -123,22 +123,26 @@ export class StatisticsComponent implements OnInit, OnDestroy {
       periode: '01 fév. – 28 fév. 2025', statut: 'DISPONIBLE', taille: '980 Ko' },
   ]);
 
+  generatingType = signal<ReportType | null>(null);
+
   // ── Lifecycle ─────────────────────────────────────────────────────────────
-  ngOnInit(): void { this.loadData(); }
+  ngOnInit(): void { this.updateChartData(); this.loadData(); }
   ngOnDestroy(): void { this.subs.forEach(s => s.unsubscribe()); }
 
   // ── Chargement données ────────────────────────────────────────────────────
   loadData(): void {
     this.isLoading.set(true);
     this.error.set(null);
+    const { startDate, endDate } = this.getPeriodDates();
+    const filters = { startDate, endDate };
     const sub = forkJoin({
       kpis:     this.reportService.getGlobalKPIs().pipe(catchError(() => of(null))),
-      room:     this.reportService.getRoomUtilizationReport().pipe(catchError(() => of(null))),
-      workload: this.reportService.getAllWorkloadReports().pipe(catchError(() => of([]))),
+      room:     this.reportService.getRoomUtilizationReport(filters).pipe(catchError(() => of(null))),
+      workload: this.reportService.getAllWorkloadReports(filters).pipe(catchError(() => of([]))),
     }).subscribe({
       next: ({ kpis, room, workload }) => {
-        if (kpis)    this.kpis.set(kpis as GlobalKPIs);
-        if (room)    this.roomReport.set(room as RoomUtilizationReport);
+        if (kpis)     this.kpis.set(kpis as GlobalKPIs);
+        if (room)     this.roomReport.set(room as RoomUtilizationReport);
         if (workload) this.workloads.set(workload as WorkloadReport[]);
         this.isLoading.set(false);
       },
@@ -154,6 +158,7 @@ export class StatisticsComponent implements OnInit, OnDestroy {
   setPeriod(p: string): void {
     this.selectedPeriod.set(p);
     this.showPeriodMenu.set(false);
+    this.updateChartData();
     this.loadData();
   }
 
@@ -161,20 +166,94 @@ export class StatisticsComponent implements OnInit, OnDestroy {
     this.showPeriodMenu.set(!this.showPeriodMenu());
   }
 
-  showNext    = signal<boolean>(false);
-  showConfirm = signal<boolean>(false);
-  showCurrent = signal<boolean>(false);
-
-  toggleNext(): void {
-    this.showNext.set(!this.showNext());
+  private getPeriodDates(): { startDate: string; endDate: string } {
+    const now = new Date();
+    const fmt = (d: Date) => d.toISOString().split('T')[0];
+    let start: Date;
+    switch (this.selectedPeriod()) {
+      case 'month':
+        start = new Date(now.getFullYear(), now.getMonth(), 1);
+        break;
+      case 'semester':
+        start = new Date(now.getFullYear(), now.getMonth() < 6 ? 0 : 6, 1);
+        break;
+      case 'year':
+        start = new Date(now.getFullYear(), 0, 1);
+        break;
+      default: {
+        start = new Date(now);
+        const day = now.getDay() || 7;
+        start.setDate(now.getDate() - day + 1);
+      }
+    }
+    return { startDate: fmt(start), endDate: fmt(now) };
   }
 
-  toggleConfirm(): void {
-    this.showConfirm.set(!this.showConfirm());
-  }
-
-  toggleCurrent(): void {
-    this.showCurrent.set(!this.showCurrent());
+  private updateChartData(): void {
+    switch (this.selectedPeriod()) {
+      case 'month':
+        this.occupationParJour.set([
+          { day: 'S1', amphi: 55, labo: 70, td: 82 },
+          { day: 'S2', amphi: 48, labo: 85, td: 90 },
+          { day: 'S3', amphi: 62, labo: 78, td: 88 },
+          { day: 'S4', amphi: 70, labo: 92, td: 95 },
+        ]);
+        this.evaluationMensuelle.set([
+          { mois: 'S1',  conflits: 4,  reservations: 24 },
+          { mois: 'S2',  conflits: 6,  reservations: 22 },
+          { mois: 'S3',  conflits: 3,  reservations: 28 },
+          { mois: 'S4',  conflits: 2,  reservations: 26 },
+        ]);
+        break;
+      case 'semester':
+        this.occupationParJour.set([
+          { day: 'jan', amphi: 40, labo: 65, td: 78 },
+          { day: 'fév', amphi: 52, labo: 72, td: 85 },
+          { day: 'mar', amphi: 60, labo: 80, td: 92 },
+          { day: 'avr', amphi: 55, labo: 88, td: 95 },
+          { day: 'mai', amphi: 45, labo: 76, td: 88 },
+          { day: 'jun', amphi: 30, labo: 60, td: 70 },
+        ]);
+        this.evaluationMensuelle.set([
+          { mois: 'jan', conflits: 14, reservations: 88 },
+          { mois: 'fév', conflits: 10, reservations: 92 },
+          { mois: 'mar', conflits: 8,  reservations: 100 },
+          { mois: 'avr', conflits: 15, reservations: 85 },
+          { mois: 'mai', conflits: 6,  reservations: 108 },
+          { mois: 'jun', conflits: 4,  reservations: 75 },
+        ]);
+        break;
+      case 'year':
+        this.occupationParJour.set([
+          { day: 'T1', amphi: 50, labo: 75, td: 88 },
+          { day: 'T2', amphi: 65, labo: 82, td: 92 },
+          { day: 'T3', amphi: 45, labo: 68, td: 78 },
+          { day: 'T4', amphi: 58, labo: 80, td: 86 },
+        ]);
+        this.evaluationMensuelle.set([
+          { mois: 'jan', conflits: 14, reservations: 88 },
+          { mois: 'avr', conflits: 10, reservations: 95 },
+          { mois: 'jul', conflits: 6,  reservations: 72 },
+          { mois: 'oct', conflits: 12, reservations: 100 },
+          { mois: 'déc', conflits: 8,  reservations: 90 },
+        ]);
+        break;
+      default:
+        this.occupationParJour.set([
+          { day: 'Lundi',    amphi: 20, labo: 80,  td: 95  },
+          { day: 'Mardi',    amphi: 15, labo: 90,  td: 100 },
+          { day: 'Mercredi', amphi: 10, labo: 70,  td: 85  },
+          { day: 'Jeudi',    amphi: 18, labo: 85,  td: 90  },
+          { day: 'Vendredi', amphi: 60, labo: 75,  td: 78  },
+        ]);
+        this.evaluationMensuelle.set([
+          { mois: 'lun', conflits: 3,  reservations: 22 },
+          { mois: 'mar', conflits: 2,  reservations: 25 },
+          { mois: 'mer', conflits: 5,  reservations: 18 },
+          { mois: 'jeu', conflits: 1,  reservations: 28 },
+          { mois: 'ven', conflits: 4,  reservations: 20 },
+        ]);
+    }
   }
 
   // ── Affichage des détails d'un rapport ────────────────────────────────────
@@ -433,9 +512,44 @@ export class StatisticsComponent implements OnInit, OnDestroy {
     return ({ ROOM_UTILIZATION: 'teal', AVAILABILITY: 'green', WORKLOAD: 'blue', AUDIT: 'purple' } as Record<string,string>)[t] ?? 'gray';
   }
 
-// Ajoutez ces méthodes dans la classe StatisticsComponent
+  generateReport(type: ReportType): void {
+    if (this.generatingType() === type) return;
+    this.generatingType.set(type);
+    const { startDate, endDate } = this.getPeriodDates();
+    const typeLabels: Record<ReportType, string> = {
+      ROOM_UTILIZATION: 'Utilisation des Salles',
+      AVAILABILITY: 'Disponibilités Enseignants',
+      WORKLOAD: 'Charge Horaire',
+      AUDIT: "Journal d'Audit",
+    };
+    const sub = this.reportService
+      .exportReportPDF(type, { startDate, endDate })
+      .pipe(catchError((err: unknown) => of({ __error: true, raw: err })))
+      .subscribe({
+        next: async (result: unknown) => {
+          this.generatingType.set(null);
+          if (result instanceof Blob) {
+            const errMsg = await this.checkBlob(result);
+            if (errMsg) { this.toast('error', `Génération impossible : ${errMsg}`); return; }
+            const newRapport: HistoriqueRapport = {
+              id: Date.now().toString(),
+              type,
+              typeLabel: typeLabels[type],
+              dateGeneration: new Date().toISOString(),
+              periode: `${startDate} – ${endDate}`,
+              statut: 'DISPONIBLE',
+            };
+            this.historiqueRapports.update(list => [newRapport, ...list]);
+            this.download(result, this.reportService.generateExportFilename(type, 'pdf'));
+            this.toast('success', `Rapport « ${typeLabels[type]} » généré avec succès.`);
+          } else {
+            this.toast('error', `Échec : ${this.httpMsg((result as { __error: true; raw: unknown }).raw)}`);
+          }
+        },
+      });
+    this.subs.push(sub);
+  }
 
-// Méthodes utilitaires sécurisées pour le template
 getObjectKeys(obj: Record<string, string | number> | null | undefined): string[] {
   return obj ? Object.keys(obj) : [];
 }
