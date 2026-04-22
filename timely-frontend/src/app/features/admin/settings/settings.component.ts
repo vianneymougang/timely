@@ -342,6 +342,20 @@ export class SettingsComponent implements OnInit, OnDestroy {
     return (err as Error)?.message ?? 'Erreur inattendue.';
   }
 
+  // ── Notif items (typed to avoid template inference issue) ─────────────────
+  readonly notifInApp: { key: keyof NotifSettings; icon: string; color: string; label: string; sub: string }[] = [
+    { key: 'conflits',     icon: 'warning',   color: 'text-red-400',   label: 'Conflits de planning',   sub: 'Quand un conflit de créneau est détecté' },
+    { key: 'reservations', icon: 'event',     color: 'text-teal-500',  label: 'Réservations',           sub: 'Nouvelles réservations et modifications' },
+    { key: 'rappels',      icon: 'alarm',     color: 'text-amber-500', label: 'Rappels de cours',       sub: '30 minutes avant chaque créneau' },
+    { key: 'rapports',     icon: 'bar_chart', color: 'text-blue-500',  label: 'Génération de rapports', sub: 'Quand un rapport est prêt' },
+  ];
+
+  readonly notifEmail: { key: keyof NotifSettings; icon: string; color: string; label: string; sub: string }[] = [
+    { key: 'emailConflits', icon: 'mail', color: 'text-red-400',   label: 'Conflits critiques',       sub: 'Email immédiat pour les conflits non résolus' },
+    { key: 'emailRapports', icon: 'mail', color: 'text-blue-500',  label: 'Rapports hebdomadaires',   sub: 'Récapitulatif chaque lundi matin' },
+    { key: 'connexions',    icon: 'mail', color: 'text-slate-400', label: 'Connexions inhabituelles', sub: 'Alerte si connexion depuis un nouvel appareil' },
+  ];
+
   // ── Getters UI ────────────────────────────────────────────────────────────
   get userInitials(): string {
     const n = this.profil().name;

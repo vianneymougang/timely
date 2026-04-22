@@ -351,12 +351,7 @@
           <h3 class="text-sm font-semibold text-slate-700 mb-1">Notifications dans l'application</h3>
           <p class="text-xs text-slate-400 mb-4">Alertes visibles directement dans Timely</p>
           <div class="space-y-3">
-            @for (item of [
-            {key:'conflits',     icon:'warning',         color:'text-red-400',    label:'Conflits de planning',      sub:'Quand un conflit de créneau est détecté'},
-            {key:'reservations', icon:'event',           color:'text-teal-500',   label:'Réservations',              sub:'Nouvelles réservations et modifications'},
-            {key:'rappels',      icon:'alarm',           color:'text-amber-500',  label:'Rappels de cours',          sub:'30 minutes avant chaque créneau'},
-            {key:'rapports',     icon:'bar_chart',       color:'text-blue-500',   label:'Génération de rapports',    sub:'Quand un rapport est prêt'}
-            ]; track item.key) {
+            @for (item of notifInApp; track item.key) {
             <div class="notif-row">
               <div class="flex items-center gap-3">
                 <span class="material-icons text-xl" [class]="item.color">{{ item.icon }}</span>
@@ -384,11 +379,7 @@
           <h3 class="text-sm font-semibold text-slate-700 mb-1">Notifications par email</h3>
           <p class="text-xs text-slate-400 mb-4">Envoyées à {{ profil().email || 'votre adresse email' }}</p>
           <div class="space-y-3">
-            @for (item of [
-            {key:'emailConflits',  icon:'mail',  color:'text-red-400',  label:'Conflits critiques',       sub:'Email immédiat pour les conflits non résolus'},
-            {key:'emailRapports',  icon:'mail',  color:'text-blue-500', label:'Rapports hebdomadaires',   sub:'Récapitulatif chaque lundi matin'},
-            {key:'connexions',     icon:'mail',  color:'text-slate-400', label:'Connexions inhabituelles', sub:'Alerte si connexion depuis un nouvel appareil'}
-            ]; track item.key) {
+            @for (item of notifEmail; track item.key) {
             <div class="notif-row">
               <div class="flex items-center gap-3">
                 <span class="material-icons text-xl" [class]="item.color">{{ item.icon }}</span>
