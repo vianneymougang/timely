@@ -6,15 +6,14 @@
         body { font-family: Arial, sans-serif; margin: 40px; color: #333; }
         h1 { color: #1e293b; border-bottom: 2px solid #3b82f6; padding-bottom: 8px; }
         h2 { color: #475569; margin-top: 24px; }
-        .meta { background: #f8fafc; border-radius: 8px; padding: 16px; margin-bottom: 24px; }
-        .meta-row { display: flex; gap: 16px; margin-bottom: 6px; }
-        .meta-label { font-weight: bold; min-width: 180px; color: #64748b; }
+        .meta { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px; margin-bottom: 24px; }
+        .meta-row { margin-bottom: 6px; }
+        .meta-label { font-weight: bold; color: #64748b; }
         table { width: 100%; border-collapse: collapse; margin-top: 16px; }
-        th { background: #1e293b; color: white; padding: 10px 12px; text-align: left; }
-        td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; }
+        th { background: #1e293b; color: white; padding: 10px 12px; text-align: left; font-size: 13px; }
+        td { padding: 8px 12px; border-bottom: 1px solid #e2e8f0; font-size: 13px; }
         tr:nth-child(even) td { background: #f8fafc; }
-        .footer { margin-top: 40px; text-align: center; color: #94a3b8; font-size: 12px; border-top: 1px solid #e2e8f0; padding-top: 16px; }
-        .badge { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 12px; background: #dbeafe; color: #1d4ed8; }
+        .footer { margin-top: 40px; text-align: center; color: #94a3b8; font-size: 11px; border-top: 1px solid #e2e8f0; padding-top: 16px; }
     </style>
 </head>
 <body>
@@ -23,16 +22,16 @@
 
 <div class="meta">
     <div class="meta-row">
-        <span class="meta-label">Type de rapport :</span>
+        <span class="meta-label">Type :</span>
         <span th:text="${typeRapport}">-</span>
     </div>
     <div class="meta-row">
         <span class="meta-label">Date de génération :</span>
         <span th:text="${#temporals.format(dateGeneration, 'dd/MM/yyyy HH:mm')}">-</span>
     </div>
-    <div class="meta-row" th:if="${dateDebut != null}">
+    <div class="meta-row" th:if="${dateDebut != null and parametres != null and parametres['dateDebut'] != null}">
         <span class="meta-label">Période :</span>
-        <span th:text="${#temporals.format(dateDebut, 'dd/MM/yyyy')} + ' → ' + ${#temporals.format(dateFin, 'dd/MM/yyyy')}">-</span>
+        <span th:text="${#temporals.format(parametres['dateDebut'], 'dd/MM/yyyy')} + ' → ' + ${#temporals.format(parametres['dateFin'], 'dd/MM/yyyy')}">-</span>
     </div>
     <div class="meta-row">
         <span class="meta-label">Généré par :</span>
@@ -40,8 +39,8 @@
     </div>
 </div>
 
-<!-- CHARGE HORAIRE -->
-<div th:if="${parametres != null and parametres['teachers'] != null}">
+<!-- CHARGE ENSEIGNANTS -->
+<div th:if="${parametres != null and parametres['teacherCharges'] != null}">
     <h2>Charge horaire par enseignant</h2>
     <table>
         <thead>
@@ -54,12 +53,12 @@
             </tr>
         </thead>
         <tbody>
-            <tr th:each="charge : ${parametres['charges']}">
-                <td th:text="${#lists.toList(parametres['teachers']).?[id == charge.enseignantId][0]?.surname}">-</td>
-                <td th:text="${#lists.toList(parametres['teachers']).?[id == charge.enseignantId][0]?.name}">-</td>
-                <td th:text="${#lists.toList(parametres['teachers']).?[id == charge.enseignantId][0]?.email}">-</td>
-                <td th:text="${charge.totalHeures != null ? charge.totalHeures : 0}">0</td>
-                <td th:text="${charge.nombreCours != null ? charge.nombreCours : 0}">0</td>
+            <tr th:each="row : ${parametres['teacherCharges']}">
+                <td th:text="${row['surname']}">-</td>
+                <td th:text="${row['name']}">-</td>
+                <td th:text="${row['email']}">-</td>
+                <td th:text="${row['totalHeures']}">0</td>
+                <td th:text="${row['nombreCours']}">0</td>
             </tr>
         </tbody>
     </table>
@@ -74,23 +73,23 @@
                 <th>Salle</th>
                 <th>Type</th>
                 <th>Capacité</th>
-                <th>Nombre de réservations</th>
+                <th>Réservations</th>
             </tr>
         </thead>
         <tbody>
             <tr th:each="salle : ${parametres['salles']}">
-                <td th:text="${salle.nom}">-</td>
-                <td th:text="${salle.typeSalle}">-</td>
-                <td th:text="${salle.capacite}">-</td>
-                <td th:text="${parametres['reservationsParSalle'][salle.id?.toString()] ?: 0}">0</td>
+                <td th:text="${salle['nom']}">-</td>
+                <td th:text="${salle['typeSalle']}">-</td>
+                <td th:text="${salle['capacite']}">-</td>
+                <td th:text="${parametres['reservationsParSalle'] != null ? parametres['reservationsParSalle'][salle['id']?.toString()] ?: 0 : 0}">0</td>
             </tr>
         </tbody>
     </table>
 </div>
 
-<!-- STATISTIQUES COURS -->
+<!-- RÉPARTITION COURS -->
 <div th:if="${parametres != null and parametres['cours'] != null}">
-    <h2>Statistiques des cours</h2>
+    <h2>Répartition des cours</h2>
     <table>
         <thead>
             <tr>
@@ -101,9 +100,9 @@
         </thead>
         <tbody>
             <tr th:each="cours : ${parametres['cours']}">
-                <td th:text="${cours.intitule}">-</td>
-                <td><span class="badge" th:text="${cours.typeCours}">-</span></td>
-                <td th:text="${cours.volumeHoraire != null ? cours.volumeHoraire + 'h' : '-'}">-</td>
+                <td th:text="${cours['intitule']}">-</td>
+                <td th:text="${cours['typeCours']}">-</td>
+                <td th:text="${cours['volumeHoraire'] != null ? cours['volumeHoraire'] + 'h' : '-'}">-</td>
             </tr>
         </tbody>
     </table>

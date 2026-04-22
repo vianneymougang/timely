@@ -117,20 +117,27 @@ public class ReportService {
     private Map<String, Object> buildChargeHoraireData(GenerateReportRequest request) {
         try {
             List<TeacherSummaryDTO> teachers = userServiceClient.getEnseignants();
-            List<ChargeHoraireDTO> charges = teachers.stream()
+            List<Map<String, Object>> teacherCharges = teachers.stream()
                     .map(t -> {
+                        Map<String, Object> row = new HashMap<>();
+                        row.put("name", t.name());
+                        row.put("surname", t.surname());
+                        row.put("email", t.email());
                         try {
-                            return userServiceClient.getChargeHoraire(t.id());
+                            ChargeHoraireDTO charge = userServiceClient.getChargeHoraire(t.id());
+                            row.put("totalHeures", charge.totalHeures() != null ? charge.totalHeures() : 0);
+                            row.put("nombreCours", charge.nombreCours() != null ? charge.nombreCours() : 0);
                         } catch (Exception e) {
-                            log.warn("Impossible de récupérer la charge pour l'enseignant {}: {}", t.id(), e.getMessage());
-                            return new ChargeHoraireDTO(t.id(), 0, Map.of(), 0);
+                            log.warn("Charge indisponible pour {}: {}", t.id(), e.getMessage());
+                            row.put("totalHeures", 0);
+                            row.put("nombreCours", 0);
                         }
+                        return row;
                     })
                     .collect(Collectors.toList());
 
             Map<String, Object> data = new HashMap<>();
-            data.put("teachers", teachers);
-            data.put("charges", charges);
+            data.put("teacherCharges", teacherCharges);
             data.put("dateDebut", request.getDateDebut());
             data.put("dateFin", request.getDateFin());
             return data;

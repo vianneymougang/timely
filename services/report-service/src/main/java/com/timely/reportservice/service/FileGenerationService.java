@@ -106,6 +106,7 @@ public class FileGenerationService {
                 renderer.setDocumentFromString(htmlContent);
                 renderer.layout();
                 renderer.createPDF(outputStream);
+                renderer.finishPDF();
             }
 
             log.info("PDF généré avec succès: {}", filePath);
