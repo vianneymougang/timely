@@ -368,7 +368,7 @@ services:
       - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
       - EUREKA_INSTANCE_HOSTNAME=api-gateway
       - EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
-      - JWT_SECRET=${JWT_SECRET:-mySecretKeyForJWTTokenGenerationThisShouldBeAtLeast256BitsLongForHS256Algorithm}
+      - JWT_SECRET=${JWT_SECRET}
     restart: unless-stopped
     deploy:
       resources:
@@ -406,12 +406,14 @@ services:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_DATASOURCE_URL=jdbc:postgresql://auth-service-db:5432/auth-service-db
       - DB_PASSWORD=${DB_PASSWORD:-changeme}
-      - JWT_SECRET=${JWT_SECRET:-mySecretKeyForJWTTokenGenerationThisShouldBeAtLeast256BitsLongForHS256Algorithm}
+      - JWT_SECRET=${JWT_SECRET}
       - SPRING_RABBITMQ_HOST=rabbitmq
       - SPRING_RABBITMQ_PORT=5672
       - SPRING_RABBITMQ_USERNAME=admin
       - SPRING_RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-changeme}
       - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-changeme}
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
       - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
       - EUREKA_INSTANCE_HOSTNAME=auth-service
@@ -449,7 +451,13 @@ services:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_DATASOURCE_URL=jdbc:postgresql://user-service-db:5432/user-service-db
       - DB_PASSWORD=${DB_PASSWORD:-changeme}
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=admin
+      - SPRING_RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-changeme}
       - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-changeme}
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
       - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
       - EUREKA_INSTANCE_HOSTNAME=user-service
@@ -487,7 +495,13 @@ services:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_DATASOURCE_URL=jdbc:postgresql://planning-service-db:5432/planning-service-db
       - DB_PASSWORD=${DB_PASSWORD:-changeme}
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=admin
+      - SPRING_RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-changeme}
       - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-changeme}
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
       - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
       - EUREKA_INSTANCE_HOSTNAME=planning-service
@@ -525,7 +539,13 @@ services:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_DATASOURCE_URL=jdbc:postgresql://booking-service-db:5432/booking-service-db
       - DB_PASSWORD=${DB_PASSWORD:-changeme}
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=admin
+      - SPRING_RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-changeme}
       - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-changeme}
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
       - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
       - EUREKA_INSTANCE_HOSTNAME=booking-service
@@ -565,7 +585,7 @@ services:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_DATA_MONGODB_HOST=mongodb
       - MONGODB_PASSWORD=${MONGODB_PASSWORD:-changeme}
-      - JWT_SECRET=${JWT_SECRET:-mySecretKeyForJWTTokenGenerationThisShouldBeAtLeast256BitsLongForHS256Algorithm}
+      - JWT_SECRET=${JWT_SECRET}
       - SPRING_RABBITMQ_HOST=rabbitmq
       - SPRING_RABBITMQ_PORT=5672
       - SPRING_RABBITMQ_USERNAME=admin
@@ -608,7 +628,11 @@ services:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_DATASOURCE_URL=jdbc:postgresql://report-service-db:5432/report-service-db
       - DB_PASSWORD=${DB_PASSWORD:-changeme}
-      - JWT_SECRET=${JWT_SECRET:-mySecretKeyForJWTTokenGenerationThisShouldBeAtLeast256BitsLongForHS256Algorithm}
+      - JWT_SECRET=${JWT_SECRET}
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=admin
+      - SPRING_RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-changeme}
       - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-changeme}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
       - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
@@ -647,7 +671,11 @@ services:
       - SPRING_PROFILES_ACTIVE=docker
       - SPRING_DATASOURCE_URL=jdbc:postgresql://agora-service-db:5432/agora-service-db
       - DB_PASSWORD=${DB_PASSWORD:-changeme}
-      - JWT_SECRET=${JWT_SECRET:-mySecretKeyForJWTTokenGenerationThisShouldBeAtLeast256BitsLongForHS256Algorithm}
+      - JWT_SECRET=${JWT_SECRET}
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=admin
+      - SPRING_RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-changeme}
       - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD:-changeme}
       - AGORA_PASSWORD=${AGORA_PASSWORD:-changeme}
       - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
