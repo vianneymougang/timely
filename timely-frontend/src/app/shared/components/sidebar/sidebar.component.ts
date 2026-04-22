@@ -24,7 +24,6 @@ export class SidebarComponent {
   menuItems: MenuItem[] = [
     { icon: 'dashboard', label: 'Tableau de bord', route: '/admin/dashboard' },
     { icon: 'schedule', label: 'Emplois du temps', route: '/admin/schedule' },
-    { icon: 'event_note', label: 'Réservations', route: '/admin/reservations' },
     { icon: 'school', label: 'Enseignants', route: '/admin/teachers' },
     { icon: 'school', label: 'Étudiants', route: '/admin/students' },
     { icon: 'menu_book', label: 'Cours & UE', route: '/admin/courses' },

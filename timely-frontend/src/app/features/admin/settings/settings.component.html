@@ -1,1 +1,565 @@
-<p>settings.component works!</p>
+<div class="flex-1 p-6 min-h-screen bg-slate-50">
+
+  <!-- ══ TOASTS ═══════════════════════════════════════════════════════════ -->
+  <div class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none">
+    @for (t of toasts(); track t.id) {
+    <div class="toast-item pointer-events-auto" [class]="'toast-' + t.type">
+        <span class="material-icons text-base shrink-0">
+          {{ t.type === 'success' ? 'check_circle' : 'error_outline' }}
+        </span>
+      <span class="flex-1 text-sm font-medium">{{ t.message }}</span>
+      <button (click)="dismissToast(t.id)" class="opacity-60 hover:opacity-100 transition-opacity">
+        <span class="material-icons text-sm">close</span>
+      </button>
+    </div>
+    }
+  </div>
+
+  <!-- ══ HEADER ════════════════════════════════════════════════════════════ -->
+  <div class="mb-6">
+    <h1 class="text-xl font-bold text-slate-800 flex items-center gap-2">
+      <span class="material-icons text-teal-600">settings</span>
+      Paramètres
+    </h1>
+    <p class="text-sm text-slate-500 mt-1">Gérez votre compte, votre établissement et les préférences système</p>
+  </div>
+
+  <div class="flex flex-col lg:flex-row gap-6">
+
+    <!-- ══ SIDEBAR ONGLETS ════════════════════════════════════════════════ -->
+    <aside class="lg:w-56 shrink-0">
+      <nav class="bg-white rounded-2xl shadow-sm border border-slate-100 p-2 flex flex-row lg:flex-col gap-1 overflow-x-auto lg:overflow-visible">
+        @for (tab of tabs; track tab.id) {
+        <button
+          (click)="setTab(tab.id)"
+          class="tab-btn flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm transition-colors whitespace-nowrap w-full text-left"
+          [class.tab-active]="activeTab() === tab.id"
+          [class.tab-inactive]="activeTab() !== tab.id"
+        >
+          <span class="material-icons text-lg">{{ tab.icon }}</span>
+          {{ tab.label }}
+        </button>
+        }
+      </nav>
+    </aside>
+
+    <!-- ══ CONTENU ════════════════════════════════════════════════════════ -->
+    <div class="flex-1 min-w-0">
+
+      <!-- ─── ONGLET PROFIL ─────────────────────────────────────────────── -->
+      @if (activeTab() === 'profil') {
+      <div class="settings-card">
+        <div class="section-header">
+          <span class="material-icons text-teal-600">person</span>
+          <div>
+            <h2 class="section-title">Informations personnelles</h2>
+            <p class="section-sub">Mettez à jour vos informations de profil administrateur</p>
+          </div>
+        </div>
+
+        <!-- Avatar -->
+        <div class="flex items-center gap-5 mb-6 pb-6 border-b border-slate-100">
+          <div class="avatar-circle text-white text-xl font-bold bg-teal-600">
+            {{ userInitials }}
+          </div>
+          <div>
+            <p class="text-sm font-medium text-slate-700">Photo de profil</p>
+            <p class="text-xs text-slate-400 mt-0.5">JPG, PNG — max 2 Mo</p>
+            <button class="mt-2 text-xs text-teal-600 hover:text-teal-700 font-medium underline underline-offset-2">
+              Changer la photo
+            </button>
+          </div>
+        </div>
+
+        <!-- Champs -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          <div class="field-group">
+            <label class="field-label">Prénom</label>
+            <input class="field-input" type="text" placeholder="Prénom"
+                   [value]="profil().name"
+                   (input)="updateProfilField('name', $any($event.target).value)">
+          </div>
+          <div class="field-group">
+            <label class="field-label">Nom</label>
+            <input class="field-input" type="text" placeholder="Nom de famille"
+                   [value]="profil().surname"
+                   (input)="updateProfilField('surname', $any($event.target).value)">
+          </div>
+          <div class="field-group">
+            <label class="field-label">Adresse email</label>
+            <input class="field-input" type="email" placeholder="email@exemple.com"
+                   [value]="profil().email"
+                   (input)="updateProfilField('email', $any($event.target).value)">
+          </div>
+          <div class="field-group">
+            <label class="field-label">Téléphone</label>
+            <input class="field-input" type="tel" placeholder="+237 6XX XXX XXX"
+                   [value]="profil().phone"
+                   (input)="updateProfilField('phone', $any($event.target).value)">
+          </div>
+          <div class="field-group sm:col-span-2">
+            <label class="field-label">Rôle</label>
+            <input class="field-input bg-slate-50 cursor-not-allowed" type="text" readonly
+                   [value]="profil().role || 'Administrateur'">
+          </div>
+        </div>
+
+        <div class="flex justify-end">
+          <button class="btn-primary" (click)="saveProfil()" [disabled]="savingProfil()">
+              <span class="material-icons text-base" [class.spinning]="savingProfil()">
+                {{ savingProfil() ? 'autorenew' : 'save' }}
+              </span>
+            {{ savingProfil() ? 'Enregistrement…' : 'Enregistrer le profil' }}
+          </button>
+        </div>
+      </div>
+      }
+
+      <!-- ─── ONGLET SÉCURITÉ ───────────────────────────────────────────── -->
+      @if (activeTab() === 'securite') {
+      <div class="settings-card">
+        <div class="section-header">
+          <span class="material-icons text-amber-500">lock</span>
+          <div>
+            <h2 class="section-title">Sécurité du compte</h2>
+            <p class="section-sub">Modifiez votre mot de passe et gérez la sécurité de votre session</p>
+          </div>
+        </div>
+
+        <!-- Changer mot de passe -->
+        <div class="mb-6 pb-6 border-b border-slate-100">
+          <h3 class="text-sm font-semibold text-slate-700 mb-4">Changer le mot de passe</h3>
+          <div class="flex flex-col gap-4 max-w-md">
+
+            <!-- Actuel -->
+            <div class="field-group">
+              <label class="field-label">Mot de passe actuel</label>
+              <div class="relative">
+                <input class="field-input pr-10"
+                       [type]="showCurrent() ? 'text' : 'password'"
+                       placeholder="••••••••"
+                       [value]="password().current"
+                       (input)="updatePasswordField('current', $any($event.target).value)">
+                <button class="eye-btn" (click)="toggleShowCurrent()">
+                  <span class="material-icons text-base">{{ showCurrent() ? 'visibility_off' : 'visibility' }}</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Nouveau -->
+            <div class="field-group">
+              <label class="field-label">Nouveau mot de passe</label>
+              <div class="relative">
+                <input class="field-input pr-10"
+                       [type]="showNext() ? 'text' : 'password'"
+                       placeholder="••••••••"
+                       [value]="password().next"
+                       (input)="updatePasswordField('next', $any($event.target).value)">
+                <button class="eye-btn" (click)="toggleShowNext()">
+                  <span class="material-icons text-base">{{ showNext() ? 'visibility_off' : 'visibility' }}</span>
+                </button>
+              </div>
+              <!-- Barre de force -->
+              @if (password().next.length > 0) {
+              <div class="mt-2">
+                <div class="flex gap-1 mb-1">
+                  @for (i of [1,2,3,4]; track i) {
+                  <div class="h-1.5 flex-1 rounded-full transition-all duration-300"
+                       [class]="i <= passwordStrength() ? strengthColor : 'bg-slate-200'">
+                  </div>
+                  }
+                </div>
+                <p class="text-xs text-slate-500">Force : <span class="font-medium">{{ strengthLabel }}</span></p>
+              </div>
+              }
+            </div>
+
+            <!-- Confirmation -->
+            <div class="field-group">
+              <label class="field-label">Confirmer le mot de passe</label>
+              <div class="relative">
+                <input class="field-input pr-10"
+                       [type]="showConfirm() ? 'text' : 'password'"
+                       placeholder="••••••••"
+                       [value]="password().confirm"
+                       (input)="updatePasswordField('confirm', $any($event.target).value)">
+                <button class="eye-btn" (click)="toggleShowConfirm()">
+                  <span class="material-icons text-base">{{ showConfirm() ? 'visibility_off' : 'visibility' }}</span>
+                </button>
+              </div>
+              @if (password().confirm.length > 0 && password().next !== password().confirm) {
+              <p class="text-xs text-red-500 mt-1 flex items-center gap-1">
+                <span class="material-icons text-xs">cancel</span> Les mots de passe ne correspondent pas
+              </p>
+              }
+            </div>
+          </div>
+        </div>
+
+        <!-- Règles -->
+        <div class="mb-6 pb-6 border-b border-slate-100">
+          <h3 class="text-sm font-semibold text-slate-700 mb-3">Règles du mot de passe</h3>
+          <ul class="space-y-2">
+            @for (rule of passwordRules(); track rule.text){
+            <li class="flex items-center gap-2 text-xs"
+                [class.text-emerald-600]="rule.ok"
+                [class.text-slate-400]="!rule.ok">
+              <span class="material-icons text-sm">{{ rule.ok ? 'check_circle' : 'radio_button_unchecked' }}</span>
+              {{ rule.text }}
+            </li>
+            }
+          </ul>
+        </div>
+
+        <!-- Sessions actives
+        <div class="mb-6">
+          <h3 class="text-sm font-semibold text-slate-700 mb-3">Sessions actives</h3>
+          <div class="space-y-3">
+            @for (session of [
+            {device:'Chrome — Windows 11', location:'Yaoundé, CM', date:'Maintenant', current:true},
+            {device:'Firefox — Android',   location:'Douala, CM',   date:'Il y a 2h',  current:false}
+            ]; track session.device) {
+            <div class="flex items-center justify-between p-3 rounded-xl border border-slate-100 bg-slate-50">
+              <div class="flex items-center gap-3">
+                <span class="material-icons text-slate-400">devices</span>
+                <div>
+                  <p class="text-sm font-medium text-slate-700">{{ session.device }}</p>
+                  <p class="text-xs text-slate-400">{{ session.location }} · {{ session.date }}</p>
+                </div>
+              </div>
+              @if (session.current) {
+              <span class="text-xs font-semibold text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full">Actuelle</span>
+              } @else {
+              <button class="text-xs text-red-500 hover:text-red-600 font-medium">Révoquer</button>
+              }
+            </div>
+            }
+          </div>
+        </div>-->
+
+        <div class="flex justify-end">
+          <button class="btn-primary" (click)="savePassword()" [disabled]="savingPassword()">
+              <span class="material-icons text-base" [class.spinning]="savingPassword()">
+                {{ savingPassword() ? 'autorenew' : 'lock_reset' }}
+              </span>
+            {{ savingPassword() ? 'Enregistrement…' : 'Changer le mot de passe' }}
+          </button>
+        </div>
+      </div>
+      }
+
+      <!-- ─── ONGLET ÉTABLISSEMENT ──────────────────────────────────────── -->
+      @if (activeTab() === 'etablissement') {
+      <div class="settings-card">
+        <div class="section-header">
+          <span class="material-icons text-blue-500">school</span>
+          <div>
+            <h2 class="section-title">Informations de l'établissement</h2>
+            <p class="section-sub">Configurez les données de votre école ou université</p>
+          </div>
+        </div>
+
+        @if (ecoleLoading()) {
+        <div class="flex items-center gap-3 text-slate-400 py-8">
+          <span class="material-icons spinning">autorenew</span>
+          <span class="text-sm">Chargement des données…</span>
+        </div>
+        } @else {
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6">
+          <div class="field-group">
+            <label class="field-label">Nom de l'établissement</label>
+            <input class="field-input" type="text" placeholder="Institut Supérieur de…"
+                   [value]="etablissement().nom"
+                   (input)="updateEtabField('nom', $any($event.target).value)">
+          </div>
+          <div class="field-group">
+            <label class="field-label">Code établissement</label>
+            <input class="field-input" type="text" placeholder="IST-CM"
+                   [value]="etablissement().code"
+                   (input)="updateEtabField('code', $any($event.target).value)">
+          </div>
+          <div class="field-group sm:col-span-2">
+            <label class="field-label">Adresse</label>
+            <input class="field-input" type="text" placeholder="Rue, quartier, ville…"
+                   [value]="etablissement().adresse"
+                   (input)="updateEtabField('adresse', $any($event.target).value)">
+          </div>
+          <div class="field-group">
+            <label class="field-label">Téléphone</label>
+            <input class="field-input" type="tel" placeholder="+237 2XX XXX XXX"
+                   [value]="etablissement().telephone"
+                   (input)="updateEtabField('telephone', $any($event.target).value)">
+          </div>
+          <div class="field-group">
+            <label class="field-label">Email institutionnel</label>
+            <input class="field-input" type="email" placeholder="contact@ecole.cm"
+                   [value]="etablissement().email"
+                   (input)="updateEtabField('email', $any($event.target).value)">
+          </div>
+          <div class="field-group sm:col-span-2">
+            <label class="field-label">Responsable / Directeur</label>
+            <input class="field-input" type="text" placeholder="Nom du responsable"
+                   [value]="etablissement().contactResponsable"
+                   (input)="updateEtabField('contactResponsable', $any($event.target).value)">
+          </div>
+        </div>
+
+        <!-- Liste des écoles -->
+        @if (ecoles().length > 1) {
+        <div class="mb-6 p-4 bg-slate-50 rounded-xl border border-slate-200">
+          <p class="text-xs font-semibold text-slate-500 uppercase tracking-wide mb-3">Autres établissements</p>
+          <div class="space-y-2">
+            @for (e of ecoles().slice(1); track e.id) {
+            <div class="flex items-center justify-between text-sm">
+              <div class="flex items-center gap-2">
+                <span class="material-icons text-slate-400 text-base">account_balance</span>
+                <span class="text-slate-700">{{ e.nom }}</span>
+                <span class="text-xs text-slate-400 bg-slate-200 px-1.5 py-0.5 rounded">{{ e.code }}</span>
+              </div>
+              <button class="text-teal-600 text-xs hover:underline">Configurer</button>
+            </div>
+            }
+          </div>
+        </div>
+        }
+
+        <div class="flex justify-end">
+          <button class="btn-primary" (click)="saveEtablissement()" [disabled]="savingEtab()">
+                <span class="material-icons text-base" [class.spinning]="savingEtab()">
+                  {{ savingEtab() ? 'autorenew' : 'save' }}
+                </span>
+            {{ savingEtab() ? 'Enregistrement…' : 'Mettre à jour' }}
+          </button>
+        </div>
+        }
+      </div>
+      }
+
+      <!-- ─── ONGLET NOTIFICATIONS ──────────────────────────────────────── -->
+      @if (activeTab() === 'notifications') {
+      <div class="settings-card">
+        <div class="section-header">
+          <span class="material-icons text-purple-500">notifications</span>
+          <div>
+            <h2 class="section-title">Préférences de notifications</h2>
+            <p class="section-sub">Choisissez les événements pour lesquels vous souhaitez être alerté</p>
+          </div>
+        </div>
+
+        <!-- Notifications in-app -->
+        <div class="mb-6 pb-6 border-b border-slate-100">
+          <h3 class="text-sm font-semibold text-slate-700 mb-1">Notifications dans l'application</h3>
+          <p class="text-xs text-slate-400 mb-4">Alertes visibles directement dans Timely</p>
+          <div class="space-y-3">
+            @for (item of [
+            {key:'conflits',     icon:'warning',         color:'text-red-400',    label:'Conflits de planning',      sub:'Quand un conflit de créneau est détecté'},
+            {key:'reservations', icon:'event',           color:'text-teal-500',   label:'Réservations',              sub:'Nouvelles réservations et modifications'},
+            {key:'rappels',      icon:'alarm',           color:'text-amber-500',  label:'Rappels de cours',          sub:'30 minutes avant chaque créneau'},
+            {key:'rapports',     icon:'bar_chart',       color:'text-blue-500',   label:'Génération de rapports',    sub:'Quand un rapport est prêt'}
+            ]; track item.key) {
+            <div class="notif-row">
+              <div class="flex items-center gap-3">
+                <span class="material-icons text-xl" [class]="item.color">{{ item.icon }}</span>
+                <div>
+                  <p class="text-sm font-medium text-slate-700">{{ item.label }}</p>
+                  <p class="text-xs text-slate-400">{{ item.sub }}</p>
+                </div>
+              </div>
+              <button
+                class="toggle-btn"
+                [class.toggle-on]="getNotif(item.key)"
+                [class.toggle-off]="!getNotif(item.key)"
+                (click)="toggleNotif(item.key)"
+                [attr.aria-checked]="getNotif(item.key)"
+              >
+                <span class="toggle-thumb" [class.translate-x-5]="getNotif(item.key)" [class.translate-x-0]="!getNotif(item.key)"></span>
+              </button>
+            </div>
+            }
+          </div>
+        </div>
+
+        <!-- Notifications email -->
+        <div class="mb-6">
+          <h3 class="text-sm font-semibold text-slate-700 mb-1">Notifications par email</h3>
+          <p class="text-xs text-slate-400 mb-4">Envoyées à {{ profil().email || 'votre adresse email' }}</p>
+          <div class="space-y-3">
+            @for (item of [
+            {key:'emailConflits',  icon:'mail',  color:'text-red-400',  label:'Conflits critiques',       sub:'Email immédiat pour les conflits non résolus'},
+            {key:'emailRapports',  icon:'mail',  color:'text-blue-500', label:'Rapports hebdomadaires',   sub:'Récapitulatif chaque lundi matin'},
+            {key:'connexions',     icon:'mail',  color:'text-slate-400', label:'Connexions inhabituelles', sub:'Alerte si connexion depuis un nouvel appareil'}
+            ]; track item.key) {
+            <div class="notif-row">
+              <div class="flex items-center gap-3">
+                <span class="material-icons text-xl" [class]="item.color">{{ item.icon }}</span>
+                <div>
+                  <p class="text-sm font-medium text-slate-700">{{ item.label }}</p>
+                  <p class="text-xs text-slate-400">{{ item.sub }}</p>
+                </div>
+              </div>
+              <button
+                class="toggle-btn"
+                [class.toggle-on]="getNotif(item.key)"
+                [class.toggle-off]="!getNotif(item.key)"
+                (click)="toggleNotif(item.key)"
+              >
+                <span class="toggle-thumb" [class.translate-x-5]="getNotif(item.key)" [class.translate-x-0]="!getNotif(item.key)"></span>
+              </button>
+            </div>
+            }
+          </div>
+        </div>
+
+        <div class="flex justify-end">
+          <button class="btn-primary" (click)="saveNotifications()" [disabled]="savingNotifications()">
+              <span class="material-icons text-base" [class.spinning]="savingNotifications()">
+                {{ savingNotifications() ? 'autorenew' : 'save' }}
+              </span>
+            {{ savingNotifications() ? 'Enregistrement…' : 'Sauvegarder les préférences' }}
+          </button>
+        </div>
+      </div>
+      }
+
+      <!-- ─── ONGLET SYSTÈME ────────────────────────────────────────────── -->
+      @if (activeTab() === 'systeme') {
+      <div class="settings-card">
+        <div class="section-header">
+          <span class="material-icons text-slate-500">tune</span>
+          <div>
+            <h2 class="section-title">Paramètres système</h2>
+            <p class="section-sub">Langue, thème, fuseau horaire et comportement de l'application</p>
+          </div>
+        </div>
+
+        <!-- Apparence -->
+        <div class="mb-6 pb-6 border-b border-slate-100">
+          <h3 class="text-sm font-semibold text-slate-700 mb-4">Apparence</h3>
+          <div class="flex gap-3 flex-wrap">
+            @for (theme of [{v:'light',icon:'light_mode',label:'Clair'},{v:'dark',icon:'dark_mode',label:'Sombre'},{v:'system',icon:'computer',label:'Système'}]; track theme.v) {
+            <button
+              class="theme-option"
+              [class.theme-selected]="systeme().theme === theme.v"
+              (click)="updateSystemeField('theme', theme.v)"
+            >
+              <span class="material-icons text-2xl mb-1">{{ theme.icon }}</span>
+              <span class="text-xs font-medium">{{ theme.label }}</span>
+            </button>
+            }
+          </div>
+        </div>
+
+        <!-- Mode dense -->
+        <div class="mb-6 pb-6 border-b border-slate-100">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-slate-700">Mode dense</p>
+              <p class="text-xs text-slate-400 mt-0.5">Réduit les espacements pour afficher plus de contenu</p>
+            </div>
+            <button
+              class="toggle-btn"
+              [class.toggle-on]="systeme().denseMode"
+              [class.toggle-off]="!systeme().denseMode"
+              (click)="updateSystemeField('denseMode', !systeme().denseMode)"
+            >
+              <span class="toggle-thumb" [class.translate-x-5]="systeme().denseMode" [class.translate-x-0]="!systeme().denseMode"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Région & langue -->
+        <div class="mb-6 pb-6 border-b border-slate-100">
+          <h3 class="text-sm font-semibold text-slate-700 mb-4">Région &amp; langue</h3>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="field-group">
+              <label class="field-label">Langue</label>
+              <select class="field-input"
+                      [value]="systeme().langue"
+                      (change)="updateSystemeField('langue', $any($event.target).value)">
+                <option value="fr">Français</option>
+                <option value="en">English</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Fuseau horaire</label>
+              <select class="field-input"
+                      [value]="systeme().fuseau"
+                      (change)="updateSystemeField('fuseau', $any($event.target).value)">
+                <option value="Africa/Douala">Africa/Douala (UTC+1)</option>
+                <option value="Africa/Lagos">Africa/Lagos (UTC+1)</option>
+                <option value="Europe/Paris">Europe/Paris (UTC+1/2)</option>
+                <option value="UTC">UTC</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Format de date</label>
+              <select class="field-input"
+                      [value]="systeme().formatDate"
+                      (change)="updateSystemeField('formatDate', $any($event.target).value)">
+                <option value="dd/MM/yyyy">JJ/MM/AAAA</option>
+                <option value="MM/dd/yyyy">MM/JJ/AAAA</option>
+                <option value="yyyy-MM-dd">AAAA-MM-JJ</option>
+              </select>
+            </div>
+            <div class="field-group">
+              <label class="field-label">Délai d'inactivité (min)</label>
+              <select class="field-input"
+                      [value]="systeme().sessionTimeout"
+                      (change)="updateSystemeField('sessionTimeout', $any($event.target).value)">
+                <option value="15">15 minutes</option>
+                <option value="30">30 minutes</option>
+                <option value="60">1 heure</option>
+                <option value="120">2 heures</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- Auto-sauvegarde -->
+        <div class="mb-6 pb-6 border-b border-slate-100">
+          <div class="flex items-center justify-between">
+            <div>
+              <p class="text-sm font-medium text-slate-700">Auto-sauvegarde des formulaires</p>
+              <p class="text-xs text-slate-400 mt-0.5">Sauvegarde automatiquement les modifications en cours</p>
+            </div>
+            <button
+              class="toggle-btn"
+              [class.toggle-on]="systeme().autoSave"
+              [class.toggle-off]="!systeme().autoSave"
+              (click)="updateSystemeField('autoSave', !systeme().autoSave)"
+            >
+              <span class="toggle-thumb" [class.translate-x-5]="systeme().autoSave" [class.translate-x-0]="!systeme().autoSave"></span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Zone danger -->
+        <div class="mb-6 p-4 rounded-xl border border-red-200 bg-red-50">
+          <h3 class="text-sm font-semibold text-red-700 mb-1 flex items-center gap-2">
+            <span class="material-icons text-base">dangerous</span>Zone de danger
+          </h3>
+          <p class="text-xs text-red-500 mb-3">Ces actions sont irréversibles. Procédez avec précaution.</p>
+          <div class="flex flex-wrap gap-2">
+            <button class="flex items-center gap-1.5 px-3 py-2 text-xs text-red-600 border border-red-300 rounded-lg hover:bg-red-100 transition-colors font-medium">
+              <span class="material-icons text-sm">delete_sweep</span> Vider les logs système
+            </button>
+            <button class="flex items-center gap-1.5 px-3 py-2 text-xs text-red-600 border border-red-300 rounded-lg hover:bg-red-100 transition-colors font-medium">
+              <span class="material-icons text-sm">restart_alt</span> Réinitialiser les paramètres
+            </button>
+          </div>
+        </div>
+
+        <div class="flex justify-end">
+          <button class="btn-primary" (click)="saveSysteme()" [disabled]="savingSysteme()">
+              <span class="material-icons text-base" [class.spinning]="savingSysteme()">
+                {{ savingSysteme() ? 'autorenew' : 'save' }}
+              </span>
+            {{ savingSysteme() ? 'Enregistrement…' : 'Appliquer les paramètres' }}
+          </button>
+        </div>
+      </div>
+      }
+
+    </div>
+  </div>
+</div>

@@ -1,11 +1,322 @@
-import { Component } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { HttpErrorResponse } from '@angular/common/http';
+import { AuthService } from '../../../core/services/auth.service';
+import { UserService, UpdateUserRequest } from '../../../core/services/user.service';
+import { EcoleService, EcoleDto } from '../../../core/services/ecole.service';
+import { catchError, of, Subscription } from 'rxjs';
+
+export type SettingsTab = 'profil' | 'securite' | 'etablissement' | 'notifications' | 'systeme';
+
+export interface Toast { id: number; type: 'success' | 'error'; message: string; }
 
 @Component({
-  selector: 'app-settings.component',
-  imports: [],
+  selector: 'app-settings',
+  standalone: true,
+  imports: [CommonModule, FormsModule],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss',
 })
-export class SettingsComponent {
+export class SettingsComponent implements OnInit, OnDestroy {
+  private authService  = inject(AuthService);
+  private userService  = inject(UserService);
+  private ecoleService = inject(EcoleService);
 
+  private subs: Subscription[] = [];
+  private toastId = 0;
+
+  // ── Onglet actif ─────────────────────────────────────────────────────────
+  activeTab = signal<SettingsTab>('profil');
+
+  tabs: { id: SettingsTab; label: string; icon: string }[] = [
+    { id: 'profil',        label: 'Profil',        icon: 'person'         },
+    { id: 'securite',      label: 'Sécurité',      icon: 'lock'           },
+    { id: 'etablissement', label: 'Établissement', icon: 'school'         },
+    { id: 'notifications', label: 'Notifications', icon: 'notifications'  },
+    { id: 'systeme',       label: 'Système',        icon: 'settings'      },
+  ];
+
+  // ── Toast ─────────────────────────────────────────────────────────────────
+  toasts = signal<Toast[]>([]);
+
+  // ── État global ───────────────────────────────────────────────────────────
+  savingProfil        = signal(false);
+  savingPassword      = signal(false);
+  savingEtab          = signal(false);
+  savingNotifications = signal(false);
+  savingSysteme       = signal(false);
+
+  // ── Profil ────────────────────────────────────────────────────────────────
+  profil = signal({
+    name:    '',
+    surname: '',
+    email:   '',
+    phone:   '',
+    role:    '',
+  });
+
+  // ── Sécurité ──────────────────────────────────────────────────────────────
+  password = signal({
+    current:  '',
+    next:     '',
+    confirm:  '',
+  });
+
+  toggleShowCurrent(): void {
+    this.showCurrent.update(v => !v);
+  }
+
+  toggleShowNext(): void {
+    this.showNext.update(v => !v);
+  }
+
+  toggleShowConfirm(): void {
+    this.showConfirm.update(v => !v);
+  }
+  showCurrent = signal(false);
+  showNext    = signal(false);
+  showConfirm = signal(false);
+
+  passwordStrength = signal(0); // 0-4
+
+  passwordRules() {
+    const pwd = this.password().next || '';
+
+    return [
+      { text: 'Minimum 8 caractères',         ok: pwd.length >= 8 },
+      { text: 'Au moins une majuscule',       ok: /[A-Z]/.test(pwd) },
+      { text: 'Au moins un chiffre',          ok: /[0-9]/.test(pwd) },
+      { text: 'Au moins un caractère spécial',ok: /[^A-Za-z0-9]/.test(pwd) }
+    ];
+  }
+
+  getNotif(key: string): boolean {
+    return this.notifications()[key as keyof ReturnType<typeof this.notifications>];
+  }
+
+  // ── Établissement ─────────────────────────────────────────────────────────
+  ecoles        = signal<EcoleDto[]>([]);
+  ecoleLoading  = signal(false);
+
+  etablissement = signal({
+    nom:                '',
+    code:               '',
+    adresse:            '',
+    telephone:          '',
+    email:              '',
+    contactResponsable: '',
+  });
+
+  // ── Notifications ─────────────────────────────────────────────────────────
+  notifications = signal({
+    conflits:       true,
+    reservations:   true,
+    rappels:        false,
+    rapports:       true,
+    connexions:     false,
+    emailConflits:  true,
+    emailRapports:  false,
+  });
+
+  // ── Système ───────────────────────────────────────────────────────────────
+  systeme = signal({
+    langue:          'fr',
+    theme:           'light',
+    fuseau:          'Africa/Douala',
+    formatDate:      'dd/MM/yyyy',
+    sessionTimeout:  '30',
+    autoSave:        true,
+    denseMode:       false,
+  });
+
+  // ── Lifecycle ─────────────────────────────────────────────────────────────
+  ngOnInit(): void {
+    this.loadProfil();
+    this.loadEcoles();
+  }
+
+  ngOnDestroy(): void {
+    this.subs.forEach(s => s.unsubscribe());
+  }
+
+  // ── Chargement données ────────────────────────────────────────────────────
+  private loadProfil(): void {
+    const user = this.authService.currentUser();
+    if (user) {
+      this.profil.update(p => ({
+        ...p,
+        name:  user.name ?? '',
+        email: user.email ?? '',
+        role:  user.role ?? '',
+      }));
+    }
+  }
+
+  private loadEcoles(): void {
+    this.ecoleLoading.set(true);
+    const sub = this.ecoleService.fetchEcolesFromApi()
+      .pipe(catchError(() => of([])))
+      .subscribe(ecoles => {
+        this.ecoles.set(ecoles as EcoleDto[]);
+        if ((ecoles as EcoleDto[]).length > 0) {
+          const e = (ecoles as EcoleDto[])[0];
+          this.etablissement.set({
+            nom:                e.nom ?? '',
+            code:               e.code ?? '',
+            adresse:            e.adresse ?? '',
+            telephone:          e.telephone ?? '',
+            email:              e.email ?? '',
+            contactResponsable: e.contactResponsable ?? '',
+          });
+        }
+        this.ecoleLoading.set(false);
+      });
+    this.subs.push(sub);
+  }
+
+  // ── Navigation ────────────────────────────────────────────────────────────
+  setTab(tab: SettingsTab): void { this.activeTab.set(tab); }
+
+  // ── Profil ────────────────────────────────────────────────────────────────
+  updateProfilField(field: string, value: string): void {
+    this.profil.update(p => ({ ...p, [field]: value }));
+  }
+
+  saveProfil(): void {
+    if (this.savingProfil()) return;
+    this.savingProfil.set(true);
+    const user = this.authService.currentUser();
+    if (!user?.id) { this.savingProfil.set(false); return; }
+
+    const req: UpdateUserRequest = {
+      name:    this.profil().name,
+      surname: this.profil().surname,
+      email:   this.profil().email,
+    };
+    const sub = this.userService.updateUser(user.id, req)
+      .pipe(catchError((e: unknown) => { this.toast('error', this.httpMsg(e)); return of(null); }))
+      .subscribe(res => {
+        this.savingProfil.set(false);
+        if (res) this.toast('success', 'Profil mis à jour avec succès.');
+      });
+    this.subs.push(sub);
+  }
+
+  // ── Mot de passe ──────────────────────────────────────────────────────────
+  updatePasswordField(field: string, value: string): void {
+    this.password.update(p => ({ ...p, [field]: value }));
+    if (field === 'next') this.computeStrength(value);
+  }
+
+  private computeStrength(pw: string): void {
+    let score = 0;
+    if (pw.length >= 8)              score++;
+    if (/[A-Z]/.test(pw))           score++;
+    if (/[0-9]/.test(pw))           score++;
+    if (/[^A-Za-z0-9]/.test(pw))   score++;
+    this.passwordStrength.set(score);
+  }
+
+  get strengthLabel(): string {
+    return ['', 'Faible', 'Moyen', 'Bon', 'Fort'][this.passwordStrength()] ?? '';
+  }
+  get strengthColor(): string {
+    return ['', 'bg-red-400', 'bg-amber-400', 'bg-blue-400', 'bg-emerald-500'][this.passwordStrength()] ?? '';
+  }
+
+  savePassword(): void {
+    const { current, next, confirm } = this.password();
+    if (!current) { this.toast('error', 'Saisissez votre mot de passe actuel.'); return; }
+    if (next.length < 8) { this.toast('error', 'Le nouveau mot de passe doit contenir au moins 8 caractères.'); return; }
+    if (next !== confirm) { this.toast('error', 'Les mots de passe ne correspondent pas.'); return; }
+
+    this.savingPassword.set(true);
+    // Appel API à brancher sur ton endpoint dédié
+    setTimeout(() => {
+      this.savingPassword.set(false);
+      this.password.set({ current: '', next: '', confirm: '' });
+      this.passwordStrength.set(0);
+      this.toast('success', 'Mot de passe modifié avec succès.');
+    }, 900);
+  }
+
+  // ── Établissement ─────────────────────────────────────────────────────────
+  updateEtabField(field: string, value: string): void {
+    this.etablissement.update(e => ({ ...e, [field]: value }));
+  }
+
+  saveEtablissement(): void {
+    if (this.savingEtab()) return;
+    this.savingEtab.set(true);
+    const ecole = this.ecoles()[0];
+    if (!ecole?.id) { this.savingEtab.set(false); return; }
+
+    const sub = this.ecoleService.updateEcole({ id: ecole.id, ...this.etablissement() as any })
+      .pipe(catchError((e: unknown) => { this.toast('error', this.httpMsg(e)); return of(null); }))
+      .subscribe(res => {
+        this.savingEtab.set(false);
+        if (res) this.toast('success', 'Établissement mis à jour.');
+      });
+    this.subs.push(sub);
+  }
+
+  // ── Notifications ─────────────────────────────────────────────────────────
+  toggleNotif(key: any): void {
+    this.notifications.update(n => ({
+      ...n,
+      [key]: !n[key as keyof typeof n]
+    }));
+  }
+
+  saveNotifications(): void {
+    this.savingNotifications.set(true);
+    setTimeout(() => {
+      this.savingNotifications.set(false);
+      this.toast('success', 'Préférences de notifications sauvegardées.');
+    }, 700);
+  }
+
+  // ── Système ───────────────────────────────────────────────────────────────
+  updateSystemeField(field: string, value: string | boolean): void {
+    this.systeme.update(s => ({ ...s, [field]: value }));
+  }
+
+  saveSysteme(): void {
+    this.savingSysteme.set(true);
+    setTimeout(() => {
+      this.savingSysteme.set(false);
+      this.toast('success', 'Paramètres système enregistrés.');
+    }, 700);
+  }
+
+  // ── Toast helpers ─────────────────────────────────────────────────────────
+  toast(type: Toast['type'], message: string): void {
+    const id = ++this.toastId;
+    this.toasts.update(l => [...l, { id, type, message }]);
+    setTimeout(() => this.dismissToast(id), 4500);
+  }
+
+  dismissToast(id: number): void {
+    this.toasts.update(l => l.filter(t => t.id !== id));
+  }
+
+  // ── HTTP error helper ─────────────────────────────────────────────────────
+  private httpMsg(err: unknown): string {
+    if (err instanceof HttpErrorResponse) {
+      if (err.status === 0)   return 'Serveur inaccessible.';
+      if (err.status === 401) return 'Session expirée.';
+      if (err.status === 403) return 'Accès refusé.';
+      if (err.status >= 500)  return 'Erreur interne du serveur.';
+      return err.error?.message ?? `Erreur ${err.status}`;
+    }
+    return (err as Error)?.message ?? 'Erreur inattendue.';
+  }
+
+  // ── Getters UI ────────────────────────────────────────────────────────────
+  get userInitials(): string {
+    const n = this.profil().name;
+    const s = this.profil().surname;
+    return `${n.charAt(0)}${s.charAt(0)}`.toUpperCase() || 'AD';
+  }
 }

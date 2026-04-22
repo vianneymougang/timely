@@ -1,0 +1,182 @@
+// ─── Spinner ─────────────────────────────────────────────────────────────────
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.spinning {
+  animation: spin 0.85s linear infinite;
+  display: inline-block;
+}
+
+// ─── Toast ────────────────────────────────────────────────────────────────────
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+.toast-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+  animation: slideIn 0.22s ease-out;
+  max-width: 360px;
+  &.toast-success { background:#f0fdf4; border:1px solid #bbf7d0; color:#15803d; }
+  &.toast-error   { background:#fef2f2; border:1px solid #fecaca; color:#dc2626; }
+}
+
+// ─── Tab sidebar ──────────────────────────────────────────────────────────────
+.tab-btn { font-weight: 500; }
+.tab-active  { background-color: #f0fdfa; color: #0d9488; font-weight: 600; }
+.tab-inactive { color: #64748b; &:hover { background-color: #f8fafc; color: #334155; } }
+
+// ─── Card principale ──────────────────────────────────────────────────────────
+.settings-card {
+  background: #fff;
+  border-radius: 1rem;
+  border: 1px solid #f1f5f9;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  padding: 1.5rem;
+}
+
+// ─── Section header ───────────────────────────────────────────────────────────
+.section-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.25rem;
+  border-bottom: 1px solid #f1f5f9;
+
+  .material-icons { font-size: 22px; margin-top: 2px; }
+}
+.section-title { font-size: 1rem; font-weight: 700; color: #1e293b; }
+.section-sub   { font-size: 0.8rem; color: #94a3b8; margin-top: 2px; }
+
+// ─── Avatar ───────────────────────────────────────────────────────────────────
+.avatar-circle {
+  width: 60px; height: 60px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+// ─── Champs formulaire ────────────────────────────────────────────────────────
+.field-group { display: flex; flex-direction: column; gap: 6px; }
+.field-label {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #475569;
+  letter-spacing: 0.01em;
+}
+.field-input {
+  width: 100%;
+  padding: 8px 12px;
+  border: 1px solid #e2e8f0;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  color: #1e293b;
+  background: #fff;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+
+  &:focus {
+    border-color: #0d9488;
+    box-shadow: 0 0 0 3px rgba(13,148,136,0.1);
+  }
+  &[readonly] { color: #94a3b8; }
+  &::placeholder { color: #cbd5e1; }
+}
+select.field-input { cursor: pointer; }
+
+// ─── Eye button (password) ────────────────────────────────────────────────────
+.eye-btn {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  &:hover { color: #475569; }
+}
+
+// ─── Bouton primaire ──────────────────────────────────────────────────────────
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  background: #0d9488;
+  color: #fff;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.1);
+  transition: background 0.15s, opacity 0.15s;
+
+  &:hover:not(:disabled) { background: #0f766e; }
+  &:disabled { opacity: 0.6; cursor: not-allowed; }
+}
+
+// ─── Toggle switch ────────────────────────────────────────────────────────────
+.toggle-btn {
+  position: relative;
+  width: 44px;
+  height: 24px;
+  border-radius: 9999px;
+  flex-shrink: 0;
+  transition: background 0.2s;
+  &.toggle-on  { background: #0d9488; }
+  &.toggle-off { background: #cbd5e1; }
+}
+.toggle-thumb {
+  position: absolute;
+  top: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  transition: transform 0.2s cubic-bezier(.4,0,.2,1);
+  &.translate-x-5 { transform: translateX(20px); }
+  &.translate-x-0 { transform: translateX(3px); }
+}
+
+// ─── Notification row ─────────────────────────────────────────────────────────
+.notif-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 14px;
+  border-radius: 12px;
+  border: 1px solid #f1f5f9;
+  background: #fafafa;
+  gap: 12px;
+  transition: background 0.15s;
+  &:hover { background: #f8fafc; }
+}
+
+// ─── Theme option ─────────────────────────────────────────────────────────────
+.theme-option {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 14px 20px;
+  border-radius: 12px;
+  border: 2px solid #e2e8f0;
+  background: #fff;
+  color: #64748b;
+  cursor: pointer;
+  transition: all 0.15s;
+  min-width: 90px;
+
+  &:hover { border-color: #94a3b8; }
+  &.theme-selected {
+    border-color: #0d9488;
+    background: #f0fdfa;
+    color: #0d9488;
+  }
+}

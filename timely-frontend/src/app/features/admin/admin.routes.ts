@@ -29,13 +29,6 @@ export const ADMIN_ROUTES: Routes = [
       import('./schedule/schedule.routes').then((m) => m.routes),
   },
   {
-    path: 'reservations',
-    loadComponent: () =>
-      import('./reservations/reservations.component').then(
-        (m) => m.ReservationsComponent,
-      ),
-  },
-  {
     path: 'resources',
     loadComponent: () =>
       import('./ressources/ressources.component').then(
