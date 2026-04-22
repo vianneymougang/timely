@@ -26,15 +26,33 @@ export class DashboardComponent implements OnInit, OnDestroy {
   isLoading = signal<boolean>(true);
   error = signal<string | null>(null);
 
-  // Chart data pour occupation des salles
+  // Chart data pour occupation des salles (valeurs = nombre de salles)
   chartData = signal([
-    { day: 'Lun', coord: 80, avail: 90, limited: 70 },
-    { day: 'Mar', coord: 90, avail: 98, limited: 75 },
-    { day: 'Mer', coord: 90, avail: 106, limited: 80 },
-    { day: 'Jeu', coord: 100, avail: 114, limited: 85 },
-    { day: 'Ven', coord: 110, avail: 122, limited: 90 },
-    { day: 'Sam', coord: 120, avail: 130, limited: 95 },
+    { day: 'Lun', coord: 12, avail: 18, limited: 5 },
+    { day: 'Mar', coord: 15, avail: 14, limited: 8 },
+    { day: 'Mer', coord: 18, avail: 10, limited: 7 },
+    { day: 'Jeu', coord: 20, avail: 12, limited: 3 },
+    { day: 'Ven', coord: 16, avail: 15, limited: 6 },
+    { day: 'Sam', coord: 8,  avail: 22, limited: 2 },
   ]);
+
+  // Valeur max pour normaliser les hauteurs des barres
+  readonly chartMaxValue = 25;
+  readonly chartBarMaxPx = 160;
+
+  /** Convertit une valeur métier en hauteur de barre en pixels */
+  getBarHeight(value: number): number {
+    return Math.max(4, Math.round((value / this.chartMaxValue) * this.chartBarMaxPx));
+  }
+
+  /** Génère les lignes de grille (ex: [0, 25, 50, 75, 100] % de chartMaxValue) */
+  get gridLines(): { label: number; pct: number }[] {
+    const steps = 5;
+    return Array.from({ length: steps + 1 }, (_, i) => ({
+      label: Math.round((i / steps) * this.chartMaxValue),
+      pct: (i / steps) * 100,
+    })).reverse();
+  }
 
   ngOnInit(): void {
     this.loadDashboardData();
