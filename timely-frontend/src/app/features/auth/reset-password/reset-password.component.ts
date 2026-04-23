@@ -3,7 +3,6 @@ import { Component, inject, OnInit, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
 import { InputText } from 'primeng/inputtext';
-import { Button } from 'primeng/button';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { phosphorLockKeyFill } from '@ng-icons/phosphor-icons/fill';
 import { phosphorEye, phosphorEyeSlash } from '@ng-icons/phosphor-icons/regular';
@@ -14,7 +13,7 @@ import { SCALE_IN, SPRING_DEFAULT } from '../../../core/animations/motion.varian
 @Component({
   selector: 'app-reset-password',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, InputText, Button, NgIcon, NgmMotionDirective],
+  imports: [CommonModule, FormsModule, RouterModule, InputText, NgIcon, NgmMotionDirective],
   providers: [provideIcons({ phosphorLockKeyFill, phosphorEye, phosphorEyeSlash })],
   templateUrl: './reset-password.component.html',
   styleUrls: ['./reset-password.component.scss'],

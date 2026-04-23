@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { InputText } from 'primeng/inputtext';
-import { Button } from 'primeng/button';
 import { NgmMotionDirective } from '@scripttype/ng-motion';
 import { AuthService } from '../../../core/services/auth.service';
 import { FADE_UP, SCALE_IN, SPRING_DEFAULT, SPRING_SOFT } from '../../../core/animations/motion.variants';
@@ -11,7 +10,7 @@ import { FADE_UP, SCALE_IN, SPRING_DEFAULT, SPRING_SOFT } from '../../../core/an
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, InputText, Button, NgmMotionDirective],
+  imports: [CommonModule, FormsModule, RouterModule, InputText, NgmMotionDirective],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.scss'],
 })

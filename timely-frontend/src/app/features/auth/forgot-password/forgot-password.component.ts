@@ -3,7 +3,6 @@ import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { InputText } from 'primeng/inputtext';
-import { Button } from 'primeng/button';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import { phosphorKeyFill } from '@ng-icons/phosphor-icons/fill';
 import { NgmMotionDirective } from '@scripttype/ng-motion';
@@ -13,7 +12,7 @@ import { SCALE_IN, SPRING_DEFAULT } from '../../../core/animations/motion.varian
 @Component({
   selector: 'app-forgot-password',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule, InputText, Button, NgIcon, NgmMotionDirective],
+  imports: [CommonModule, FormsModule, RouterModule, InputText, NgIcon, NgmMotionDirective],
   providers: [provideIcons({ phosphorKeyFill })],
   templateUrl: './forgot-password.component.html',
   styleUrls: ['./forgot-password.component.scss'],
