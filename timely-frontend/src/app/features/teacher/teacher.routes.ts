@@ -1,8 +1,10 @@
 import { Routes } from '@angular/router';
 
 export const TEACHER_ROUTES: Routes = [
+  { path: '', redirectTo: 'week', pathMatch: 'full' },
+  { path: 'dashboard', redirectTo: 'week' },
   {
-    path: 'dashboard',
+    path: 'week',
     loadComponent: () =>
       import('./dashboard/teacher-dashboard.component').then(
         (m) => m.TeacherDashboardComponent,
@@ -13,6 +15,13 @@ export const TEACHER_ROUTES: Routes = [
     loadComponent: () =>
       import('./schedule/teacher-schedule.component').then(
         (m) => m.TeacherScheduleComponent,
+      ),
+  },
+  {
+    path: 'courses',
+    loadComponent: () =>
+      import('./courses/teacher-courses.component').then(
+        (m) => m.TeacherCoursesComponent,
       ),
   },
   {
@@ -34,13 +43,6 @@ export const TEACHER_ROUTES: Routes = [
     loadComponent: () =>
       import('./profile/teacher-profile.component').then(
         (m) => m.TeacherProfileComponent,
-      ),
-  },
-  {
-    path: 'courses',
-    loadComponent: () =>
-      import('./courses/teacher-courses.component').then(
-        (m) => m.TeacherCoursesComponent,
       ),
   },
 ];

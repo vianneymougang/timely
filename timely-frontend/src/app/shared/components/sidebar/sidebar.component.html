@@ -1,67 +1,109 @@
-<div class="w-64 bg-white shadow-lg flex flex-col h-screen sticky top-0">
-  <!-- Logo -->
-  <div class="p-6 border-b flex items-center gap-3">
-    <svg class="w-8 h-8 text-teal-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
-      />
-    </svg>
-    <span class="text-xl font-bold text-slate-800">Timely</span>
-    <!--<button (click)="toggleTheme()">
-      {{ currentTheme === 'dark' ? '☀️ Light' : '🌙 Dark' }}
-    </button>-->
+<aside class="flex flex-col w-64 min-h-[100dvh] bg-white border-r border-slate-200/80 sticky top-0 z-20">
+
+  <div class="flex items-center gap-2.5 px-6 py-5 border-b border-slate-100">
+    <div class="w-7 h-7 rounded-lg bg-accent-500 flex items-center justify-center flex-shrink-0">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="1" y="3" width="12" height="10" rx="1.5" stroke="white" stroke-width="1.5"/>
+        <path d="M4 1v2M10 1v2" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+        <path d="M1 6h12" stroke="white" stroke-width="1.5"/>
+        <rect x="3.5" y="8" width="2" height="2" rx="0.5" fill="white"/>
+        <rect x="6.5" y="8" width="2" height="2" rx="0.5" fill="white"/>
+      </svg>
+    </div>
+    <span class="font-sans font-bold text-lg text-gray-900 tracking-tight">Timely</span>
   </div>
 
-  <!-- Navigation -->
-  <nav class="flex-1 p-4 overflow-y-auto">
-    @for (item of menuItems; track item.route) {
-    <a
-      [routerLink]="item.route"
-      routerLinkActive="bg-teal-50 text-teal-700 font-medium"
-      class="flex items-center gap-3 w-full p-3 rounded-lg mb-1 transition-colors text-slate-600 hover:bg-slate-50"
-    >
-      <span class="material-icons text-xl">{{ item.icon }}</span>
-      <span>{{ item.label }}</span>
-    </a>
+  <nav class="flex-1 overflow-y-auto px-3 py-4 space-y-6">
+    @for (group of navGroups(); track group.label; let gi = $index) {
+      <div>
+        <p class="text-[10px] font-semibold uppercase tracking-[0.08em] text-gray-400 px-3 mb-1.5">
+          {{ group.label }}
+        </p>
+        @for (item of group.items; track item.route; let i = $index) {
+          <a [routerLink]="item.route"
+             class="relative flex items-center gap-3 py-2 px-3 rounded-lg mb-0.5 cursor-pointer group"
+             ngmMotion
+             [initial]="{ opacity: 0, x: -10 }"
+             [animate]="{ opacity: 1, x: 0 }"
+             [transition]="{ type: 'spring', stiffness: 400, damping: 28, delay: (gi * 0.05) + (i * 0.04) }">
+
+            @if (isActive(item.route)) {
+              <span ngmMotion
+                    [layoutId]="'nav-pill-' + role"
+                    class="absolute inset-0 rounded-lg bg-accent-50"
+                    [transition]="{ type: 'spring', stiffness: 300, damping: 26 }">
+              </span>
+            }
+
+            <ng-icon [name]="item.icon"
+                     class="relative z-10 flex-shrink-0 transition-colors"
+                     [class]="isActive(item.route)
+                       ? 'text-accent-600'
+                       : 'text-gray-400 group-hover:text-gray-600'"
+                     style="font-size: 1rem">
+            </ng-icon>
+
+            <span class="relative z-10 text-sm font-medium flex-1 transition-colors"
+                  [class]="isActive(item.route)
+                    ? 'text-accent-700'
+                    : 'text-gray-600 group-hover:text-gray-900'">
+              {{ item.label }}
+            </span>
+
+            @if (item.badge && item.badge > 0) {
+              <span class="relative z-10 ml-auto text-[10px] font-bold bg-red-500 text-white rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
+                {{ item.badge }}
+              </span>
+            }
+          </a>
+        }
+      </div>
     }
   </nav>
 
-  <!-- Logout -->
-  <div class="p-4 border-t">
-    <button
-      (click)="logout()"
-      class="flex items-center gap-3 text-slate-600 hover:text-slate-800 w-full p-2 rounded-lg hover:bg-slate-100 transition-colors"
-    >
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
-        />
-      </svg>
-      <span>Se déconnecter</span>
+  @if (role === 'admin') {
+    <div class="px-3 pb-1">
+      <a [routerLink]="settingsRoute()"
+         class="relative flex items-center gap-3 py-2 px-3 rounded-lg cursor-pointer group">
+        @if (isActive(settingsRoute())) {
+          <span ngmMotion
+                [layoutId]="'nav-pill-' + role"
+                class="absolute inset-0 rounded-lg bg-accent-50"
+                [transition]="{ type: 'spring', stiffness: 300, damping: 26 }">
+          </span>
+        }
+        <ng-icon name="phosphorGear"
+                 class="relative z-10 flex-shrink-0 transition-colors"
+                 [class]="isActive(settingsRoute())
+                   ? 'text-accent-600'
+                   : 'text-gray-400 group-hover:text-gray-600'"
+                 style="font-size: 1rem">
+        </ng-icon>
+        <span class="relative z-10 text-sm font-medium transition-colors"
+              [class]="isActive(settingsRoute())
+                ? 'text-accent-700'
+                : 'text-gray-600 group-hover:text-gray-900'">
+          Paramètres
+        </span>
+      </a>
+    </div>
+  }
+
+  <div class="border-t border-slate-100 p-4">
+    <div class="flex items-center gap-3 mb-3">
+      <div class="w-8 h-8 rounded-full bg-accent-100 flex items-center justify-center flex-shrink-0">
+        <span class="text-xs font-semibold text-accent-700 leading-none">{{ getUserInitials() }}</span>
+      </div>
+      <div class="flex-1 min-w-0">
+        <p class="text-sm font-semibold text-gray-900 truncate">{{ currentUser()?.name ?? '—' }}</p>
+        <p class="text-xs text-gray-400 truncate">{{ currentUser()?.email ?? '' }}</p>
+      </div>
+    </div>
+    <button (click)="logout()"
+            class="flex items-center gap-2.5 w-full py-2 px-3 rounded-lg text-gray-500 hover:text-red-600 hover:bg-red-50 transition-colors text-sm font-medium group">
+      <ng-icon name="phosphorSignOut" style="font-size: 1rem" class="group-hover:text-red-500 transition-colors"></ng-icon>
+      <span>Déconnexion</span>
     </button>
   </div>
 
-  <!-- User Profile -->
-  <div class="p-4 border-t bg-slate-50">
-    <div class="flex items-center gap-3">
-      <div class="w-12 h-12 bg-slate-300 rounded-full flex items-center justify-center">
-        <span class="text-slate-600 font-semibold text-lg">
-          @if (currentUser()) {
-          {{ getUserInitials(currentUser()!.name) }}
-          }
-        </span>
-      </div>
-      <div class="flex-1">
-        <p class="font-semibold text-slate-800 text-sm">{{ currentUser()?.role }}</p>
-        <p class="text-sm text-slate-600">{{ currentUser()?.name }}</p>
-        <p class="text-xs text-slate-500 truncate">{{ currentUser()?.email }}</p>
-      </div>
-    </div>
-  </div>
-</div>
+</aside>
