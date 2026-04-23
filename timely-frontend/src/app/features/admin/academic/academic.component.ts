@@ -1,6 +1,13 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  phosphorBuildings, phosphorPlus, phosphorPencil, phosphorTrash, phosphorX,
+  phosphorListDashes, phosphorGraduationCap,
+} from '@ng-icons/phosphor-icons/regular';
+import { NgmMotionDirective } from '@scripttype/ng-motion';
+import { FADE_UP, SPRING_DEFAULT, SPRING_SNAPPY } from '../../../core/animations/motion.variants';
 import { EcoleService } from '../../../core/services/ecole.service';
 import { FiliereService } from '../../../core/services/filiere.service';
 import { ClasseService } from '../../../core/services/classe.service';
@@ -25,11 +32,20 @@ export const CYCLE_TYPE_OPTIONS = [
 @Component({
   selector: 'app-academic',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, NgIcon, NgmMotionDirective],
+  providers: [
+    provideIcons({
+      phosphorBuildings, phosphorPlus, phosphorPencil, phosphorTrash, phosphorX,
+      phosphorListDashes, phosphorGraduationCap,
+    }),
+  ],
   templateUrl: './academic.component.html',
   styleUrls: ['./academic.component.scss']
 })
 export class AcademicComponent implements OnInit {
+  readonly FADE_UP = FADE_UP;
+  readonly SPRING_DEFAULT = SPRING_DEFAULT;
+  readonly SPRING_SNAPPY = SPRING_SNAPPY;
   private ecoleService = inject(EcoleService);
   private filiereService = inject(FiliereService);
   private classeService = inject(ClasseService);

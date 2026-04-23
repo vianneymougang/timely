@@ -1,6 +1,13 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  phosphorDesktop, phosphorPlus, phosphorPencil, phosphorTrash, phosphorX,
+  phosphorWrench,
+} from '@ng-icons/phosphor-icons/regular';
+import { NgmMotionDirective } from '@scripttype/ng-motion';
+import { FADE_UP, SPRING_DEFAULT, SPRING_SNAPPY } from '../../../core/animations/motion.variants';
 import { MaterielService } from '../../../core/services/materiel.service';
 import { EquipementService } from '../../../core/services/equipement.service';
 import {
@@ -15,11 +22,20 @@ import {
 @Component({
   selector: 'app-ressources',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, NgIcon, NgmMotionDirective],
+  providers: [
+    provideIcons({
+      phosphorDesktop, phosphorPlus, phosphorPencil, phosphorTrash, phosphorX,
+      phosphorWrench,
+    }),
+  ],
   templateUrl: './ressources.component.html',
   styleUrls: ['./ressources.component.scss']
 })
 export class RessourcesComponent implements OnInit {
+  readonly FADE_UP = FADE_UP;
+  readonly SPRING_DEFAULT = SPRING_DEFAULT;
+  readonly SPRING_SNAPPY = SPRING_SNAPPY;
   private materielService = inject(MaterielService);
   private equipementService = inject(EquipementService);
   private fb = inject(FormBuilder);

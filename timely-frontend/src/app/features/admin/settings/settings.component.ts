@@ -2,6 +2,13 @@ import { Component, inject, OnInit, OnDestroy, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  phosphorUser, phosphorLock, phosphorBuildings, phosphorBell, phosphorGear,
+  phosphorCheckCircle, phosphorWarningCircle, phosphorX, phosphorEye, phosphorEyeSlash,
+} from '@ng-icons/phosphor-icons/regular';
+import { NgmMotionDirective } from '@scripttype/ng-motion';
+import { FADE_UP, SPRING_DEFAULT, SPRING_SNAPPY } from '../../../core/animations/motion.variants';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserService, UpdateUserRequest } from '../../../core/services/user.service';
 import { EcoleService, EcoleDto } from '../../../core/services/ecole.service';
@@ -20,11 +27,21 @@ type NotifSettings = {
 @Component({
   selector: 'app-settings',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NgIcon, NgmMotionDirective],
+  providers: [
+    provideIcons({
+      phosphorUser, phosphorLock, phosphorBuildings, phosphorBell, phosphorGear,
+      phosphorCheckCircle, phosphorWarningCircle, phosphorX, phosphorEye, phosphorEyeSlash,
+    }),
+  ],
   templateUrl: './settings.component.html',
   styleUrl: './settings.component.scss',
 })
 export class SettingsComponent implements OnInit, OnDestroy {
+  readonly FADE_UP = FADE_UP;
+  readonly SPRING_DEFAULT = SPRING_DEFAULT;
+  readonly SPRING_SNAPPY = SPRING_SNAPPY;
+
   private authService  = inject(AuthService);
   private userService  = inject(UserService);
   private ecoleService = inject(EcoleService);
@@ -36,11 +53,11 @@ export class SettingsComponent implements OnInit, OnDestroy {
   activeTab = signal<SettingsTab>('profil');
 
   tabs: { id: SettingsTab; label: string; icon: string }[] = [
-    { id: 'profil',        label: 'Profil',        icon: 'person'         },
-    { id: 'securite',      label: 'Sécurité',      icon: 'lock'           },
-    { id: 'etablissement', label: 'Établissement', icon: 'school'         },
-    { id: 'notifications', label: 'Notifications', icon: 'notifications'  },
-    { id: 'systeme',       label: 'Système',        icon: 'settings'      },
+    { id: 'profil',        label: 'Profil',        icon: 'phosphorUser'      },
+    { id: 'securite',      label: 'Sécurité',      icon: 'phosphorLock'      },
+    { id: 'etablissement', label: 'Établissement', icon: 'phosphorBuildings' },
+    { id: 'notifications', label: 'Notifications', icon: 'phosphorBell'      },
+    { id: 'systeme',       label: 'Système',        icon: 'phosphorGear'     },
   ];
 
   // ── Toast ─────────────────────────────────────────────────────────────────

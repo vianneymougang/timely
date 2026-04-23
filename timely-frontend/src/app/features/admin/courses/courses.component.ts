@@ -1,6 +1,13 @@
 import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  phosphorBooks, phosphorPlus, phosphorPencil, phosphorTrash, phosphorX,
+  phosphorMagnifyingGlass, phosphorArrowClockwise, phosphorTag,
+} from '@ng-icons/phosphor-icons/regular';
+import { NgmMotionDirective } from '@scripttype/ng-motion';
+import { FADE_UP, SPRING_DEFAULT, SPRING_SNAPPY } from '../../../core/animations/motion.variants';
 import { CoursService } from '../../../core/services/cours.service';
 import { UEService } from '../../../core/services/ue.service';
 import { FiliereService } from '../../../core/services/filiere.service';
@@ -13,12 +20,22 @@ import { Teacher } from '../../../core/models/teacher.model';
 @Component({
   selector: 'app-courses-management',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, NgIcon, NgmMotionDirective],
+  providers: [
+    provideIcons({
+      phosphorBooks, phosphorPlus, phosphorPencil, phosphorTrash, phosphorX,
+      phosphorMagnifyingGlass, phosphorArrowClockwise, phosphorTag,
+    }),
+  ],
   templateUrl: './courses.component.html',
   styleUrls: ['./courses.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CoursesComponent implements OnInit {
+  readonly FADE_UP = FADE_UP;
+  readonly SPRING_DEFAULT = SPRING_DEFAULT;
+  readonly SPRING_SNAPPY = SPRING_SNAPPY;
+
   private coursService = inject(CoursService);
   private ueService = inject(UEService);
   private filiereService = inject(FiliereService);

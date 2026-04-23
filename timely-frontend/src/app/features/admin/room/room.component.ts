@@ -1,6 +1,13 @@
 import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  phosphorDoor, phosphorPlus, phosphorPencil, phosphorTrash, phosphorX,
+  phosphorMagnifyingGlass, phosphorSquaresFour, phosphorList,
+} from '@ng-icons/phosphor-icons/regular';
+import { NgmMotionDirective } from '@scripttype/ng-motion';
+import { FADE_UP, SPRING_DEFAULT, SPRING_SNAPPY } from '../../../core/animations/motion.variants';
 import { SalleService } from '../../../core/services/salle.service';
 import { MaterielService } from '../../../core/services/materiel.service';
 import { EquipementService } from '../../../core/services/equipement.service';
@@ -19,12 +26,22 @@ import { Materiel, Equipement } from '../../../core/models/resource.model';
 @Component({
   selector: 'app-room',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, NgIcon, NgmMotionDirective],
+  providers: [
+    provideIcons({
+      phosphorDoor, phosphorPlus, phosphorPencil, phosphorTrash, phosphorX,
+      phosphorMagnifyingGlass, phosphorSquaresFour, phosphorList,
+    }),
+  ],
   templateUrl: './room.component.html',
   styleUrls: ['./room.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RoomComponent implements OnInit {
+  readonly FADE_UP = FADE_UP;
+  readonly SPRING_DEFAULT = SPRING_DEFAULT;
+  readonly SPRING_SNAPPY = SPRING_SNAPPY;
+  viewMode = signal<'grid' | 'list'>('grid');
   private salleService = inject(SalleService);
   private materielService = inject(MaterielService);
   private equipementService = inject(EquipementService);

@@ -1,6 +1,14 @@
 import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  phosphorStudent, phosphorMagnifyingGlass, phosphorPlus, phosphorArrowClockwise,
+  phosphorPencil, phosphorTrash, phosphorX, phosphorUsers, phosphorFunnel,
+  phosphorUserCircle,
+} from '@ng-icons/phosphor-icons/regular';
+import { NgmMotionDirective } from '@scripttype/ng-motion';
+import { FADE_UP, SPRING_DEFAULT, SPRING_SNAPPY } from '../../../core/animations/motion.variants';
 import { EtudiantService } from '../../../core/services/etudiant.service';
 import { GroupeService } from '../../../core/services/groupe.service';
 import { ClasseService } from '../../../core/services/classe.service';
@@ -15,12 +23,23 @@ import {
 @Component({
   selector: 'app-etudiants',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, NgIcon, NgmMotionDirective],
+  providers: [
+    provideIcons({
+      phosphorStudent, phosphorMagnifyingGlass, phosphorPlus, phosphorArrowClockwise,
+      phosphorPencil, phosphorTrash, phosphorX, phosphorUsers, phosphorFunnel,
+      phosphorUserCircle,
+    }),
+  ],
   templateUrl: './etudiants.component.html',
   styleUrls: ['./etudiants.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class EtudiantsComponent implements OnInit {
+  readonly FADE_UP = FADE_UP;
+  readonly SPRING_DEFAULT = SPRING_DEFAULT;
+  readonly SPRING_SNAPPY = SPRING_SNAPPY;
+
   private etudiantService = inject(EtudiantService);
   private groupeService = inject(GroupeService);
   private classeService = inject(ClasseService);
