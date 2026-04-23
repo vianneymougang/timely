@@ -1,5 +1,5 @@
 import { Component, computed, inject, OnDestroy, OnInit, signal } from '@angular/core';
-import { CommonModule, DatePipe } from '@angular/common';
+import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
@@ -47,7 +47,7 @@ const TYPE_META: Record<ReportType, { label: string; icon: string; color: string
 @Component({
   selector: 'app-analytics',
   standalone: true,
-  imports: [CommonModule, DatePipe, NgIcon, NgmMotionDirective],
+  imports: [CommonModule, NgIcon, NgmMotionDirective],
   providers: [
     provideIcons({
       phosphorChartBar, phosphorChartLine, phosphorFileText, phosphorFilePdf,

@@ -130,37 +130,37 @@
           </div>
           <div>
             <p class="text-sm font-semibold text-gray-900">Génération terminée</p>
-            <p class="text-xs text-gray-400">{{ generationResult()!.generatedSchedules?.length || 0 }} emplois du temps générés</p>
+            <p class="text-xs text-gray-400">{{ generationResult()!.schoolResults.length }} emplois du temps générés</p>
           </div>
         </div>
 
         <div class="grid grid-cols-3 gap-3 mb-5">
           <div class="text-center p-3 bg-gray-50 rounded-xl">
-            <p class="text-2xl font-bold font-mono text-gray-900">{{ generationResult()!.generatedSchedules?.length || 0 }}</p>
-            <p class="text-xs text-gray-500 mt-0.5">Emplois générés</p>
+            <p class="text-2xl font-bold font-mono text-gray-900">{{ generationResult()!.totalScheduled }}</p>
+            <p class="text-xs text-gray-500 mt-0.5">Cours planifiés</p>
           </div>
           <div class="text-center p-3 bg-gray-50 rounded-xl">
-            <p class="text-2xl font-bold font-mono" [class]="getSuccessRateClass(generationResult()!.globalSuccessRate || 0)">
-              {{ generationResult()!.globalSuccessRate || 0 }}%
+            <p class="text-2xl font-bold font-mono" [class]="getSuccessRateClass(generationResult()!.overallSuccessRate)">
+              {{ generationResult()!.overallSuccessRate }}%
             </p>
             <p class="text-xs text-gray-500 mt-0.5">Taux de succès</p>
           </div>
           <div class="text-center p-3 bg-gray-50 rounded-xl">
-            <p class="text-2xl font-bold font-mono text-gray-900">{{ formatDuration(generationResult()!.generationDurationMs || 0) }}</p>
+            <p class="text-2xl font-bold font-mono text-gray-900">{{ formatDuration(generationResult()!.generationDurationMs) }}</p>
             <p class="text-xs text-gray-500 mt-0.5">Durée</p>
           </div>
         </div>
 
-        @if (generationResult()!.generatedSchedules?.length) {
+        @if (generationResult()!.schoolResults.length) {
           <div class="space-y-2 mb-5">
-            @for (schedule of generationResult()!.generatedSchedules!; track schedule.emploiDuTempsId) {
-              <button (click)="viewSchedule(schedule.emploiDuTempsId)"
+            @for (school of generationResult()!.schoolResults; track school.emploiDuTempsId) {
+              <button (click)="viewSchedule(school.emploiDuTempsId)"
                       ngmMotion
                       [whileTap]="{ scale: 0.99 }"
                       class="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-gray-100 hover:border-accent-200 hover:bg-accent-50/30 transition-all text-left group">
                 <div>
-                  <p class="text-sm font-medium text-gray-800">{{ schedule.ecoleName || schedule.ecoleId }}</p>
-                  <p class="text-xs text-gray-400">{{ schedule.assignedCours || 0 }} cours planifiés</p>
+                  <p class="text-sm font-medium text-gray-800">{{ school.ecoleNom || school.ecoleId }}</p>
+                  <p class="text-xs text-gray-400">{{ school.coursesScheduled }} cours planifiés</p>
                 </div>
                 <ng-icon name="phosphorArrowRight" class="text-gray-300 group-hover:text-accent-400 transition-colors" style="font-size: 0.9rem"></ng-icon>
               </button>
