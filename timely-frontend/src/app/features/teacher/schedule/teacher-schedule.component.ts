@@ -3,6 +3,13 @@ import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
 import { catchError, finalize } from 'rxjs/operators';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  phosphorCaretLeft, phosphorCaretRight, phosphorCalendarBlank,
+  phosphorWarningCircle, phosphorArrowClockwise,
+} from '@ng-icons/phosphor-icons/regular';
+import { NgmMotionDirective } from '@scripttype/ng-motion';
+import { FADE_UP, SPRING_DEFAULT } from '../../../core/animations/motion.variants';
 import { CreneauResponse } from '../../../core/models/planning.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { PlanningService } from '../../../core/services/planning.service';
@@ -11,11 +18,20 @@ import { ScheduleGridComponent } from '../../../shared/components/schedule-grid/
 @Component({
   selector: 'app-teacher-schedule',
   standalone: true,
-  imports: [CommonModule, ScheduleGridComponent],
+  imports: [CommonModule, NgIcon, NgmMotionDirective, ScheduleGridComponent],
+  providers: [
+    provideIcons({
+      phosphorCaretLeft, phosphorCaretRight, phosphorCalendarBlank,
+      phosphorWarningCircle, phosphorArrowClockwise,
+    }),
+  ],
   templateUrl: './teacher-schedule.component.html',
   styleUrl: './teacher-schedule.component.scss',
 })
 export class TeacherScheduleComponent implements OnInit {
+  readonly FADE_UP = FADE_UP;
+  readonly SPRING_DEFAULT = SPRING_DEFAULT;
+
   private planningService = inject(PlanningService);
   private authService = inject(AuthService);
   private router = inject(Router);
@@ -63,10 +79,8 @@ export class TeacherScheduleComponent implements OnInit {
       .getCreneauxByEnseignant(user.id, weekStart)
       .pipe(
         catchError((error) => {
-          console.error("Erreur lors du chargement de l'emploi du temps:", error);
           this.errorMessage.set(
-            error.error?.message ||
-              'Impossible de charger votre emploi du temps pour cette semaine.',
+            error.error?.message ?? 'Impossible de charger votre emploi du temps.',
           );
           return of([]);
         }),

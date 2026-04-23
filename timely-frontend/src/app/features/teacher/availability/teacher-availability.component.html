@@ -1,13 +1,10 @@
-<main class="flex-1 p-8 overflow-y-auto bg-[#FBFBFA]" (mouseup)="onMouseUp()" (mouseleave)="onMouseUp()">
+<div class="flex-1 space-y-5 min-h-0" (mouseup)="onMouseUp()" (mouseleave)="onMouseUp()">
 
-  <!-- Header -->
-  <header class="mb-8">
-    <p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#787774] mb-2">Planification</p>
-    <h1 class="text-2xl font-semibold text-[#111111] tracking-tight leading-snug">Mes disponibilités</h1>
-    <p class="mt-1 text-sm text-[#787774] leading-relaxed">
-      Définissez votre template récurrent et ajustez les exceptions par semaine.
-    </p>
-  </header>
+  <div>
+    <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.15em] mb-0.5">Espace enseignant</p>
+    <h1 class="font-display text-2xl font-semibold text-gray-900 tracking-tight">Mes disponibilités</h1>
+    <p class="text-xs text-gray-400 mt-0.5">Définissez votre template récurrent et ajustez les exceptions par semaine.</p>
+  </div>
 
   <!-- Tabs — underline style -->
   <div class="border-b border-[#EAEAEA] mb-7 flex">
@@ -349,4 +346,4 @@
     </div>
   }
 
-</main>
+</div>
