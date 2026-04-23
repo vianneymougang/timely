@@ -18,6 +18,7 @@ import com.timely.userservice.dto.AvailabilityRequestDto;
 import com.timely.userservice.dto.AvailabilityResponseDto;
 import com.timely.userservice.dto.AvailabilitySlotDto;
 import com.timely.userservice.dto.TeacherAvailabilitySummaryDto;
+import com.timely.userservice.dto.WeeklyOverridesRequest;
 import com.timely.userservice.exception.ResourceNotFoundException;
 import com.timely.userservice.mapper.AvailabilityMapper;
 import com.timely.userservice.model.AvailabilityTimeSlot;
@@ -218,6 +219,37 @@ public class AvailabilityServiceImpl implements AvailabilityService {
         }
 
         return effective;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AvailabilityResponseDto getEffectiveAvailabilityResponse(UUID teacherId, LocalDate weekStart) {
+        User teacher = userRepository.findById(teacherId)
+                .orElseThrow(() -> new ResourceNotFoundException("Teacher not found with id: " + teacherId));
+        String teacherName = teacher.getName() + " " + teacher.getSurname();
+        List<AvailabilitySlotDto> slots = getEffectiveAvailability(teacherId, weekStart);
+        return AvailabilityMapper.fromSlots(teacherId, teacherName, slots);
+    }
+
+    @Override
+    @Transactional
+    public void saveWeeklyOverrides(UUID teacherId, WeeklyOverridesRequest request) {
+        overrideRepository.deleteByTeacherIdAndWeekStart(teacherId, request.getWeekStart());
+        if (request.getOverrides() != null && !request.getOverrides().isEmpty()) {
+            List<TeacherWeeklyOverride> entities = request.getOverrides().stream()
+                    .map(item -> {
+                        TeacherWeeklyOverride override = new TeacherWeeklyOverride();
+                        override.setTeacherId(teacherId);
+                        override.setWeekStart(request.getWeekStart());
+                        override.setDayOfWeek(item.getDayOfWeek());
+                        override.setHourStart(item.getHourStart());
+                        override.setHourEnd(item.getHourEnd());
+                        override.setOverrideType(item.getOverrideType());
+                        return override;
+                    })
+                    .collect(Collectors.toList());
+            overrideRepository.saveAll(entities);
+        }
     }
 
     private DayOfWeek convertToDayOfWeek(String dayName) {
