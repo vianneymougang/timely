@@ -68,7 +68,6 @@ export class AuthService {
       }),
       catchError((error) => {
         console.error('Token refresh error:', error);
-        this.logout();
         return throwError(() => error);
       }),
       finalize(() => {
@@ -144,28 +143,18 @@ export class AuthService {
   logout(): void {
     const refreshToken = this.getRefreshToken();
 
-    const clearSessionAndNavigate = () => {
-      // Clear local storage
-      localStorage.removeItem(this.ACCESS_TOKEN_KEY);
-      localStorage.removeItem(this.REFRESH_TOKEN_KEY);
-      localStorage.removeItem(this.USER_KEY);
+    localStorage.removeItem(this.ACCESS_TOKEN_KEY);
+    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
+    localStorage.removeItem(this.USER_KEY);
 
-      this.currentUser.set(null);
-      this.isAuthenticated.set(false);
-      this.router.navigate(['/auth/login']);
-    };
+    this.currentUser.set(null);
+    this.isAuthenticated.set(false);
+    this.router.navigate(['/auth/login']);
 
-    // Call backend logout endpoint if refresh token exists
     if (refreshToken) {
       this.http.post(`${this.AUTH_API}/logout`, { refreshToken }).subscribe({
-        next: () => clearSessionAndNavigate(),
-        error: (error) => {
-          console.error('Logout error:', error);
-          clearSessionAndNavigate();
-        }
+        error: (error) => console.error('Logout error:', error),
       });
-    } else {
-      clearSessionAndNavigate();
     }
   }
 

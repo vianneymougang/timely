@@ -6,15 +6,13 @@ import { catchError, switchMap, throwError } from 'rxjs';
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
 
-  // Skip adding token for public endpoints
-  const publicEndpoints = ['/api/auth/login', '/api/auth/refresh'];
+  const publicEndpoints = ['/api/auth/login', '/api/auth/refresh', '/api/auth/logout'];
   const isPublicEndpoint = publicEndpoints.some((endpoint) => req.url.includes(endpoint));
 
   if (isPublicEndpoint) {
     return next(req);
   }
 
-  // Add access token to request
   const token = authService.getAccessToken();
 
   if (token) {
