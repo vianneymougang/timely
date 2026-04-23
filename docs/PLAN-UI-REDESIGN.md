@@ -2,7 +2,40 @@
 
 > **Objectif** : Refonte premium complète du frontend — visuelle ET structurelle. Navigation repensée, pages manquantes implémentées, expérience utilisateur cohérente de bout en bout.
 > **Branche** : `feature/ui-redesign`
-> **Stack** : Angular 20.2 · Tailwind v3.4 · PrimeNG · ngMotion 0.5.0 · Phosphor Icons
+> **Stack** : Angular 20.2 · Tailwind v3.4 · PrimeNG v21 · @ng-icons/phosphor-icons · @scripttype/ng-motion 0.5.0
+
+---
+
+## Consignes d'Implémentation
+
+### Workflow obligatoire avant chaque sprint
+
+**Avant d'écrire la moindre ligne de code ou de config pour une librairie :**
+
+1. **Consulter la documentation officielle** avec `ctx7` :
+   ```bash
+   ctx7 library "<nom librairie>"          # résoudre l'ID
+   ctx7 docs <libraryId> "<sujet précis>"  # lire la doc
+   ```
+2. **Rechercher si ctx7 ne couvre pas** la librairie avec `ddgr` :
+   ```bash
+   ddgr --np "<package> <feature> site:github.com OR site:npmjs.com"
+   ```
+3. **Charger les skills de design frontend** en début de session (tous sauf `frontend-design`) :
+   - `ng-motion:ng-motion`
+   - `high-end-visual-design`
+   - `minimalist-ui`
+   - `design-taste-frontend`
+   - `redesign-existing-projects`
+   - `stitch-design-taste`
+   - `industrial-brutalist-ui`
+
+### Rappels techniques Sprint 0 (vérifiés via docs)
+
+- `withMotionTransitions` **n'existe pas** dans `@scripttype/ng-motion` v0.5.0 → utiliser `withViewTransitions()` depuis `@angular/router`
+- Les tokens PrimeNG sont **imbriqués** : `card.root.borderRadius`, `button.root.borderRadius`, `inputtext.root.paddingX`, etc. — jamais à plat
+- `@ng-icons/phosphor-icons` : icons importés **par composant** via `provideIcons({...})` dans le tableau `providers` du `@Component`, `NgIcon` dans `imports`
+- `provideNgIconsConfig({ size: '1.25rem' })` dans `app.config.ts` pour la taille globale
 
 ---
 
