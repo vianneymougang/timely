@@ -462,6 +462,7 @@ services:
       - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
       - EUREKA_INSTANCE_HOSTNAME=user-service
       - EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
+      - JWT_SECRET=${JWT_SECRET}
     restart: unless-stopped
     deploy:
       resources:
@@ -506,6 +507,7 @@ services:
       - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
       - EUREKA_INSTANCE_HOSTNAME=planning-service
       - EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
+      - JWT_SECRET=${JWT_SECRET}
     restart: unless-stopped
     deploy:
       resources:
@@ -550,6 +552,7 @@ services:
       - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
       - EUREKA_INSTANCE_HOSTNAME=booking-service
       - EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
+      - JWT_SECRET=${JWT_SECRET}
     restart: unless-stopped
     deploy:
       resources:
