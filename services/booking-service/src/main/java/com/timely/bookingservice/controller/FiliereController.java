@@ -30,37 +30,37 @@ public class FiliereController {
     private final FiliereService filiereService;
 
     @PostMapping("/filieres")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<FiliereResponse> create(@Valid @RequestBody FiliereRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(filiereService.create(request));
     }
 
     @GetMapping("/filieres")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<List<FiliereResponse>> getAll() {
         return ResponseEntity.ok(filiereService.getAll());
     }
 
     @GetMapping("/filieres/{id}")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<FiliereResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(filiereService.getById(id));
     }
 
     @GetMapping("/ecoles/{ecoleId}/filieres")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<List<FiliereResponse>> getByEcoleId(@PathVariable UUID ecoleId) {
         return ResponseEntity.ok(filiereService.getByEcoleId(ecoleId));
     }
 
     @PutMapping("/filieres/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<FiliereResponse> update(@PathVariable UUID id, @Valid @RequestBody FiliereRequest request) {
         return ResponseEntity.ok(filiereService.update(id, request));
     }
 
     @DeleteMapping("/filieres/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         filiereService.delete(id);
         return ResponseEntity.noContent().build();

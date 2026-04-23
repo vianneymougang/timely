@@ -36,13 +36,13 @@ public class ReservationController {
     private final SalleAssignmentService salleAssignmentService;
 
     @PostMapping("/reservations")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ReservationResponse> create(@Valid @RequestBody ReservationRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(reservationService.create(request));
     }
 
     @GetMapping("/reservations")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<Page<ReservationResponse>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
@@ -50,13 +50,13 @@ public class ReservationController {
     }
 
     @GetMapping("/reservations/{id}")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<ReservationResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(reservationService.getById(id));
     }
 
     @GetMapping("/salles/{salleId}/reservations")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<Page<ReservationResponse>> getBySalleId(
             @PathVariable UUID salleId,
             @RequestParam(defaultValue = "0") int page,
@@ -65,13 +65,13 @@ public class ReservationController {
     }
 
     @PutMapping("/reservations/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ReservationResponse> update(@PathVariable UUID id, @Valid @RequestBody ReservationRequest request) {
         return ResponseEntity.ok(reservationService.update(id, request));
     }
 
     @DeleteMapping("/reservations/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         reservationService.delete(id);
         return ResponseEntity.noContent().build();
@@ -82,7 +82,7 @@ public class ReservationController {
      * Uses progressive filtering: availability -> type -> capacity -> equipment.
      */
     @PostMapping("/reservations/auto-assign")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<SalleResponse> autoAssignSalle(@Valid @RequestBody AutoAssignSalleRequest request) {
         SalleResponse optimalSalle = salleAssignmentService.findOptimalSalle(request);
         return ResponseEntity.ok(optimalSalle);

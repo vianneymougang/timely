@@ -32,13 +32,13 @@ public class EtudiantController {
     private final EtudiantService etudiantService;
 
     @PostMapping("/etudiants")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EtudiantResponse> create(@Valid @RequestBody EtudiantRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(etudiantService.create(request));
     }
 
     @GetMapping("/etudiants")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<EtudiantResponse>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
@@ -46,13 +46,13 @@ public class EtudiantController {
     }
 
     @GetMapping("/etudiants/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EtudiantResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(etudiantService.getById(id));
     }
 
     @GetMapping("/classes/{classeId}/etudiants")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<Page<EtudiantResponse>> getByClasseId(
             @PathVariable UUID classeId,
             @RequestParam(defaultValue = "0") int page,
@@ -61,13 +61,13 @@ public class EtudiantController {
     }
 
     @PutMapping("/etudiants/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EtudiantResponse> update(@PathVariable UUID id, @Valid @RequestBody EtudiantRequest request) {
         return ResponseEntity.ok(etudiantService.update(id, request));
     }
 
     @DeleteMapping("/etudiants/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         etudiantService.delete(id);
         return ResponseEntity.noContent().build();

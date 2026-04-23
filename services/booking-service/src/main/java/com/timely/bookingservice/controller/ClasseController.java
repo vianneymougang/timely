@@ -30,37 +30,37 @@ public class ClasseController {
     private final ClasseService classeService;
 
     @PostMapping("/classes")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ClasseResponse> create(@Valid @RequestBody ClasseRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(classeService.create(request));
     }
 
     @GetMapping("/classes")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<List<ClasseResponse>> getAll() {
         return ResponseEntity.ok(classeService.getAll());
     }
 
     @GetMapping("/classes/{id}")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<ClasseResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(classeService.getById(id));
     }
 
     @GetMapping("/filieres/{filiereId}/classes")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<List<ClasseResponse>> getByFiliereId(@PathVariable UUID filiereId) {
         return ResponseEntity.ok(classeService.getByFiliereId(filiereId));
     }
 
     @PutMapping("/classes/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<ClasseResponse> update(@PathVariable UUID id, @Valid @RequestBody ClasseRequest request) {
         return ResponseEntity.ok(classeService.update(id, request));
     }
 
     @DeleteMapping("/classes/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         classeService.delete(id);
         return ResponseEntity.noContent().build();

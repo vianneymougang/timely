@@ -36,13 +36,13 @@ public class CoursController {
     private final GroupeEtudiantService groupeEtudiantService;
 
     @PostMapping("/cours")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CoursResponse> create(@Valid @RequestBody CoursRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(coursService.create(request));
     }
 
     @GetMapping("/cours")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<Page<CoursResponse>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
@@ -50,13 +50,13 @@ public class CoursController {
     }
 
     @GetMapping("/cours/{id}")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<CoursResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(coursService.getById(id));
     }
 
     @GetMapping("/ues/{ueId}/cours")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<Page<CoursResponse>> getByUeId(
             @PathVariable UUID ueId,
             @RequestParam(defaultValue = "0") int page,
@@ -65,7 +65,7 @@ public class CoursController {
     }
 
     @GetMapping("/classes/{classeId}/cours")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<Page<CoursResponse>> getByClasseId(
             @PathVariable UUID classeId,
             @RequestParam(defaultValue = "0") int page,
@@ -74,7 +74,7 @@ public class CoursController {
     }
 
     @GetMapping("/cours/enseignant/{enseignantId}")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<Page<CoursResponse>> getByEnseignantId(
             @PathVariable UUID enseignantId,
             @RequestParam(defaultValue = "0") int page,
@@ -83,13 +83,13 @@ public class CoursController {
     }
 
     @PutMapping("/cours/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<CoursResponse> update(@PathVariable UUID id, @Valid @RequestBody CoursRequest request) {
         return ResponseEntity.ok(coursService.update(id, request));
     }
 
     @DeleteMapping("/cours/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         coursService.delete(id);
         return ResponseEntity.noContent().build();
@@ -103,7 +103,7 @@ public class CoursController {
      * - TP: 3 groups (or custom via request)
      */
     @PostMapping("/cours/{id}/groupes/generate")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<GenerateGroupesResponse> generateGroupes(
             @PathVariable UUID id,
             @RequestBody(required = false) GenerateGroupesRequest request) {

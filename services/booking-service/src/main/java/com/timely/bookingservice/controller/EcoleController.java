@@ -30,31 +30,31 @@ public class EcoleController {
     private final EcoleService ecoleService;
 
     @PostMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EcoleResponse> create(@Valid @RequestBody EcoleRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(ecoleService.create(request));
     }
 
     @GetMapping
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<List<EcoleResponse>> getAll() {
         return ResponseEntity.ok(ecoleService.getAll());
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<EcoleResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ecoleService.getById(id));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EcoleResponse> update(@PathVariable UUID id, @Valid @RequestBody EcoleRequest request) {
         return ResponseEntity.ok(ecoleService.update(id, request));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         ecoleService.delete(id);
         return ResponseEntity.noContent().build();
