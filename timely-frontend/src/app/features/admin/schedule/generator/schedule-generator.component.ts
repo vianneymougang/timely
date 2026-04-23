@@ -94,7 +94,7 @@ export class ScheduleGeneratorComponent {
   }
 
   viewSchedule(emploiDuTempsId: string): void {
-    this.router.navigate(['/admin/schedule/viewer', emploiDuTempsId]);
+    this.router.navigate(['/admin/schedule/view', emploiDuTempsId]);
   }
 
   resetForm(): void {

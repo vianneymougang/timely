@@ -141,7 +141,7 @@ export class ScheduleListComponent implements OnInit {
   }
 
   viewSchedule(id: string): void {
-    this.router.navigate(['/admin/schedule/viewer', id]);
+    this.router.navigate(['/admin/schedule/view', id]);
   }
 
   deleteSchedule(id: string, event: Event): void {
