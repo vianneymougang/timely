@@ -4,6 +4,19 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
 import { catchError, finalize } from 'rxjs/operators';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  phosphorCalendarDots,
+  phosphorArrowRight,
+  phosphorTrash,
+  phosphorMagnifyingGlass,
+  phosphorArrowClockwise,
+  phosphorWarningCircle,
+  phosphorCaretLeft,
+  phosphorCaretRight,
+} from '@ng-icons/phosphor-icons/regular';
+import { NgmMotionDirective } from '@scripttype/ng-motion';
+import { FADE_UP, SPRING_DEFAULT } from '../../../../core/animations/motion.variants';
 import {
   EmploiDuTempsResponse,
   SearchPlanningRequest,
@@ -16,11 +29,20 @@ import { PlanningService } from '../../../../core/services/planning.service';
 @Component({
   selector: 'app-schedule-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NgIcon, NgmMotionDirective],
+  providers: [
+    provideIcons({
+      phosphorCalendarDots, phosphorArrowRight, phosphorTrash,
+      phosphorMagnifyingGlass, phosphorArrowClockwise, phosphorWarningCircle,
+      phosphorCaretLeft, phosphorCaretRight,
+    }),
+  ],
   templateUrl: './schedule-list.component.html',
   styleUrl: './schedule-list.component.scss',
 })
 export class ScheduleListComponent implements OnInit {
+  readonly FADE_UP = FADE_UP;
+  readonly SPRING_DEFAULT = SPRING_DEFAULT;
   private planningService = inject(PlanningService);
   private router = inject(Router);
   private ecoleService = inject(EcoleService);

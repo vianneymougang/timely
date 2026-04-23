@@ -4,6 +4,19 @@ import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angula
 import { Router } from '@angular/router';
 import { of } from 'rxjs';
 import { catchError, finalize } from 'rxjs/operators';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  phosphorCalendarDots,
+  phosphorLightning,
+  phosphorCheckCircle,
+  phosphorArrowRight,
+  phosphorArrowCounterClockwise,
+  phosphorWarningCircle,
+  phosphorInfo,
+  phosphorEye,
+} from '@ng-icons/phosphor-icons/regular';
+import { NgmMotionDirective } from '@scripttype/ng-motion';
+import { FADE_UP, SCALE_IN, SPRING_DEFAULT } from '../../../../core/animations/motion.variants';
 import {
   CampusGenerationRequest,
   CampusGenerationResponse,
@@ -13,11 +26,21 @@ import { PlanningService } from '../../../../core/services/planning.service';
 @Component({
   selector: 'app-schedule-generator',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, NgIcon, NgmMotionDirective],
+  providers: [
+    provideIcons({
+      phosphorCalendarDots, phosphorLightning, phosphorCheckCircle,
+      phosphorArrowRight, phosphorArrowCounterClockwise,
+      phosphorWarningCircle, phosphorInfo, phosphorEye,
+    }),
+  ],
   templateUrl: './schedule-generator.component.html',
   styleUrl: './schedule-generator.component.scss',
 })
 export class ScheduleGeneratorComponent {
+  readonly FADE_UP = FADE_UP;
+  readonly SCALE_IN = SCALE_IN;
+  readonly SPRING_DEFAULT = SPRING_DEFAULT;
   private fb = inject(FormBuilder);
   private planningService = inject(PlanningService);
   private router = inject(Router);
