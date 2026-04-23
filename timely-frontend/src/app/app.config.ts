@@ -3,6 +3,7 @@ import { provideRouter } from '@angular/router';
 import { provideHttpClient, withInterceptors } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { withViewTransitions } from '@angular/router';
+import { provideNgIconsConfig } from '@ng-icons/core';
 import { providePrimeNG } from 'primeng/config';
 import { provideMotionConfig, provideMotionFeatures, ngmAllFeatures } from '@scripttype/ng-motion';
 import { routes } from './app.routes';
@@ -15,6 +16,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, withViewTransitions()),
     provideHttpClient(withInterceptors([authInterceptor])),
     provideAnimationsAsync(),
+    provideNgIconsConfig({ size: '1.25rem' }),
     providePrimeNG({
       theme: {
         preset: TimelyPreset,
