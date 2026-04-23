@@ -17,10 +17,12 @@
    ctx7 library "<nom librairie>"          # résoudre l'ID
    ctx7 docs <libraryId> "<sujet précis>"  # lire la doc
    ```
-2. **Rechercher si ctx7 ne couvre pas** la librairie avec `ddgr` :
+2. **Rechercher si ctx7 ne couvre pas** la librairie avec `ddgr`, ou fetcher la doc directement :
    ```bash
    ddgr --np "<package> <feature> site:github.com OR site:npmjs.com"
+   curl -s "https://raw.githubusercontent.com/<org>/<repo>/main/docs/<page>.md"
    ```
+   - **ng-motion** : doc officielle sur `https://ng-motion.dev/docs/` — sources brutes sur `https://raw.githubusercontent.com/ScriptType/ng-motion/main/docs/`
 3. **Charger les skills de design frontend** en début de session (tous sauf `frontend-design`) :
    - `ng-motion:ng-motion`
    - `high-end-visual-design`
@@ -30,12 +32,24 @@
    - `stitch-design-taste`
    - `industrial-brutalist-ui`
 
-### Rappels techniques Sprint 0 (vérifiés via docs)
+### Rappels techniques Sprint 0 (vérifiés via docs officielles)
 
-- `withMotionTransitions` **n'existe pas** dans `@scripttype/ng-motion` v0.5.0 → utiliser `withViewTransitions()` depuis `@angular/router`
-- Les tokens PrimeNG sont **imbriqués** : `card.root.borderRadius`, `button.root.borderRadius`, `inputtext.root.paddingX`, etc. — jamais à plat
-- `@ng-icons/phosphor-icons` : icons importés **par composant** via `provideIcons({...})` dans le tableau `providers` du `@Component`, `NgIcon` dans `imports`
+**@scripttype/ng-motion v0.5.0** ([API ref](https://raw.githubusercontent.com/ScriptType/ng-motion/main/docs/api-reference.md)) :
+- `withMotionTransitions` **n'existe pas** — absent de l'API officielle → utiliser `withViewTransitions()` depuis `@angular/router`
+- `provideMotionConfig(config)` : defaults globaux (transition, reducedMotion)
+- `provideMotionFeatures(bundle)` + `ngmAllFeatures` : chargement des features (gestures, drag, layout…)
+- `motion-dom` et `motion-utils` sont des peer dependencies — bien présents en tant que dépendances transitives
+- Directive : `NgmMotionDirective` importée dans `imports[]` du composant
+- `NgmPresenceDirective` pour les animations d'entrée/sortie avec `*ngmPresence`
+
+**PrimeNG v21 / @primeuix/themes** :
+- Tokens **toujours imbriqués** : `card.root.borderRadius`, `button.root.borderRadius`, `inputtext.root.paddingX`
+- Couleurs sous `colorScheme.light.root` (pas à plat)
+
+**@ng-icons/core + @ng-icons/phosphor-icons** :
+- Icons importés **par composant** : `provideIcons({phosphorHouse, ...})` dans `providers[]`, `NgIcon` dans `imports[]`
 - `provideNgIconsConfig({ size: '1.25rem' })` dans `app.config.ts` pour la taille globale
+- Nommage : `phosphor` + PascalCase (ex: `phosphorWarning`, `phosphorCalendar`)
 
 ---
 
