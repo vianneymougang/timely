@@ -1,0 +1,265 @@
+<div class="flex-1 p-6 space-y-5 min-h-0">
+
+  <div class="flex items-start justify-between"
+       ngmMotion
+       [initial]="'hidden'"
+       [animate]="'visible'"
+       [variants]="FADE_UP"
+       [transition]="SPRING_DEFAULT">
+    <div>
+      <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.15em] mb-0.5">Planification</p>
+      <h1 class="font-display text-2xl font-semibold text-gray-900 tracking-tight">Conflits actifs</h1>
+    </div>
+
+    <div class="flex items-center gap-2">
+      <div class="flex items-center gap-1.5 px-3 py-2 bg-white rounded-xl border border-gray-200 shadow-[0_1px_4px_rgba(17,24,39,0.06)]">
+        <ng-icon name="phosphorFunnel" class="text-gray-400" style="font-size: 0.85rem"></ng-icon>
+        <span class="text-xs font-medium text-gray-500">Filtres</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="flex flex-wrap gap-3"
+       ngmMotion
+       [initial]="'hidden'"
+       [animate]="'visible'"
+       [variants]="FADE_UP"
+       [transition]="{ type: 'spring', stiffness: 280, damping: 24, delay: 0.06 }">
+
+    <div class="flex items-center gap-2 bg-white rounded-xl border border-gray-100 p-1 shadow-[0_1px_4px_rgba(17,24,39,0.05)]">
+      <button (click)="setSeverityFilter(null)"
+              [class]="!filterSeverity()
+                ? 'bg-gray-900 text-white px-3 py-1.5 rounded-lg text-xs font-semibold'
+                : 'text-gray-500 px-3 py-1.5 rounded-lg text-xs font-medium hover:text-gray-700 transition-colors'">
+        Tous ({{ stats().total }})
+      </button>
+      <button (click)="setSeverityFilter('CRITICAL')"
+              [class]="filterSeverity() === 'CRITICAL'
+                ? 'bg-red-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold'
+                : 'text-red-600 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-red-50 transition-colors'">
+        Critique ({{ stats().critical }})
+      </button>
+      <button (click)="setSeverityFilter('HIGH')"
+              [class]="filterSeverity() === 'HIGH'
+                ? 'bg-amber-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold'
+                : 'text-amber-600 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-amber-50 transition-colors'">
+        Élevé
+      </button>
+      <button (click)="setSeverityFilter('MEDIUM')"
+              [class]="filterSeverity() === 'MEDIUM'
+                ? 'bg-blue-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold'
+                : 'text-blue-600 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-blue-50 transition-colors'">
+        Modéré
+      </button>
+    </div>
+
+    <div class="flex items-center gap-2 bg-white rounded-xl border border-gray-100 p-1 shadow-[0_1px_4px_rgba(17,24,39,0.05)]">
+      <button (click)="setStatusFilter('OPEN')"
+              [class]="filterStatus() === 'OPEN'
+                ? 'bg-gray-900 text-white px-3 py-1.5 rounded-lg text-xs font-semibold'
+                : 'text-gray-500 px-3 py-1.5 rounded-lg text-xs font-medium hover:text-gray-700 transition-colors'">
+        Ouverts ({{ stats().open }})
+      </button>
+      <button (click)="setStatusFilter('RESOLVED')"
+              [class]="filterStatus() === 'RESOLVED'
+                ? 'bg-green-500 text-white px-3 py-1.5 rounded-lg text-xs font-semibold'
+                : 'text-green-600 px-3 py-1.5 rounded-lg text-xs font-medium hover:bg-green-50 transition-colors'">
+        Résolus ({{ stats().resolved }})
+      </button>
+    </div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+
+    <div class="lg:col-span-2 space-y-3">
+      @if (filteredConflicts().length === 0) {
+        <div class="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-dashed border-gray-200"
+             ngmMotion
+             [initial]="{ opacity: 0, scale: 0.96 }"
+             [animate]="{ opacity: 1, scale: 1 }"
+             [transition]="SPRING_DEFAULT">
+          <div class="w-12 h-12 rounded-2xl bg-green-50 flex items-center justify-center mb-3">
+            <ng-icon name="phosphorCheckCircleFill" class="text-green-500" style="font-size: 1.4rem"></ng-icon>
+          </div>
+          <p class="text-sm font-semibold text-gray-700 mb-1">Aucun conflit</p>
+          <p class="text-xs text-gray-400">Tous les conflits ont été résolus</p>
+        </div>
+      }
+
+      @for (conflict of filteredConflicts(); track conflict.id; let i = $index) {
+        <button type="button"
+                (click)="selectConflict(conflict.id)"
+                class="w-full text-left"
+                ngmMotion
+                [initial]="'hidden'"
+                [animate]="'visible'"
+                [variants]="FADE_UP"
+                [transition]="{ type: 'spring', stiffness: 280, damping: 24, delay: i * 0.04 }"
+                [whileTap]="{ scale: 0.99 }">
+
+          <div [class]="'relative bg-white rounded-xl border shadow-[0_2px_8px_rgba(17,24,39,0.06)] overflow-hidden transition-all duration-200 '
+                + (selectedId() === conflict.id
+                    ? 'border-accent-300 ring-2 ring-accent-100'
+                    : 'border-gray-200/80 hover:border-gray-300 hover:shadow-[0_4px_16px_rgba(17,24,39,0.08)]')">
+
+            <div [class]="'absolute left-0 top-0 bottom-0 w-0.5 ' + SEVERITY_CONFIG[conflict.severity].dot + (conflict.status === 'RESOLVED' ? ' opacity-30' : '')"></div>
+
+            <div class="pl-4 pr-4 py-4 flex items-start gap-3">
+
+              <div [class]="'w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 mt-0.5 '
+                           + (conflict.severity === 'CRITICAL' ? 'bg-red-50' : conflict.severity === 'HIGH' ? 'bg-amber-50' : 'bg-blue-50')">
+                <ng-icon [name]="conflict.status === 'RESOLVED' ? 'phosphorCheckCircleFill' : conflict.severity === 'CRITICAL' ? 'phosphorLightningFill' : 'phosphorWarningCircleFill'"
+                         [class]="conflict.status === 'RESOLVED' ? 'text-green-500' : conflict.severity === 'CRITICAL' ? 'text-red-500' : conflict.severity === 'HIGH' ? 'text-amber-500' : 'text-blue-400'"
+                         style="font-size: 1rem"></ng-icon>
+              </div>
+
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 flex-wrap mb-1">
+                  <span class="text-[13px] font-semibold text-gray-900 truncate">{{ conflict.title }}</span>
+                  <span [class]="'inline-flex text-[10px] font-semibold px-2 py-0.5 rounded-full border ' + STATUS_CONFIG[conflict.status].classes">
+                    {{ STATUS_CONFIG[conflict.status].label }}
+                  </span>
+                </div>
+                <p class="text-xs text-gray-500 leading-relaxed line-clamp-2 mb-2">{{ conflict.description }}</p>
+                <div class="flex items-center gap-3 text-[11px] text-gray-400">
+                  <span class="font-medium">{{ TYPE_LABELS[conflict.type] }}</span>
+                  <span class="text-gray-300">·</span>
+                  <span>{{ conflict.slot }}</span>
+                </div>
+              </div>
+
+              <div class="flex-shrink-0 self-center">
+                <ng-icon name="phosphorCaretRight"
+                         [class]="'transition-colors ' + (selectedId() === conflict.id ? 'text-accent-500' : 'text-gray-300')"
+                         style="font-size: 0.9rem"></ng-icon>
+              </div>
+            </div>
+          </div>
+        </button>
+      }
+    </div>
+
+    <div class="lg:col-span-1">
+      @if (selectedConflict()) {
+        <div ngmMotion
+             [initial]="{ opacity: 0, x: 20 }"
+             [animate]="{ opacity: 1, x: 0 }"
+             [exit]="{ opacity: 0, x: 20 }"
+             [transition]="SPRING_SNAPPY"
+             class="sticky top-4">
+
+          <div class="p-1.5 bg-gray-50 rounded-2xl border border-gray-100 shadow-[0_8px_24px_rgba(17,24,39,0.10)]">
+            <div class="bg-white rounded-[calc(1rem-2px)] shadow-[inset_0_1px_2px_rgba(17,24,39,0.04)] overflow-hidden">
+
+              <div [class]="'border-l-4 px-5 pt-5 pb-4 ' + SEVERITY_CONFIG[selectedConflict()!.severity].panel">
+                <div class="flex items-start justify-between gap-2 mb-1">
+                  <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.12em]">
+                    {{ TYPE_LABELS[selectedConflict()!.type] }}
+                  </p>
+                  <button (click)="closePanel()"
+                          ngmMotion
+                          [whileTap]="{ scale: 0.88 }"
+                          class="flex-shrink-0 w-6 h-6 rounded-lg bg-gray-100 flex items-center justify-center text-gray-400 hover:text-gray-600 transition-colors">
+                    <ng-icon name="phosphorX" style="font-size: 0.75rem"></ng-icon>
+                  </button>
+                </div>
+                <h2 class="text-base font-semibold text-gray-900 leading-snug">
+                  {{ selectedConflict()!.title }}
+                </h2>
+              </div>
+
+              <div class="px-5 py-4 space-y-4 border-t border-gray-50">
+
+                <div>
+                  <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.1em] mb-2">Statut</p>
+                  <div class="flex items-center gap-2">
+                    <span [class]="'inline-flex text-xs font-semibold px-2.5 py-1 rounded-full border ' + STATUS_CONFIG[selectedConflict()!.status].classes">
+                      {{ STATUS_CONFIG[selectedConflict()!.status].label }}
+                    </span>
+                    <span [class]="'inline-flex text-xs font-semibold px-2.5 py-1 rounded-full border ' + SEVERITY_CONFIG[selectedConflict()!.severity].badge">
+                      {{ SEVERITY_CONFIG[selectedConflict()!.severity].label }}
+                    </span>
+                  </div>
+                </div>
+
+                <div>
+                  <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.1em] mb-2">Créneau</p>
+                  <p class="text-sm font-medium text-gray-700">{{ selectedConflict()!.slot }}</p>
+                </div>
+
+                <div>
+                  <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.1em] mb-2.5">Description</p>
+                  <p class="text-xs text-gray-600 leading-relaxed">{{ selectedConflict()!.description }}</p>
+                </div>
+
+                <div>
+                  <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.1em] mb-2.5">Entités concernées</p>
+                  <div class="space-y-1.5">
+                    @for (entity of selectedConflict()!.entities; track entity.name) {
+                      <div class="flex items-center gap-2 text-xs text-gray-600"
+                           ngmMotion
+                           [initial]="{ opacity: 0, x: -8 }"
+                           [animate]="{ opacity: 1, x: 0 }"
+                           [transition]="SPRING_SNAPPY">
+                        <div class="w-5 h-5 rounded-md bg-gray-50 border border-gray-100 flex items-center justify-center flex-shrink-0">
+                          <ng-icon [name]="ENTITY_ICON[entity.type]" class="text-gray-400" style="font-size: 0.7rem"></ng-icon>
+                        </div>
+                        <span class="font-medium truncate">{{ entity.name }}</span>
+                      </div>
+                    }
+                  </div>
+                </div>
+              </div>
+
+              @if (selectedConflict()!.status !== 'RESOLVED') {
+                <div class="px-5 pb-5 space-y-2 border-t border-gray-50 pt-4">
+                  <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.1em] mb-3">Actions</p>
+
+                  <button (click)="resolveConflict(selectedConflict()!.id)"
+                          ngmMotion
+                          [whileTap]="{ scale: 0.97 }"
+                          class="w-full flex items-center justify-center gap-2 h-10 rounded-xl bg-accent-500 hover:bg-accent-600 text-white text-sm font-semibold transition-colors shadow-[0_2px_8px_rgba(99,102,241,0.3)]">
+                    <ng-icon name="phosphorCheck" style="font-size: 0.9rem"></ng-icon>
+                    Marquer comme résolu
+                  </button>
+
+                  @if (selectedConflict()!.status === 'OPEN') {
+                    <button (click)="markInProgress(selectedConflict()!.id)"
+                            ngmMotion
+                            [whileTap]="{ scale: 0.97 }"
+                            class="w-full flex items-center justify-center gap-2 h-10 rounded-xl bg-white border border-gray-200 text-gray-700 text-sm font-medium hover:border-accent-300 hover:text-accent-600 transition-colors">
+                      <ng-icon name="phosphorPencil" style="font-size: 0.9rem"></ng-icon>
+                      Prendre en charge
+                    </button>
+                  }
+                </div>
+              } @else {
+                <div class="px-5 pb-5 pt-4 border-t border-gray-50">
+                  <div class="flex items-center gap-2.5 bg-green-50 border border-green-100 text-green-700 px-4 py-3 rounded-xl text-sm">
+                    <ng-icon name="phosphorCheckCircleFill" style="font-size: 1rem"></ng-icon>
+                    <span class="font-medium text-xs">Conflit résolu</span>
+                  </div>
+                </div>
+              }
+
+            </div>
+          </div>
+        </div>
+      } @else {
+        <div class="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-dashed border-gray-200 text-center"
+             ngmMotion
+             [initial]="{ opacity: 0 }"
+             [animate]="{ opacity: 1 }"
+             [transition]="SPRING_DEFAULT">
+          <div class="w-10 h-10 rounded-xl bg-gray-50 flex items-center justify-center mb-3">
+            <ng-icon name="phosphorEye" class="text-gray-300" style="font-size: 1.25rem"></ng-icon>
+          </div>
+          <p class="text-sm font-medium text-gray-500 mb-1">Sélectionnez un conflit</p>
+          <p class="text-xs text-gray-400">pour voir les détails et les actions</p>
+        </div>
+      }
+    </div>
+
+  </div>
+
+</div>
