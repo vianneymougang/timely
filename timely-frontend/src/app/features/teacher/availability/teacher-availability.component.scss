@@ -1,7 +1,12 @@
-@keyframes fade-in {
+:host {
+  display: block;
+  font-family: 'SF Pro Display', 'Geist Sans', 'Helvetica Neue', system-ui, sans-serif;
+}
+
+@keyframes slide-up-fade {
   from {
     opacity: 0;
-    transform: translateY(-10px);
+    transform: translateY(8px);
   }
   to {
     opacity: 1;
@@ -9,11 +14,21 @@
   }
 }
 
-.animate-fade-in {
-  animation: fade-in 0.3s ease-out;
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
 }
 
-/* Désactiver la sélection de texte pendant le drag */
+.animate-slide-up {
+  animation: slide-up-fade 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.shimmer-cell {
+  background: linear-gradient(90deg, #F7F6F3 25%, #EAEAEA 50%, #F7F6F3 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite linear;
+}
+
 .select-none {
   user-select: none;
   -webkit-user-select: none;
@@ -21,14 +36,6 @@
   -ms-user-select: none;
 }
 
-/* Style pour le sticky header */
-table thead th.sticky {
-  position: sticky;
-  top: 0;
-  z-index: 20;
-}
-
-/* Style pour la première colonne sticky */
 table tbody td.sticky {
   position: sticky;
   left: 0;
@@ -36,5 +43,5 @@ table tbody td.sticky {
 }
 
 table tbody tr:hover td.sticky {
-  background-color: #f8fafc;
+  background-color: #FAFAF9;
 }

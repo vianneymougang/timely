@@ -36,4 +36,11 @@ export const TEACHER_ROUTES: Routes = [
         (m) => m.TeacherProfileComponent,
       ),
   },
+  {
+    path: 'courses',
+    loadComponent: () =>
+      import('./courses/teacher-courses.component').then(
+        (m) => m.TeacherCoursesComponent,
+      ),
+  },
 ];

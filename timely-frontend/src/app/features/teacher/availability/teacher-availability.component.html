@@ -1,241 +1,352 @@
-<main class="flex-1 p-8 overflow-y-auto" (mouseup)="onMouseUp()" (mouseleave)="onMouseUp()">
+<main class="flex-1 p-8 overflow-y-auto bg-[#FBFBFA]" (mouseup)="onMouseUp()" (mouseleave)="onMouseUp()">
+
   <!-- Header -->
-  <header class="mb-8 flex items-center justify-between gap-6 flex-wrap">
-    <!-- Titre + sous-titre -->
-    <div>
-      <h2 class="text-3xl font-bold text-slate-800 mb-1">
-        Disponibilités hebdomadaires
-      </h2>
-      <p class="text-slate-500">
-        Définir mes créneaux de disponibilité
-      </p>
-    </div>
-    <!-- Submit Button -->
-    <div class="mt-8 flex justify-end">
-      <button
-        type="button"
-        (click)="submitAvailability()"
-        [disabled]="isSaving() || getSelectedSlotsCount() === 0"
-        class="px-8 py-3 bg-teal-600 hover:bg-teal-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center gap-2">
-        @if (isSaving()) {
-          <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-          </svg>
-          Enregistrement...
-        } @else {
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                  d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
-          </svg>
-          Soumettre disponibilités
-        }
-      </button>
-    </div>
+  <header class="mb-8">
+    <p class="text-[10px] font-semibold uppercase tracking-[0.18em] text-[#787774] mb-2">Planification</p>
+    <h1 class="text-2xl font-semibold text-[#111111] tracking-tight leading-snug">Mes disponibilités</h1>
+    <p class="mt-1 text-sm text-[#787774] leading-relaxed">
+      Définissez votre template récurrent et ajustez les exceptions par semaine.
+    </p>
   </header>
 
-  <!-- Info Banner -->
-  <div class="bg-blue-50 border border-blue-200 rounded-xl p-4 mb-6 flex items-start gap-3">
-    <svg
-      class="w-6 h-6 text-blue-600 flex-shrink-0 mt-0.5"
-      fill="none"
-      stroke="currentColor"
-      viewBox="0 0 24 24"
-    >
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-      />
-    </svg>
-    <div class="flex-1">
-      <p class="text-sm text-blue-800 font-medium mb-1">
-        Comment sélectionner vos disponibilités ?
-      </p>
-      <p class="text-sm text-blue-700">
-        Cliquez sur une case pour la sélectionner/désélectionner, ou maintenez le clic et glissez
-        pour sélectionner plusieurs créneaux à la fois.
-      </p>
-    </div>
-  </div>
-
-  <!-- Stats & Actions -->
-  <div class="flex items-center justify-between mb-6 flex-wrap gap-4">
-    <div class="flex items-center gap-6">
-      <div class="bg-white rounded-lg px-4 py-2 border border-slate-200">
-        <span class="text-sm text-slate-600">Créneaux sélectionnés : </span>
-        <span class="font-bold text-teal-600">{{ getSelectedSlotsCount() }}</span>
-      </div>
-      <div class="bg-white rounded-lg px-4 py-2 border border-slate-200">
-        <span class="text-sm text-slate-600">Total heures : </span>
-        <span class="font-bold text-teal-600">{{ getSelectedHoursCount() }}h</span>
-      </div>
-    </div>
-
-    <div class="flex items-center gap-2">
-      <button
-        type="button"
-        (click)="selectWorkDays()"
-        class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors"
-      >
-        Lun-Ven
-      </button>
-      <button
-        type="button"
-        (click)="selectAll()"
-        class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors"
-      >
-        Tout sélectionner
-      </button>
-      <button
-        type="button"
-        (click)="clearAll()"
-        class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-sm font-medium transition-colors"
-      >
-        Tout effacer
-      </button>
-    </div>
-  </div>
-
-  <!-- Success Message -->
-  @if (successMessage()) {
-  <div
-    class="bg-emerald-50 border border-emerald-200 text-emerald-700 px-4 py-3 rounded-lg mb-6 flex items-center gap-3 animate-fade-in"
-  >
-    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-      <path
-        stroke-linecap="round"
-        stroke-linejoin="round"
-        stroke-width="2"
-        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
-      />
-    </svg>
-    <span class="font-medium">{{ successMessage() }}</span>
-  </div>
-  }
-
-  <!-- Availability Grid -->
-  <div class="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-    <div class="overflow-x-auto">
-      <table class="w-full border-collapse">
-        <thead>
-          <tr class="bg-slate-50">
-            <th
-              class="sticky left-0 z-10 bg-slate-50 px-4 py-3 text-left text-sm font-semibold text-slate-700 border-b border-r border-slate-200 min-w-[120px]"
-            >
-              Horaires
-            </th>
-            @for (day of weekDays; track day.key) {
-            <th
-              class="px-4 py-3 text-center text-sm font-semibold text-slate-700 border-b border-slate-200 min-w-[140px]"
-            >
-              {{ day.label }}
-            </th>
-            }
-          </tr>
-        </thead>
-        <tbody>
-          @for (slot of timeSlots(); track slot.hour; let hourIndex = $index) {
-          <tr class="hover:bg-slate-50 transition-colors">
-            <td
-              class="sticky left-0 z-10 bg-white px-4 py-3 text-sm font-medium text-slate-700 border-r border-slate-200"
-            >
-              {{ slot.hour }}
-            </td>
-            @for (day of weekDays; track day.key) {
-            <td class="border border-slate-200 p-0">
-              @if (isPauseSlot(hourIndex)) {
-              <!-- Cellule de pause - non cliquable -->
-              <div
-                class="w-full h-16 bg-slate-200 flex items-center justify-center cursor-not-allowed"
-              >
-                <span class="text-slate-500 text-sm font-medium">Pause</span>
-              </div>
-              } @else {
-              <!-- Cellule normale - cliquable -->
-              <button
-                type="button"
-                (mousedown)="onMouseDown(hourIndex, day.key, $event)"
-                (mouseenter)="onMouseEnter(hourIndex, day.key)"
-                [class]="
-                  'w-full h-16 transition-all cursor-pointer select-none ' +
-                  (slot.slots[day.key]
-                    ? 'bg-emerald-400 hover:bg-emerald-500'
-                    : 'bg-white hover:bg-slate-100')
-                "
-                [attr.aria-label]="
-                  'Créneau ' +
-                  slot.hour +
-                  ' ' +
-                  day.label +
-                  (slot.slots[day.key] ? ' sélectionné' : ' non sélectionné')
-                "
-              ></button>
-              }
-            </td>
-            }
-          </tr>
-          }
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <!-- Submit Button 
-  <div class="mt-8 flex justify-end">
+  <!-- Tabs — underline style -->
+  <div class="border-b border-[#EAEAEA] mb-7 flex">
     <button
       type="button"
-      (click)="submitAvailability()"
-      [disabled]="isSaving() || getSelectedSlotsCount() === 0"
-      class="px-8 py-3 bg-teal-600 hover:bg-teal-700 disabled:bg-slate-300 disabled:cursor-not-allowed text-white font-semibold rounded-lg transition-colors flex items-center gap-2"
-    >
-      @if (isSaving()) {
-      <svg class="animate-spin h-5 w-5" fill="none" viewBox="0 0 24 24">
-        <circle
-          class="opacity-25"
-          cx="12"
-          cy="12"
-          r="10"
-          stroke="currentColor"
-          stroke-width="4"
-        ></circle>
-        <path
-          class="opacity-75"
-          fill="currentColor"
-          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-        ></path>
-      </svg>
-      Enregistrement... } @else {
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path
-          stroke-linecap="round"
-          stroke-linejoin="round"
-          stroke-width="2"
-          d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"
-        />
-      </svg>
-      Soumettre disponibilités }
+      (click)="switchTab('template')"
+      [class]="'px-4 pb-3 text-sm font-medium transition-all duration-200 border-b-2 -mb-px ' +
+        (activeTab() === 'template'
+          ? 'text-[#111111] border-[#111111]'
+          : 'text-[#787774] border-transparent hover:text-[#111111]')">
+      Template récurrent
     </button>
-  </div>-->
-
-  <!-- Legend -->
-  <div class="mt-6 flex items-center justify-center gap-6 text-sm">
-    <div class="flex items-center gap-2">
-      <div class="w-8 h-8 bg-emerald-400 rounded border border-slate-300"></div>
-      <span class="text-slate-600">Disponible</span>
-    </div>
-    <div class="flex items-center gap-2">
-      <div class="w-8 h-8 bg-white rounded border border-slate-300"></div>
-      <span class="text-slate-600">Non disponible</span>
-    </div>
-    <div class="flex items-center gap-2">
-      <div
-        class="w-8 h-8 bg-slate-200 rounded border border-slate-300 flex items-center justify-center"
-      >
-        <span class="text-xs text-slate-500">P</span>
-      </div>
-      <span class="text-slate-600">Pause (12h-13h)</span>
-    </div>
+    <button
+      type="button"
+      (click)="switchTab('exceptions')"
+      [class]="'px-4 pb-3 text-sm font-medium transition-all duration-200 border-b-2 -mb-px flex items-center gap-2 ' +
+        (activeTab() === 'exceptions'
+          ? 'text-[#111111] border-[#111111]'
+          : 'text-[#787774] border-transparent hover:text-[#111111]')">
+      Exceptions de semaine
+      @if (getExceptionsCount() > 0) {
+        <span class="px-1.5 py-0.5 rounded-[3px] text-[10px] font-semibold uppercase tracking-wide bg-[#FBF3DB] text-[#956400]">
+          {{ getExceptionsCount() }}
+        </span>
+      }
+    </button>
   </div>
+
+  <!-- ═══════════════ ONGLET TEMPLATE ═══════════════ -->
+  @if (activeTab() === 'template') {
+    <div class="animate-slide-up">
+
+      <!-- Info note -->
+      <div class="flex items-start gap-3 px-4 py-3 bg-[#E1F3FE] border-l-[2px] border-[#1F6C9F] rounded-r-lg mb-6">
+        <svg class="w-4 h-4 text-[#1F6C9F] flex-shrink-0 mt-[1px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+        </svg>
+        <p class="text-sm text-[#1F6C9F] leading-relaxed">
+          Ce template définit vos disponibilités récurrentes. Utilisez l'onglet <strong>Exceptions de semaine</strong> pour modifier une semaine spécifique.
+        </p>
+      </div>
+
+      <!-- Stats + Actions row -->
+      <div class="flex items-center justify-between mb-5 flex-wrap gap-3">
+        <div class="flex items-center gap-2">
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-[#EAEAEA] rounded-lg">
+            <span class="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#787774]">Créneaux</span>
+            <span class="text-sm font-bold text-[#111111] tabular-nums">{{ getSelectedSlotsCount() }}</span>
+          </div>
+          <div class="inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-[#EAEAEA] rounded-lg">
+            <span class="text-[10px] font-semibold uppercase tracking-[0.12em] text-[#787774]">Heures/sem.</span>
+            <span class="text-sm font-bold text-[#111111] tabular-nums">{{ getSelectedHoursCount() }}h</span>
+          </div>
+        </div>
+        <div class="flex items-center gap-1.5">
+          <button type="button" (click)="selectWorkDays()"
+            class="px-3.5 py-1.5 bg-white border border-[#EAEAEA] hover:border-[#111111] text-[#111111] rounded-[5px] text-xs font-medium tracking-wide transition-all duration-200 active:scale-[0.97]">
+            Lun–Ven
+          </button>
+          <button type="button" (click)="selectAll()"
+            class="px-3.5 py-1.5 bg-white border border-[#EAEAEA] hover:border-[#111111] text-[#111111] rounded-[5px] text-xs font-medium tracking-wide transition-all duration-200 active:scale-[0.97]">
+            Tout
+          </button>
+          <button type="button" (click)="clearAll()"
+            class="px-3.5 py-1.5 bg-white border border-[#EAEAEA] hover:border-[#9F2F2D] hover:text-[#9F2F2D] text-[#787774] rounded-[5px] text-xs font-medium tracking-wide transition-all duration-200 active:scale-[0.97]">
+            Effacer
+          </button>
+        </div>
+      </div>
+
+      <!-- Success Banner -->
+      @if (successMessage()) {
+        <div class="flex items-center gap-3 px-4 py-3 bg-[#EDF3EC] border-l-[2px] border-[#346538] rounded-r-lg mb-5 animate-slide-up">
+          <svg class="w-4 h-4 text-[#346538] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+          <span class="text-sm font-medium text-[#346538]">{{ successMessage() }}</span>
+        </div>
+      }
+
+      <!-- Availability Grid -->
+      <div class="bg-white rounded-xl border border-[#EAEAEA] overflow-hidden mb-5">
+        <div class="overflow-x-auto">
+          <table class="w-full border-collapse">
+            <thead>
+              <tr class="bg-[#FAFAF9]">
+                <th class="sticky left-0 z-10 bg-[#FAFAF9] px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-[#787774] border-b border-r border-[#EAEAEA] min-w-[110px]">
+                  Horaire
+                </th>
+                @for (day of weekDays; track day.key) {
+                  <th class="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.1em] text-[#787774] border-b border-[#EAEAEA] min-w-[110px]">
+                    {{ day.label }}
+                  </th>
+                }
+              </tr>
+            </thead>
+            <tbody>
+              @for (slot of timeSlots(); track slot.hour; let hourIndex = $index) {
+                <tr class="group">
+                  <td class="sticky left-0 z-10 bg-white px-4 py-0 text-[11px] font-semibold text-[#787774] border-r border-[#EAEAEA] group-hover:bg-[#FAFAF9] transition-colors align-middle h-14">
+                    <span class="tabular-nums">{{ slot.hour }}</span>
+                  </td>
+                  @for (day of weekDays; track day.key) {
+                    <td class="border border-[#EAEAEA] p-0">
+                      @if (isPauseSlot(hourIndex)) {
+                        <div class="w-full h-14 bg-[#F7F6F3] flex items-center justify-center cursor-not-allowed">
+                          <span class="text-[10px] font-semibold uppercase tracking-wider text-[#787774]">Pause</span>
+                        </div>
+                      } @else {
+                        <button type="button"
+                          (mousedown)="onMouseDown(hourIndex, day.key, $event)"
+                          (mouseenter)="onMouseEnter(hourIndex, day.key)"
+                          [class]="'w-full h-14 transition-all duration-100 cursor-pointer select-none ' +
+                            (slot.slots[day.key]
+                              ? 'bg-[#EDF3EC] hover:bg-[#d6ebd4]'
+                              : 'bg-white hover:bg-[#F7F6F3]')"
+                          [attr.aria-label]="'Créneau ' + slot.hour + ' ' + day.label">
+                        </button>
+                      }
+                    </td>
+                  }
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Legend + Submit -->
+      <div class="flex items-center justify-between flex-wrap gap-4">
+        <div class="flex items-center gap-5 text-[11px] text-[#787774]">
+          <div class="flex items-center gap-1.5">
+            <div class="w-5 h-5 bg-[#EDF3EC] rounded-[3px] border border-[#EAEAEA]"></div>
+            <span>Disponible</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <div class="w-5 h-5 bg-white rounded-[3px] border border-[#EAEAEA]"></div>
+            <span>Indisponible</span>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <div class="w-5 h-5 bg-[#F7F6F3] rounded-[3px] border border-[#EAEAEA] flex items-center justify-center">
+              <span class="text-[8px] font-bold text-[#787774]">P</span>
+            </div>
+            <span>Pause (12h–13h)</span>
+          </div>
+        </div>
+
+        <button type="button" (click)="submitAvailability()"
+          [disabled]="isSaving() || getSelectedSlotsCount() === 0"
+          class="px-6 py-2.5 bg-[#111111] hover:bg-[#2a2a2a] disabled:bg-[#EAEAEA] disabled:text-[#787774] disabled:cursor-not-allowed text-white text-sm font-semibold rounded-[5px] transition-all duration-200 active:scale-[0.98] flex items-center gap-2.5">
+          @if (isSaving()) {
+            <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+              <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+              <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+            </svg>
+            Enregistrement…
+          } @else {
+            Enregistrer le template
+          }
+        </button>
+      </div>
+
+    </div>
+  }
+
+  <!-- ═══════════════ ONGLET EXCEPTIONS ═══════════════ -->
+  @if (activeTab() === 'exceptions') {
+    <div class="animate-slide-up">
+
+      <!-- Week selector -->
+      <div class="bg-white border border-[#EAEAEA] rounded-xl px-5 py-4 mb-6 flex items-center gap-5 flex-wrap">
+        <div class="flex flex-col gap-1">
+          <label class="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#787774]">Semaine du</label>
+          <input #weekInput type="date" [value]="selectedWeek()"
+            (change)="onWeekChange(weekInput.value)"
+            class="px-3 py-1.5 bg-[#F7F6F3] border border-[#EAEAEA] rounded-[6px] text-sm font-medium text-[#111111] focus:outline-none focus:ring-1 focus:ring-[#111111] focus:border-[#111111] transition-all"/>
+        </div>
+        <div class="h-7 w-px bg-[#EAEAEA] hidden sm:block"></div>
+        <div class="flex flex-col gap-0.5">
+          <span class="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#787774]">Période</span>
+          <span class="text-sm font-semibold text-[#111111] tabular-nums">{{ selectedWeek() }}</span>
+        </div>
+        @if (getExceptionsCount() > 0) {
+          <div class="ml-auto flex items-center gap-1.5 px-3 py-1.5 bg-[#FBF3DB] rounded-[6px]">
+            <svg class="w-3.5 h-3.5 text-[#956400]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+            </svg>
+            <span class="text-xs font-semibold text-[#956400]">{{ getExceptionsCount() }} modification(s)</span>
+          </div>
+        }
+      </div>
+
+      <!-- Loading skeleton -->
+      @if (isLoadingExceptions()) {
+        <div class="bg-white rounded-xl border border-[#EAEAEA] overflow-hidden mb-5">
+          <div class="overflow-x-auto">
+            <table class="w-full border-collapse">
+              <thead>
+                <tr class="bg-[#FAFAF9]">
+                  <th class="px-4 py-3 border-b border-r border-[#EAEAEA] min-w-[110px]">
+                    <div class="h-3 rounded-sm shimmer-cell w-14"></div>
+                  </th>
+                  @for (day of weekDays; track day.key) {
+                    <th class="px-4 py-3 border-b border-[#EAEAEA] min-w-[110px]">
+                      <div class="h-3 rounded-sm shimmer-cell w-12 mx-auto"></div>
+                    </th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (row of [0,1,2,3,4,5,6,7,8]; track row) {
+                  <tr>
+                    <td class="px-4 py-4 border-r border-[#EAEAEA]">
+                      <div class="h-2.5 rounded-sm shimmer-cell w-16"></div>
+                    </td>
+                    @for (day of weekDays; track day.key) {
+                      <td class="border border-[#EAEAEA] p-1">
+                        <div class="w-full h-12 rounded shimmer-cell"></div>
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      } @else {
+
+        <!-- Info note -->
+        <div class="flex items-start gap-3 px-4 py-3 bg-[#FBF3DB] border-l-[2px] border-[#956400] rounded-r-lg mb-5">
+          <svg class="w-4 h-4 text-[#956400] flex-shrink-0 mt-[1px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+          </svg>
+          <p class="text-sm text-[#956400] leading-relaxed">
+            La grille est pré-remplie avec vos disponibilités effectives pour cette semaine. Modifiez les créneaux souhaités, puis sauvegardez.
+          </p>
+        </div>
+
+        <!-- Success Banner -->
+        @if (exceptionsSuccess()) {
+          <div class="flex items-center gap-3 px-4 py-3 bg-[#EDF3EC] border-l-[2px] border-[#346538] rounded-r-lg mb-5 animate-slide-up">
+            <svg class="w-4 h-4 text-[#346538] flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            <span class="text-sm font-medium text-[#346538]">{{ exceptionsSuccess() }}</span>
+          </div>
+        }
+
+        <!-- Exceptions Grid -->
+        <div class="bg-white rounded-xl border border-[#EAEAEA] overflow-hidden mb-5">
+          <div class="overflow-x-auto">
+            <table class="w-full border-collapse">
+              <thead>
+                <tr class="bg-[#FAFAF9]">
+                  <th class="sticky left-0 z-10 bg-[#FAFAF9] px-4 py-3 text-left text-[11px] font-semibold uppercase tracking-[0.1em] text-[#787774] border-b border-r border-[#EAEAEA] min-w-[110px]">
+                    Horaire
+                  </th>
+                  @for (day of weekDays; track day.key) {
+                    <th class="px-4 py-3 text-center text-[11px] font-semibold uppercase tracking-[0.1em] text-[#787774] border-b border-[#EAEAEA] min-w-[110px]">
+                      {{ day.label }}
+                    </th>
+                  }
+                </tr>
+              </thead>
+              <tbody>
+                @for (slot of exceptionSlots(); track slot.hour; let hourIndex = $index) {
+                  <tr class="group">
+                    <td class="sticky left-0 z-10 bg-white px-4 py-0 text-[11px] font-semibold text-[#787774] border-r border-[#EAEAEA] group-hover:bg-[#FAFAF9] transition-colors align-middle h-14">
+                      <span class="tabular-nums">{{ slot.hour }}</span>
+                    </td>
+                    @for (day of weekDays; track day.key) {
+                      <td class="border border-[#EAEAEA] p-0">
+                        @if (isPauseSlot(hourIndex)) {
+                          <div class="w-full h-14 bg-[#F7F6F3] flex items-center justify-center cursor-not-allowed">
+                            <span class="text-[10px] font-semibold uppercase tracking-wider text-[#787774]">Pause</span>
+                          </div>
+                        } @else {
+                          @let isException = timeSlots()[hourIndex].slots[day.key] !== slot.slots[day.key];
+                          <button type="button"
+                            (click)="toggleExceptionSlot(hourIndex, day.key)"
+                            [class]="'w-full h-14 transition-all duration-100 cursor-pointer select-none relative ' +
+                              (slot.slots[day.key]
+                                ? (isException ? 'bg-[#E1F3FE] hover:bg-[#cce9fa]' : 'bg-[#EDF3EC] hover:bg-[#d6ebd4]')
+                                : (isException ? 'bg-[#FDEBEC] hover:bg-[#fad9db]' : 'bg-white hover:bg-[#F7F6F3]'))">
+                            @if (isException) {
+                              <span class="absolute top-1 right-1 w-1.5 h-1.5 rounded-full"
+                                [class]="slot.slots[day.key] ? 'bg-[#1F6C9F]' : 'bg-[#9F2F2D]'">
+                              </span>
+                            }
+                          </button>
+                        }
+                      </td>
+                    }
+                  </tr>
+                }
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Legend + Save -->
+        <div class="flex items-center justify-between flex-wrap gap-4">
+          <div class="flex items-center gap-4 flex-wrap text-[11px] text-[#787774]">
+            <div class="flex items-center gap-1.5">
+              <div class="w-5 h-5 bg-[#EDF3EC] rounded-[3px] border border-[#EAEAEA]"></div>
+              <span>Disponible</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <div class="w-5 h-5 bg-white rounded-[3px] border border-[#EAEAEA]"></div>
+              <span>Indisponible</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <div class="w-5 h-5 bg-[#E1F3FE] rounded-[3px] border border-[#EAEAEA]"></div>
+              <span>Ajouté</span>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <div class="w-5 h-5 bg-[#FDEBEC] rounded-[3px] border border-[#EAEAEA]"></div>
+              <span>Retiré</span>
+            </div>
+          </div>
+
+          <button type="button" (click)="saveExceptions()"
+            [disabled]="isSavingExceptions()"
+            class="px-6 py-2.5 bg-[#111111] hover:bg-[#2a2a2a] disabled:bg-[#EAEAEA] disabled:text-[#787774] disabled:cursor-not-allowed text-white text-sm font-semibold rounded-[5px] transition-all duration-200 active:scale-[0.98] flex items-center gap-2.5">
+            @if (isSavingExceptions()) {
+              <svg class="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+              </svg>
+              Enregistrement…
+            } @else {
+              Sauvegarder les exceptions
+            }
+          </button>
+        </div>
+
+      }
+    </div>
+  }
+
 </main>
