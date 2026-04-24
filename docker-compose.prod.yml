@@ -58,7 +58,38 @@ services:
       - /data/rabbitmq:/var/lib/rabbitmq
     ports: []
 
+  config-server:
+    image: registry.gitlab.com/victory-projet/timely/config-server:latest
+    build: !reset null
+
+  discovery-server:
+    image: registry.gitlab.com/victory-projet/timely/discovery-server:latest
+    build: !reset null
+
+  api-gateway:
+    image: registry.gitlab.com/victory-projet/timely/api-gateway:latest
+    build: !reset null
+    ports: []
+
+  auth-service:
+    image: registry.gitlab.com/victory-projet/timely/auth-service:latest
+    build: !reset null
+
+  user-service:
+    image: registry.gitlab.com/victory-projet/timely/user-service:latest
+    build: !reset null
+
+  planning-service:
+    image: registry.gitlab.com/victory-projet/timely/planning-service:latest
+    build: !reset null
+
+  booking-service:
+    image: registry.gitlab.com/victory-projet/timely/booking-service:latest
+    build: !reset null
+
   notification-service:
+    image: registry.gitlab.com/victory-projet/timely/notification-service:latest
+    build: !reset null
     environment:
       - SPRING_MAIL_HOST=${MAIL_HOST}
       - SPRING_MAIL_PORT=${MAIL_PORT}
@@ -67,13 +98,17 @@ services:
       - SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=true
       - SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=true
 
-  api-gateway:
-    ports: []
+  report-service:
+    image: registry.gitlab.com/victory-projet/timely/report-service:latest
+    build: !reset null
+
+  agora-service:
+    image: registry.gitlab.com/victory-projet/timely/agora-service:latest
+    build: !reset null
 
   frontend:
-    build:
-      context: ./timely-frontend
-      dockerfile: Dockerfile
+    image: registry.gitlab.com/victory-projet/timely/frontend:latest
+    build: !reset null
     restart: unless-stopped
     networks:
       - default

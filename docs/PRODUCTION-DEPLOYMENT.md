@@ -7,23 +7,21 @@
 ## Vue d'ensemble
 
 ```
-Internet (HTTPS 443)
-        │
-    ┌───▼─────────────────────────────────┐
-    │  EC2 — Dokploy (Traefik + SSL auto) │
-    │                                     │
-    │  timely.yondrfit.com                │
-    │    /        → container frontend    │
-    │    /api/*   → api-gateway :8090     │
-    └─────────────────────────────────────┘
-                      │
-        ┌─────────────┼─────────────┐
-        ▼             ▼             ▼
-   Config Server  Discovery     Services
-     :8888         :8761       (internes)
+git push → GitLab CI → registry.gitlab.com (images)
+                                │
+                         docker pull ↓
+Internet (HTTPS 443)             │
+        │               ┌────────▼────────────────────┐
+    ┌───▼───────────┐   │  EC2 — Dokploy              │
+    │  Traefik SSL  │   │                             │
+    │               │   │  timely.yondrfit.com        │
+    │  /      → frontend container (nginx)            │
+    │  /api/* → api-gateway :8090 (interne)           │
+    └───────────────┴─────────────────────────────────┘
 ```
 
 **Stack déployée :** 9 microservices Spring Boot, 6 PostgreSQL, 1 MongoDB, Redis, RabbitMQ, Angular (container nginx routé par Traefik)
+**Images buildées par :** GitLab CI → GitLab Container Registry
 
 ---
 
@@ -33,7 +31,8 @@ Internet (HTTPS 443)
 - [x] `environment.prod.ts` pointe vers `/api` (chemin relatif)
 - [x] Fallback `JWT_SECRET` supprimé — la variable est obligatoire au démarrage
 - [x] Aucun secret commité en clair
-- [x] `docker-compose.prod.yml` prêt avec labels Traefik
+- [x] `docker-compose.prod.yml` prêt avec labels Traefik + références registry GitLab
+- [x] `.gitlab-ci.yml` prêt — build parallèle des 11 images + push vers GitLab Registry
 - [x] `scripts/backup.sh` prêt
 - [x] `timely-frontend/Dockerfile` + `nginx.conf` prêts
 
@@ -115,6 +114,21 @@ Dokploy installe Docker Compose, Traefik et son UI en une seule commande. L'UI e
 
 ---
 
+## Phase 4b — Déclenchement du build CI
+
+Avant de configurer Dokploy, les images doivent exister dans le registry.
+
+```bash
+# Pousser main déclenche automatiquement le pipeline GitLab CI
+git push origin main
+```
+
+Suivre l'avancement : GitLab → **CI/CD → Pipelines**. Les 11 jobs tournent en parallèle, durée estimée ~10-15 min (wall time). Compute minutes consommées : ~100-120 min.
+
+> **Cache inline activé** (`BUILDKIT_INLINE_CACHE=1`) — les runs suivants réutilisent les layers Maven déjà buildés, durée réduite à ~3-5 min par service.
+
+---
+
 ## Phase 5 — Configuration Dokploy
 
 ### 5.1 Domaine du serveur
@@ -127,7 +141,19 @@ Dokploy va obtenir automatiquement le certificat Let's Encrypt.
 
 UI Dokploy → **Projects** → **New Project** → nom : `timely`
 
-### 5.3 Ajouter la stack Compose
+### 5.3 Configurer le registry GitLab (images privées)
+
+Dokploy → **Settings** → **Registries** → **Add Registry** :
+
+| Champ | Valeur |
+|---|---|
+| Registry URL | `registry.gitlab.com` |
+| Username | Ton username GitLab |
+| Password | Deploy Token GitLab (`read_registry`) |
+
+> Créer le Deploy Token : GitLab → **Settings → Repository → Deploy tokens** → scope `read_registry`.
+
+### 5.4 Ajouter la stack Compose
 
 Dans le projet → **New Service** → **Docker Compose** :
 
@@ -135,7 +161,7 @@ Dans le projet → **New Service** → **Docker Compose** :
 - **Compose file** : `docker-compose.yml`
 - **Override file** : `docker-compose.prod.yml`
 
-### 5.4 Variables d'environnement
+### 5.5 Variables d'environnement
 
 Dans la section **Environment** du service Compose, saisir :
 
