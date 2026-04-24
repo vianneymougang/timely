@@ -1,0 +1,68 @@
+services:
+
+  pgadmin:
+    profiles: ["dev-only"]
+
+  mongo-express:
+    profiles: ["dev-only"]
+
+  mailtrap:
+    profiles: ["dev-only"]
+
+  auth-service-db:
+    volumes:
+      - /data/postgres/auth:/var/lib/postgresql/data
+    ports: []
+
+  user-service-db:
+    volumes:
+      - /data/postgres/user:/var/lib/postgresql/data
+    ports: []
+
+  planning-service-db:
+    volumes:
+      - /data/postgres/planning:/var/lib/postgresql/data
+    ports: []
+
+  booking-service-db:
+    volumes:
+      - /data/postgres/booking:/var/lib/postgresql/data
+    ports: []
+
+  report-service-db:
+    volumes:
+      - /data/postgres/report:/var/lib/postgresql/data
+    ports: []
+
+  agora-service-db:
+    volumes:
+      - /data/postgres/agora:/var/lib/postgresql/data
+    ports: []
+
+  mongodb:
+    volumes:
+      - /data/mongo:/data/db
+    ports: []
+
+  redis:
+    volumes:
+      - /data/redis:/data
+    ports: []
+
+  rabbitmq:
+    volumes:
+      - /data/rabbitmq:/var/lib/rabbitmq
+    ports: []
+
+  notification-service:
+    environment:
+      - SPRING_MAIL_HOST=${MAIL_HOST}
+      - SPRING_MAIL_PORT=${MAIL_PORT}
+      - SPRING_MAIL_USERNAME=${MAIL_USERNAME}
+      - SPRING_MAIL_PASSWORD=${MAIL_PASSWORD}
+      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=true
+      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=true
+
+  api-gateway:
+    ports:
+      - "127.0.0.1:8090:8090"
