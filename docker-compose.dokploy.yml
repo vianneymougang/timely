@@ -1,0 +1,637 @@
+networks:
+  timely-microservices:
+    driver: bridge
+  dokploy-network:
+    external: true
+
+volumes:
+  postgres:
+  user-postgres:
+  planning-postgres:
+  booking-postgres:
+  report-postgres:
+  agora-postgres:
+  mongo:
+  redis_data:
+  rabbitmq_data:
+
+services:
+
+  auth-service-db:
+    container_name: auth-service-db
+    image: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: auth-service-db
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "admin"]
+      interval: 10s
+      timeout: 20s
+      retries: 5
+      start_period: 60s
+    networks:
+      - timely-microservices
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.3"
+
+  user-service-db:
+    container_name: user-service-db
+    image: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: user-service-db
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - user-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "admin"]
+      interval: 10s
+      timeout: 20s
+      retries: 5
+      start_period: 60s
+    networks:
+      - timely-microservices
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.3"
+
+  planning-service-db:
+    container_name: planning-service-db
+    image: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: planning-service-db
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - planning-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "admin"]
+      interval: 10s
+      timeout: 20s
+      retries: 5
+      start_period: 60s
+    networks:
+      - timely-microservices
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.3"
+
+  booking-service-db:
+    container_name: booking-service-db
+    image: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: booking-service-db
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - booking-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "admin"]
+      interval: 10s
+      timeout: 20s
+      retries: 5
+      start_period: 60s
+    networks:
+      - timely-microservices
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.3"
+
+  report-service-db:
+    container_name: report-service-db
+    image: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: report-service-db
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - report-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "admin"]
+      interval: 10s
+      timeout: 20s
+      retries: 5
+      start_period: 60s
+    networks:
+      - timely-microservices
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.3"
+
+  agora-service-db:
+    container_name: agora-service-db
+    image: postgres
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: agora-service-db
+      PGDATA: /var/lib/postgresql/data
+    volumes:
+      - agora-postgres:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "admin"]
+      interval: 10s
+      timeout: 20s
+      retries: 5
+      start_period: 60s
+    networks:
+      - timely-microservices
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.3"
+
+  mongodb:
+    container_name: timely_ms_mongo_db
+    image: mongo
+    volumes:
+      - mongo:/data
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGODB_PASSWORD}
+    networks:
+      - timely-microservices
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping').ok", "--quiet"]
+      interval: 10s
+      timeout: 20s
+      retries: 5
+      start_period: 30s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.25"
+
+  redis:
+    container_name: timely_ms_redis
+    image: redis:7-alpine
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 20s
+      retries: 5
+      start_period: 60s
+    networks:
+      - timely-microservices
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.25"
+
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: timely_ms_rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD}
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq
+    networks:
+      - timely-microservices
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "ping"]
+      interval: 10s
+      timeout: 20s
+      retries: 5
+      start_period: 60s
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+          cpus: "0.25"
+
+  config-server:
+    container_name: timely-config-server
+    image: registry.gitlab.com/victory-projet/timely/config-server:latest
+    networks:
+      - timely-microservices
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8888/actuator/health"]
+      interval: 10s
+      timeout: 20s
+      retries: 5
+      start_period: 60s
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+          cpus: "0.3"
+        reservations:
+          memory: 192M
+
+  discovery-server:
+    container_name: timely-discovery-server
+    image: registry.gitlab.com/victory-projet/timely/discovery-server:latest
+    depends_on:
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8761/actuator/health"]
+      interval: 10s
+      timeout: 20s
+      retries: 5
+      start_period: 60s
+    networks:
+      - timely-microservices
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+          cpus: "0.3"
+        reservations:
+          memory: 192M
+
+  api-gateway:
+    container_name: timely-api-gateway
+    image: registry.gitlab.com/victory-projet/timely/api-gateway:latest
+    depends_on:
+      discovery-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+      auth-service:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+      planning-service:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8090/actuator/health"]
+      interval: 10s
+      timeout: 20s
+      retries: 5
+      start_period: 60s
+    networks:
+      - timely-microservices
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+      - EUREKA_INSTANCE_HOSTNAME=api-gateway
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
+      - JWT_SECRET=${JWT_SECRET}
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 384M
+          cpus: "0.3"
+        reservations:
+          memory: 192M
+
+  auth-service:
+    container_name: timely-auth-service
+    image: registry.gitlab.com/victory-projet/timely/auth-service:latest
+    depends_on:
+      auth-service-db:
+        condition: service_healthy
+      user-service:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8091/actuator/health"]
+      interval: 10s
+      timeout: 20s
+      retries: 5
+      start_period: 60s
+    networks:
+      - timely-microservices
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://auth-service-db:5432/auth-service-db
+      - DB_PASSWORD=${DB_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=admin
+      - SPRING_RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+      - EUREKA_INSTANCE_HOSTNAME=auth-service
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "0.5"
+        reservations:
+          memory: 256M
+
+  user-service:
+    container_name: timely-user-service
+    image: registry.gitlab.com/victory-projet/timely/user-service:latest
+    depends_on:
+      user-service-db:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8092/actuator/health"]
+      interval: 10s
+      timeout: 20s
+      retries: 5
+      start_period: 60s
+    networks:
+      - timely-microservices
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://user-service-db:5432/user-service-db
+      - DB_PASSWORD=${DB_PASSWORD}
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=admin
+      - SPRING_RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+      - EUREKA_INSTANCE_HOSTNAME=user-service
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
+      - JWT_SECRET=${JWT_SECRET}
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "0.5"
+        reservations:
+          memory: 256M
+
+  planning-service:
+    container_name: timely-planning-service
+    image: registry.gitlab.com/victory-projet/timely/planning-service:latest
+    depends_on:
+      planning-service-db:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8093/actuator/health"]
+      interval: 10s
+      timeout: 20s
+      retries: 5
+      start_period: 60s
+    networks:
+      - timely-microservices
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://planning-service-db:5432/planning-service-db
+      - DB_PASSWORD=${DB_PASSWORD}
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=admin
+      - SPRING_RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+      - EUREKA_INSTANCE_HOSTNAME=planning-service
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
+      - JWT_SECRET=${JWT_SECRET}
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "0.5"
+        reservations:
+          memory: 256M
+
+  booking-service:
+    container_name: timely-booking-service
+    image: registry.gitlab.com/victory-projet/timely/booking-service:latest
+    depends_on:
+      booking-service-db:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8094/actuator/health"]
+      interval: 10s
+      timeout: 20s
+      retries: 5
+      start_period: 60s
+    networks:
+      - timely-microservices
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://booking-service-db:5432/booking-service-db
+      - DB_PASSWORD=${DB_PASSWORD}
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=admin
+      - SPRING_RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - SPRING_DATA_REDIS_HOST=redis
+      - SPRING_DATA_REDIS_PORT=6379
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+      - EUREKA_INSTANCE_HOSTNAME=booking-service
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
+      - JWT_SECRET=${JWT_SECRET}
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "0.5"
+        reservations:
+          memory: 256M
+
+  notification-service:
+    container_name: timely-notification-service
+    image: registry.gitlab.com/victory-projet/timely/notification-service:latest
+    depends_on:
+      rabbitmq:
+        condition: service_healthy
+      mongodb:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8095/actuator/health"]
+      interval: 10s
+      timeout: 20s
+      retries: 5
+      start_period: 60s
+    networks:
+      - timely-microservices
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATA_MONGODB_HOST=mongodb
+      - MONGODB_PASSWORD=${MONGODB_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=admin
+      - SPRING_RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+      - EUREKA_INSTANCE_HOSTNAME=notification-service
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
+      - SPRING_MAIL_HOST=${MAIL_HOST:-localhost}
+      - SPRING_MAIL_PORT=${MAIL_PORT:-1025}
+      - SPRING_MAIL_USERNAME=${MAIL_USERNAME:-}
+      - SPRING_MAIL_PASSWORD=${MAIL_PASSWORD:-}
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "0.5"
+        reservations:
+          memory: 256M
+
+  report-service:
+    container_name: timely-report-service
+    image: registry.gitlab.com/victory-projet/timely/report-service:latest
+    depends_on:
+      report-service-db:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8096/actuator/health"]
+      interval: 10s
+      timeout: 20s
+      retries: 5
+      start_period: 60s
+    networks:
+      - timely-microservices
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://report-service-db:5432/report-service-db
+      - DB_PASSWORD=${DB_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=admin
+      - SPRING_RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+      - EUREKA_INSTANCE_HOSTNAME=report-service
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "0.5"
+        reservations:
+          memory: 256M
+
+  agora-service:
+    container_name: timely-agora-service
+    image: registry.gitlab.com/victory-projet/timely/agora-service:latest
+    depends_on:
+      agora-service-db:
+        condition: service_healthy
+      discovery-server:
+        condition: service_healthy
+      config-server:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8097/actuator/health"]
+      interval: 10s
+      timeout: 20s
+      retries: 5
+      start_period: 60s
+    networks:
+      - timely-microservices
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://agora-service-db:5432/agora-service-db
+      - DB_PASSWORD=${DB_PASSWORD}
+      - JWT_SECRET=${JWT_SECRET}
+      - SPRING_RABBITMQ_HOST=rabbitmq
+      - SPRING_RABBITMQ_PORT=5672
+      - SPRING_RABBITMQ_USERNAME=admin
+      - SPRING_RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - RABBITMQ_PASSWORD=${RABBITMQ_PASSWORD}
+      - EUREKA_CLIENT_SERVICEURL_DEFAULTZONE=http://discovery-server:8761/eureka/
+      - SPRING_CONFIG_IMPORT=optional:configserver:http://config-server:8888
+      - EUREKA_INSTANCE_HOSTNAME=agora-service
+      - EUREKA_INSTANCE_PREFER_IP_ADDRESS=false
+    restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+          cpus: "0.5"
+        reservations:
+          memory: 256M
+
+  frontend:
+    container_name: timely-frontend
+    image: registry.gitlab.com/victory-projet/timely/frontend:latest
+    restart: unless-stopped
+    networks:
+      - timely-microservices
+      - dokploy-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.timely.rule=Host(`timely.yondrfit.com`)"
+      - "traefik.http.routers.timely.entrypoints=websecure"
+      - "traefik.http.routers.timely.tls.certresolver=letsencrypt"
+      - "traefik.http.services.timely.loadbalancer.server.port=80"
+    depends_on:
+      - api-gateway
