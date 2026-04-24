@@ -170,6 +170,7 @@ services:
   mongodb:
     container_name: timely_ms_mongo_db
     image: mongo
+    command: --wiredTigerCacheSizeGB 0.15
     volumes:
       - mongo:/data
     environment:
@@ -186,7 +187,7 @@ services:
     deploy:
       resources:
         limits:
-          memory: 256M
+          memory: 512M
           cpus: "0.25"
 
   redis:
