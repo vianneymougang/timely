@@ -170,7 +170,7 @@ services:
   mongodb:
     container_name: timely_ms_mongo_db
     image: mongo
-    command: --wiredTigerCacheSizeGB 0.15
+    command: --wiredTigerCacheSizeGB 0.25
     volumes:
       - mongo:/data
     environment:
