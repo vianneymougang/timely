@@ -1,3 +1,7 @@
+networks:
+  dokploy-network:
+    external: true
+
 services:
 
   pgadmin:
@@ -64,5 +68,21 @@ services:
       - SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=true
 
   api-gateway:
-    ports:
-      - "127.0.0.1:8090:8090"
+    ports: []
+
+  frontend:
+    build:
+      context: ./timely-frontend
+      dockerfile: Dockerfile
+    restart: unless-stopped
+    networks:
+      - default
+      - dokploy-network
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.timely.rule=Host(`timely.yondrfit.com`)"
+      - "traefik.http.routers.timely.entrypoints=websecure"
+      - "traefik.http.routers.timely.tls.certresolver=letsencrypt"
+      - "traefik.http.services.timely.loadbalancer.server.port=80"
+    depends_on:
+      - api-gateway
