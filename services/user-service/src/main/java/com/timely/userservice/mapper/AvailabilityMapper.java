@@ -1,11 +1,16 @@
 package com.timely.userservice.mapper;
 
+import java.time.DayOfWeek;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.UUID;
 
 import com.timely.userservice.dto.AvailabilityResponseDto;
+import com.timely.userservice.dto.AvailabilitySlotDto;
 import com.timely.userservice.dto.TimeSlotDto;
 import com.timely.userservice.model.AvailabilityTimeSlot;
 import com.timely.userservice.model.TeacherAvailability;
@@ -79,6 +84,51 @@ public class AvailabilityMapper {
 
         responseDto.setTimeSlots(timeSlots);
         return responseDto;
+    }
+
+    /**
+     * Convert a list of AvailabilitySlotDto (from effective availability) to grid DTO.
+     * Used to expose effective weekly availability to the frontend.
+     */
+    public static AvailabilityResponseDto fromSlots(UUID teacherId, String teacherName, List<AvailabilitySlotDto> slots) {
+        Map<String, Set<Integer>> selectedSlots = new HashMap<>();
+        for (AvailabilitySlotDto slot : slots) {
+            if (slot.getDayOfWeek() != null && slot.getStartTime() != null) {
+                String dayKey = toDayKey(slot.getDayOfWeek());
+                selectedSlots.computeIfAbsent(dayKey, k -> new HashSet<>())
+                        .add(slot.getStartTime().getHour());
+            }
+        }
+
+        AvailabilityResponseDto response = new AvailabilityResponseDto();
+        response.setTeacherId(teacherId.toString());
+        response.setTeacherName(teacherName);
+        response.setLastUpdated(null);
+
+        List<TimeSlotDto> timeSlots = new ArrayList<>();
+        for (int hour = START_HOUR; hour < END_HOUR; hour++) {
+            String hourLabel = hour + "h - " + (hour + 1) + "h";
+            Map<String, Boolean> daySlots = new HashMap<>();
+            for (String day : DAYS) {
+                daySlots.put(day, selectedSlots.getOrDefault(day, Set.of()).contains(hour));
+            }
+            timeSlots.add(new TimeSlotDto(hourLabel, daySlots));
+        }
+
+        response.setTimeSlots(timeSlots);
+        return response;
+    }
+
+    private static String toDayKey(DayOfWeek day) {
+        return switch (day) {
+            case MONDAY -> "lundi";
+            case TUESDAY -> "mardi";
+            case WEDNESDAY -> "mercredi";
+            case THURSDAY -> "jeudi";
+            case FRIDAY -> "vendredi";
+            case SATURDAY -> "samedi";
+            default -> "dimanche";
+        };
     }
 
     /**

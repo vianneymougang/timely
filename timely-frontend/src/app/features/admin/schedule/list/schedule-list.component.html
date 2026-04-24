@@ -1,171 +1,219 @@
-<div class="space-y-6">
-  <!-- Filtres de recherche -->
-  <div class="bg-gray-50 rounded-lg p-4">
-    <h3 class="text-lg font-semibold text-gray-800 mb-4">Filtres de recherche</h3>
+<div class="flex-1 p-6 space-y-5 min-h-0">
 
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+  <div class="flex items-start justify-between"
+       ngmMotion
+       [initial]="'hidden'"
+       [animate]="'visible'"
+       [variants]="FADE_UP"
+       [transition]="SPRING_DEFAULT">
+    <div>
+      <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.15em] mb-0.5">Planification</p>
+      <h1 class="font-display text-2xl font-semibold text-gray-900 tracking-tight">Emplois du temps</h1>
+    </div>
+    <button (click)="onSearch()"
+            [disabled]="isLoading()"
+            ngmMotion
+            [whileTap]="{ scale: 0.94 }"
+            class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-gray-200 text-sm font-medium text-gray-600 hover:border-accent-300 hover:text-accent-600 transition-colors shadow-[0_1px_4px_rgba(17,24,39,0.06)] disabled:opacity-50">
+      <ng-icon name="phosphorArrowClockwise"
+               [class]="isLoading() ? 'animate-spin' : ''"
+               style="font-size: 0.9rem"></ng-icon>
+      Actualiser
+    </button>
+  </div>
+
+  <div class="bg-white rounded-xl border border-gray-100 p-4 shadow-[0_1px_4px_rgba(17,24,39,0.05)]"
+       ngmMotion
+       [initial]="'hidden'"
+       [animate]="'visible'"
+       [variants]="FADE_UP"
+       [transition]="{ type: 'spring', stiffness: 280, damping: 24, delay: 0.06 }">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-3">
       <div>
-        <label for="dateDebut" class="block text-sm font-medium text-gray-700 mb-2">
-          Date début
-        </label>
-        <input
-          type="date"
-          id="dateDebut"
-          [(ngModel)]="searchRequest.dateDebut"
-          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        <label class="block text-[11px] font-medium text-gray-500 mb-1">Date début</label>
+        <input type="date"
+               [(ngModel)]="searchRequest.dateDebut"
+               class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all font-mono text-gray-700" />
       </div>
-
       <div>
-        <label for="dateFin" class="block text-sm font-medium text-gray-700 mb-2">
-          Date fin
-        </label>
-        <input
-          type="date"
-          id="dateFin"
-          [(ngModel)]="searchRequest.dateFin"
-          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        <label class="block text-[11px] font-medium text-gray-500 mb-1">Date fin</label>
+        <input type="date"
+               [(ngModel)]="searchRequest.dateFin"
+               class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all font-mono text-gray-700" />
       </div>
-
       <div>
-        <label for="statut" class="block text-sm font-medium text-gray-700 mb-2">
-          Statut
-        </label>
-        <select
-          id="statut"
-          [(ngModel)]="searchRequest.statut"
-          class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
+        <label class="block text-[11px] font-medium text-gray-500 mb-1">École</label>
+        <select [(ngModel)]="searchRequest.ecoleId"
+                (ngModelChange)="onEcoleFilter()"
+                class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all text-gray-700 bg-white">
+          <option value="">Toutes les écoles</option>
+          @for (ecole of ecoles(); track ecole.id) {
+            <option [value]="ecole.id">{{ ecole.nom }}</option>
+          }
+        </select>
+      </div>
+      <div>
+        <label class="block text-[11px] font-medium text-gray-500 mb-1">Statut</label>
+        <select [(ngModel)]="searchRequest.statut"
+                class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all text-gray-700 bg-white">
           @for (option of statutOptions; track option.value) {
             <option [value]="option.value">{{ option.label }}</option>
           }
         </select>
       </div>
     </div>
-
-    <div class="flex gap-3 mt-4">
-      <button
-        (click)="onSearch()"
-        [disabled]="isLoading()"
-        class="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 text-white font-medium px-6 py-2 rounded-lg transition-colors">
+    <div class="flex gap-2 mt-3 pt-3 border-t border-gray-50">
+      <button (click)="onSearch()"
+              [disabled]="isLoading()"
+              ngmMotion
+              [whileTap]="{ scale: 0.97 }"
+              class="flex items-center gap-1.5 h-9 px-4 rounded-lg bg-accent-500 hover:bg-accent-600 disabled:opacity-50 text-white text-sm font-semibold transition-colors">
+        <ng-icon name="phosphorMagnifyingGlass" style="font-size: 0.8rem"></ng-icon>
         Rechercher
       </button>
-      <button
-        (click)="onReset()"
-        [disabled]="isLoading()"
-        class="bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 text-gray-800 font-medium px-6 py-2 rounded-lg transition-colors">
+      <button (click)="onReset()"
+              [disabled]="isLoading()"
+              ngmMotion
+              [whileTap]="{ scale: 0.97 }"
+              class="h-9 px-4 rounded-lg border border-gray-200 text-gray-600 text-sm font-medium hover:border-gray-300 hover:text-gray-800 transition-colors disabled:opacity-50">
         Réinitialiser
       </button>
     </div>
   </div>
 
-  <!-- Loading State -->
   @if (isLoading()) {
-    <div class="flex items-center justify-center py-12">
-      <svg class="animate-spin h-8 w-8 text-blue-600" fill="none" viewBox="0 0 24 24">
-        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-      </svg>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      @for (i of [0,1,2,3]; track i) {
+        <div class="bg-white rounded-xl border border-gray-100 p-5 h-[120px] animate-pulse shadow-[0_2px_8px_rgba(17,24,39,0.06)]">
+          <div class="flex gap-3">
+            <div class="w-8 h-8 bg-gray-100 rounded-lg flex-shrink-0"></div>
+            <div class="flex-1 space-y-2 pt-0.5">
+              <div class="h-3.5 bg-gray-100 rounded w-3/4"></div>
+              <div class="h-2.5 bg-gray-100 rounded w-1/2"></div>
+              <div class="h-2.5 bg-gray-100 rounded w-1/3"></div>
+            </div>
+          </div>
+        </div>
+      }
     </div>
   }
 
-  <!-- Error State -->
   @if (errorMessage() && !isLoading()) {
-    <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
+    <div class="flex items-center gap-3 bg-red-50 border border-red-100 text-red-700 px-4 py-3 rounded-xl text-sm">
+      <ng-icon name="phosphorWarningCircle" style="font-size: 1rem"></ng-icon>
       {{ errorMessage() }}
     </div>
   }
 
-  <!-- Liste des emplois du temps -->
   @if (!isLoading() && !errorMessage()) {
     @if (emploisDuTemps().length === 0) {
-      <div class="text-center py-12 text-gray-500">
-        <svg class="w-16 h-16 mx-auto mb-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
-        </svg>
-        <p class="text-lg">Aucun emploi du temps trouvé</p>
+      <div class="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-dashed border-gray-200 text-center"
+           ngmMotion
+           [initial]="{ opacity: 0, scale: 0.96 }"
+           [animate]="{ opacity: 1, scale: 1 }"
+           [transition]="SPRING_DEFAULT">
+        <div class="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mb-3">
+          <ng-icon name="phosphorCalendarDots" class="text-gray-300" style="font-size: 1.4rem"></ng-icon>
+        </div>
+        <p class="text-sm font-semibold text-gray-700 mb-1">Aucun emploi du temps</p>
+        <p class="text-xs text-gray-400">Modifiez les filtres ou générez un nouvel emploi du temps</p>
       </div>
     } @else {
-      <div class="space-y-4">
-        @for (emploi of emploisDuTemps(); track emploi.id) {
-          <div
-            (click)="viewSchedule(emploi.id)"
-            class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-lg transition-shadow cursor-pointer">
-            <div class="flex items-start justify-between mb-3">
-              <div class="flex-1">
-                <div class="flex items-center gap-3 mb-2">
-                  <h3 class="text-lg font-semibold text-gray-800">
-                    Emploi du temps - {{ emploi.periode }}
-                  </h3>
-                  <span class="px-2 py-1 rounded-full text-xs font-medium" [ngClass]="getStatutColor(emploi.statut)">
-                    {{ statutLabels[emploi.statut] }}
-                  </span>
-                </div>
+      <div class="space-y-6">
+        @for (group of groupedByWeek; track group.weekLabel; let gi = $index) {
+          <div ngmMotion
+               [initial]="'hidden'"
+               [animate]="'visible'"
+               [variants]="FADE_UP"
+               [transition]="{ type: 'spring', stiffness: 280, damping: 24, delay: gi * 0.05 }">
+            <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.12em] mb-3 px-1">
+              {{ group.weekLabel }}
+            </p>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+              @for (emploi of group.emplois; track emploi.id; let i = $index) {
+                <button type="button"
+                        (click)="viewSchedule(emploi.id)"
+                        ngmMotion
+                        [whileTap]="{ scale: 0.99 }"
+                        class="w-full text-left bg-white rounded-xl border border-gray-200/80 p-5 hover:border-accent-300 hover:shadow-[0_4px_16px_rgba(99,102,241,0.10)] transition-all group shadow-[0_2px_8px_rgba(17,24,39,0.06)]">
 
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 text-sm text-gray-600">
-                  <div>
-                    <span class="font-medium">Début:</span> {{ emploi.dateDebut }}
-                  </div>
-                  <div>
-                    <span class="font-medium">Fin:</span> {{ emploi.dateFin }}
-                  </div>
-                  <div>
-                    <span class="font-medium">Créneaux:</span> {{ emploi.creneaux?.length || 0 }}
-                  </div>
-                  <div>
-                    <span class="font-medium">Conflits:</span>
-                    <span [class.text-red-600]="emploi.conflits && emploi.conflits.length > 0">
-                      {{ emploi.conflits?.length || 0 }}
+                  <div class="flex items-start justify-between gap-3 mb-3">
+                    <div class="flex items-start gap-3 flex-1 min-w-0">
+                      <div class="w-8 h-8 rounded-lg bg-accent-50 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <ng-icon name="phosphorCalendarDots" class="text-accent-500" style="font-size: 0.9rem"></ng-icon>
+                      </div>
+                      <div class="flex-1 min-w-0">
+                        <p class="text-sm font-semibold text-gray-900 truncate">{{ getEcoleNom(emploi.ecoleId) }}</p>
+                        <p class="text-xs text-gray-400 mt-0.5">{{ emploi.periode }}</p>
+                      </div>
+                    </div>
+                    <span [class]="'flex-shrink-0 text-[10px] font-semibold px-2 py-0.5 rounded-full border ' + getStatutColor(emploi.statut)">
+                      {{ statutLabels[emploi.statut] }}
                     </span>
                   </div>
-                </div>
 
-                @if (emploi.notes) {
-                  <p class="text-sm text-gray-600 mt-2">{{ emploi.notes }}</p>
-                }
-              </div>
+                  <div class="grid grid-cols-3 gap-2 text-center">
+                    <div class="bg-gray-50 rounded-lg py-2">
+                      <p class="text-base font-bold font-mono text-gray-800">{{ emploi.creneaux.length }}</p>
+                      <p class="text-[10px] text-gray-400 mt-0.5">créneaux</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg py-2">
+                      <p class="text-base font-bold font-mono"
+                         [class]="emploi.conflits && emploi.conflits.length > 0 ? 'text-red-500' : 'text-gray-800'">
+                        {{ emploi.conflits.length }}
+                      </p>
+                      <p class="text-[10px] text-gray-400 mt-0.5">conflits</p>
+                    </div>
+                    <div class="bg-gray-50 rounded-lg py-2 flex items-center justify-center">
+                      <ng-icon name="phosphorArrowRight"
+                               class="text-gray-300 group-hover:text-accent-400 transition-colors"
+                               style="font-size: 1rem"></ng-icon>
+                    </div>
+                  </div>
 
-              <div class="flex items-center gap-2">
-                <button
-                  (click)="viewSchedule(emploi.id)"
-                  class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                  Voir
+                  @if (emploi.statut === 'DRAFT') {
+                    <div class="mt-3 pt-3 border-t border-gray-50">
+                      <button (click)="deleteSchedule(emploi.id, $event)"
+                              ngmMotion
+                              [whileTap]="{ scale: 0.94 }"
+                              class="flex items-center gap-1.5 text-xs text-red-400 hover:text-red-600 transition-colors font-medium">
+                        <ng-icon name="phosphorTrash" style="font-size: 0.8rem"></ng-icon>
+                        Supprimer
+                      </button>
+                    </div>
+                  }
                 </button>
-                @if (emploi.statut === 'DRAFT') {
-                  <button
-                    (click)="deleteSchedule(emploi.id, $event)"
-                    class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors">
-                    Supprimer
-                  </button>
-                }
-              </div>
+              }
             </div>
           </div>
         }
       </div>
 
-      <!-- Pagination -->
       @if (totalPages() > 1) {
-        <div class="flex items-center justify-between border-t pt-4">
-          <div class="text-sm text-gray-600">
-            {{ totalElements() }} résultat(s) - Page {{ currentPage() + 1 }} sur {{ totalPages() }}
-          </div>
-
-          <div class="flex gap-2">
-            <button
-              (click)="goToPage(currentPage() - 1)"
-              [disabled]="currentPage() === 0"
-              class="bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-800 px-4 py-2 rounded-lg font-medium transition-colors">
-              Précédent
+        <div class="flex items-center justify-between pt-2">
+          <p class="text-xs text-gray-400">
+            {{ totalElements() }} résultat(s) — page {{ currentPage() + 1 }}/{{ totalPages() }}
+          </p>
+          <div class="flex items-center gap-1.5 bg-white rounded-xl border border-gray-100 p-1 shadow-[0_1px_4px_rgba(17,24,39,0.05)]">
+            <button (click)="goToPage(currentPage() - 1)"
+                    [disabled]="currentPage() === 0"
+                    ngmMotion
+                    [whileTap]="{ scale: 0.92 }"
+                    class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+              <ng-icon name="phosphorCaretLeft" style="font-size: 0.85rem"></ng-icon>
             </button>
-
-            <button
-              (click)="goToPage(currentPage() + 1)"
-              [disabled]="currentPage() >= totalPages() - 1"
-              class="bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-800 px-4 py-2 rounded-lg font-medium transition-colors">
-              Suivant
+            <span class="text-xs font-semibold text-gray-700 px-2">{{ currentPage() + 1 }}</span>
+            <button (click)="goToPage(currentPage() + 1)"
+                    [disabled]="currentPage() >= totalPages() - 1"
+                    ngmMotion
+                    [whileTap]="{ scale: 0.92 }"
+                    class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-500 hover:bg-gray-50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors">
+              <ng-icon name="phosphorCaretRight" style="font-size: 0.85rem"></ng-icon>
             </button>
           </div>
         </div>
       }
     }
   }
+
 </div>

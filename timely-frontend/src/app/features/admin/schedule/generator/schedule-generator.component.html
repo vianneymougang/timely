@@ -1,263 +1,182 @@
-<div class="container mx-auto px-4 py-6">
-  <div class="max-w-4xl mx-auto">
-    <!-- Header -->
-    <div class="mb-6">
-      <h2 class="text-2xl font-bold text-gray-800 mb-2">Générer un emploi du temps</h2>
-      <p class="text-gray-600">Configurez les paramètres pour générer automatiquement un emploi du temps</p>
+<div class="flex-1 p-6 max-w-2xl space-y-5 min-h-0">
+
+  <div ngmMotion
+       [initial]="'hidden'"
+       [animate]="'visible'"
+       [variants]="FADE_UP"
+       [transition]="SPRING_DEFAULT">
+    <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.15em] mb-0.5">Planification</p>
+    <h1 class="font-display text-2xl font-semibold text-gray-900 tracking-tight">Générer les emplois du temps</h1>
+    <p class="text-sm text-gray-500 mt-1">Campus IUSJC — génération campus-wide pour toutes les écoles</p>
+  </div>
+
+  @if (errorMessage()) {
+    <div class="flex items-start gap-3 bg-red-50 border border-red-100 text-red-700 px-4 py-3 rounded-xl text-sm"
+         ngmMotion
+         [initial]="{ opacity: 0, y: -8 }"
+         [animate]="{ opacity: 1, y: 0 }"
+         [exit]="{ opacity: 0, y: -8 }"
+         [transition]="SPRING_DEFAULT">
+      <ng-icon name="phosphorWarningCircle" class="flex-shrink-0 mt-0.5" style="font-size: 1rem"></ng-icon>
+      <span>{{ errorMessage() }}</span>
     </div>
+  }
 
-    <!-- Error Alert -->
-    @if (errorMessage()) {
-      <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg mb-6">
-        <div class="flex items-start">
-          <svg class="w-5 h-5 mt-0.5 mr-3" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/>
-          </svg>
-          <span>{{ errorMessage() }}</span>
-        </div>
-      </div>
-    }
+  @if (!generationResult()) {
+    <div class="p-1.5 bg-gray-50 rounded-2xl border border-gray-100 shadow-[0_4px_16px_rgba(17,24,39,0.07)]"
+         ngmMotion
+         [initial]="'hidden'"
+         [animate]="'visible'"
+         [variants]="FADE_UP"
+         [transition]="{ type: 'spring', stiffness: 280, damping: 24, delay: 0.06 }">
+      <div class="bg-white rounded-[calc(1rem-2px)] shadow-[inset_0_1px_2px_rgba(17,24,39,0.04)] p-6">
 
-    <!-- Success Result -->
-    @if (generationResult()) {
-      <div class="bg-white shadow-lg rounded-lg p-6 mb-6 border border-green-200">
-        <div class="flex items-center mb-4">
-          <svg class="w-8 h-8 text-green-500 mr-3" fill="currentColor" viewBox="0 0 20 20">
-            <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/>
-          </svg>
-          <h3 class="text-xl font-semibold text-gray-800">Génération terminée</h3>
-        </div>
+        <form [formGroup]="generatorForm" (ngSubmit)="onSubmit()" class="space-y-5">
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-          <div class="bg-gray-50 p-4 rounded-lg">
-            <p class="text-sm text-gray-600 mb-1">Taux de réussite</p>
-            <p class="text-2xl font-bold" [ngClass]="getSeverityClass()">
-              {{ generationResult()!.tauxReussite.toFixed(1) }}%
-            </p>
+          <div class="flex items-center gap-3 pb-4 border-b border-gray-50">
+            <div class="w-9 h-9 rounded-xl bg-accent-50 flex items-center justify-center flex-shrink-0">
+              <ng-icon name="phosphorCalendarDots" class="text-accent-500" style="font-size: 1.1rem"></ng-icon>
+            </div>
+            <div>
+              <p class="text-sm font-semibold text-gray-900">Semaine de génération</p>
+              <p class="text-xs text-gray-400">Sélectionnez le lundi de la semaine cible</p>
+            </div>
           </div>
 
-          <div class="bg-gray-50 p-4 rounded-lg">
-            <p class="text-sm text-gray-600 mb-1">Cours planifiés</p>
-            <p class="text-2xl font-bold text-gray-800">
-              {{ generationResult()!.coursPlanifies }} / {{ generationResult()!.totalCoursAPlanifier }}
-            </p>
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-1.5">
+              Date de début <span class="text-red-400">*</span>
+            </label>
+            <input type="date"
+                   id="weekStart"
+                   formControlName="weekStart"
+                   class="w-full max-w-xs h-10 px-3 text-sm border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all font-mono text-gray-800" />
+            @if (generatorForm.get('weekStart')?.touched && generatorForm.get('weekStart')?.errors?.['required']) {
+              <p class="text-red-500 text-xs mt-1.5 flex items-center gap-1">
+                <ng-icon name="phosphorWarningCircle" style="font-size: 0.75rem"></ng-icon>
+                La date de début est obligatoire
+              </p>
+            }
+            @if (generatorForm.get('weekStart')?.touched && generatorForm.get('weekStart')?.errors?.['notMonday']) {
+              <p class="text-red-500 text-xs mt-1.5 flex items-center gap-1">
+                <ng-icon name="phosphorWarningCircle" style="font-size: 0.75rem"></ng-icon>
+                La date doit être un lundi
+              </p>
+            }
+            @if (getWeekLabel()) {
+              <p class="text-xs text-accent-600 mt-1.5 font-medium">{{ getWeekLabel() }}</p>
+            }
           </div>
 
-          <div class="bg-gray-50 p-4 rounded-lg">
-            <p class="text-sm text-gray-600 mb-1">Conflits détectés</p>
-            <p class="text-2xl font-bold text-gray-800">
-              {{ generationResult()!.conflitsDetectes }}
-            </p>
-          </div>
-
-          <div class="bg-gray-50 p-4 rounded-lg">
-            <p class="text-sm text-gray-600 mb-1">Durée de génération</p>
-            <p class="text-2xl font-bold text-gray-800">
-              {{ (generationResult()!.dureeGenerationMs / 1000).toFixed(2) }}s
-            </p>
-          </div>
-        </div>
-
-        @if (generationResult()!.coursNonPlanifies.length > 0) {
-          <div class="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-            <h4 class="font-semibold text-yellow-800 mb-2">Cours non planifiés ({{ generationResult()!.coursNonPlanifies.length }})</h4>
-            <ul class="list-disc list-inside text-sm text-yellow-700 space-y-1">
-              @for (cours of generationResult()!.coursNonPlanifies; track cours.coursId) {
-                <li>{{ cours.intitule }} - {{ cours.raison }}</li>
-              }
+          <div class="bg-accent-50/60 border border-accent-100 rounded-xl p-4">
+            <div class="flex items-center gap-2 mb-2.5">
+              <ng-icon name="phosphorInfo" class="text-accent-500 flex-shrink-0" style="font-size: 0.9rem"></ng-icon>
+              <p class="text-xs font-semibold text-accent-700">Grille campus appliquée</p>
+            </div>
+            <ul class="space-y-1 text-xs text-accent-600/80">
+              <li class="flex items-center gap-2">
+                <div class="w-1 h-1 rounded-full bg-accent-400 flex-shrink-0"></div>
+                Lundi au samedi — 8 créneaux par jour
+              </li>
+              <li class="flex items-center gap-2">
+                <div class="w-1 h-1 rounded-full bg-accent-400 flex-shrink-0"></div>
+                Horaires : 8h–12h puis 13h–17h (créneaux d'1h)
+              </li>
+              <li class="flex items-center gap-2">
+                <div class="w-1 h-1 rounded-full bg-accent-400 flex-shrink-0"></div>
+                Pause déjeuner 12h–13h exclue
+              </li>
+              <li class="flex items-center gap-2">
+                <div class="w-1 h-1 rounded-full bg-accent-400 flex-shrink-0"></div>
+                Algorithme Ford-Fulkerson (affectation optimale)
+              </li>
             </ul>
+          </div>
+
+          <div class="flex gap-3 pt-2">
+            <button type="submit"
+                    [disabled]="isLoading() || generatorForm.invalid"
+                    ngmMotion
+                    [whileTap]="{ scale: 0.97 }"
+                    class="flex items-center gap-2 h-10 px-5 rounded-xl bg-accent-500 hover:bg-accent-600 disabled:opacity-50 disabled:cursor-not-allowed text-white text-sm font-semibold transition-colors shadow-[0_2px_8px_rgba(99,102,241,0.3)]">
+              @if (isLoading()) {
+                <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                  <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                  <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                </svg>
+                <span>Génération en cours…</span>
+              } @else {
+                <ng-icon name="phosphorLightning" style="font-size: 0.9rem"></ng-icon>
+                <span>Lancer la génération</span>
+              }
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  }
+
+  @if (generationResult()) {
+    <div class="p-1.5 bg-green-50/80 rounded-2xl border border-green-100 shadow-[0_4px_16px_rgba(34,197,94,0.12)]"
+         ngmMotion
+         [initial]="{ opacity: 0, scale: 0.96 }"
+         [animate]="{ opacity: 1, scale: 1 }"
+         [transition]="SPRING_DEFAULT">
+      <div class="bg-white rounded-[calc(1rem-2px)] shadow-[inset_0_1px_2px_rgba(17,24,39,0.04)] p-6">
+
+        <div class="flex items-start gap-3 mb-5 pb-5 border-b border-gray-50">
+          <div class="w-9 h-9 rounded-xl bg-green-50 flex items-center justify-center flex-shrink-0">
+            <ng-icon name="phosphorCheckCircle" class="text-green-500" style="font-size: 1.1rem"></ng-icon>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-gray-900">Génération terminée</p>
+            <p class="text-xs text-gray-400">{{ generationResult()!.schoolResults.length }} emplois du temps générés</p>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-3 gap-3 mb-5">
+          <div class="text-center p-3 bg-gray-50 rounded-xl">
+            <p class="text-2xl font-bold font-mono text-gray-900">{{ generationResult()!.totalScheduled }}</p>
+            <p class="text-xs text-gray-500 mt-0.5">Cours planifiés</p>
+          </div>
+          <div class="text-center p-3 bg-gray-50 rounded-xl">
+            <p class="text-2xl font-bold font-mono" [class]="getSuccessRateClass(generationResult()!.overallSuccessRate)">
+              {{ generationResult()!.overallSuccessRate }}%
+            </p>
+            <p class="text-xs text-gray-500 mt-0.5">Taux de succès</p>
+          </div>
+          <div class="text-center p-3 bg-gray-50 rounded-xl">
+            <p class="text-2xl font-bold font-mono text-gray-900">{{ formatDuration(generationResult()!.generationDurationMs) }}</p>
+            <p class="text-xs text-gray-500 mt-0.5">Durée</p>
+          </div>
+        </div>
+
+        @if (generationResult()!.schoolResults.length) {
+          <div class="space-y-2 mb-5">
+            @for (school of generationResult()!.schoolResults; track school.emploiDuTempsId) {
+              <button (click)="viewSchedule(school.emploiDuTempsId)"
+                      ngmMotion
+                      [whileTap]="{ scale: 0.99 }"
+                      class="w-full flex items-center justify-between px-4 py-3 rounded-xl border border-gray-100 hover:border-accent-200 hover:bg-accent-50/30 transition-all text-left group">
+                <div>
+                  <p class="text-sm font-medium text-gray-800">{{ school.ecoleNom || school.ecoleId }}</p>
+                  <p class="text-xs text-gray-400">{{ school.coursesScheduled }} cours planifiés</p>
+                </div>
+                <ng-icon name="phosphorArrowRight" class="text-gray-300 group-hover:text-accent-400 transition-colors" style="font-size: 0.9rem"></ng-icon>
+              </button>
+            }
           </div>
         }
 
-        <div class="flex gap-3">
-          <button
-            type="button"
-            (click)="viewSchedule()"
-            class="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-medium px-6 py-2 rounded-lg transition-colors">
-            Visualiser l'emploi du temps
-          </button>
-          <button
-            type="button"
-            (click)="resetForm()"
-            class="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium px-6 py-2 rounded-lg transition-colors">
-            Générer un nouveau
-          </button>
-        </div>
+        <button (click)="resetForm()"
+                ngmMotion
+                [whileTap]="{ scale: 0.97 }"
+                class="w-full flex items-center justify-center gap-2 h-10 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:border-gray-300 hover:text-gray-800 transition-colors">
+          <ng-icon name="phosphorArrowCounterClockwise" style="font-size: 0.9rem"></ng-icon>
+          Nouvelle génération
+        </button>
       </div>
-    }
+    </div>
+  }
 
-    <!-- Generation Form -->
-    @if (!generationResult()) {
-      <form [formGroup]="generatorForm" (ngSubmit)="onSubmit()" class="bg-white shadow-lg rounded-lg p-6">
-        <!-- Informations de base -->
-        <div class="mb-6">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">Informations de base</h3>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- École ID -->
-            <div>
-              <label for="ecoleId" class="block text-sm font-medium text-gray-700 mb-2">
-                ID de l'école <span class="text-red-500">*</span>
-              </label>
-              <input
-                type="text"
-                id="ecoleId"
-                formControlName="ecoleId"
-                placeholder="ex: uuid-de-ecole"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-              @if (generatorForm.get('ecoleId')?.touched && generatorForm.get('ecoleId')?.errors) {
-                <p class="text-red-500 text-sm mt-1">L'ID de l'école est obligatoire</p>
-              }
-            </div>
-
-            <!-- Période -->
-            <div>
-              <label for="periode" class="block text-sm font-medium text-gray-700 mb-2">
-                Période <span class="text-red-500">*</span>
-              </label>
-              <select
-                id="periode"
-                formControlName="periode"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-                @for (option of periodeOptions; track option.value) {
-                  <option [value]="option.value">{{ option.label }}</option>
-                }
-              </select>
-            </div>
-
-            <!-- Date début -->
-            <div>
-              <label for="dateDebut" class="block text-sm font-medium text-gray-700 mb-2">
-                Date de début <span class="text-red-500">*</span>
-              </label>
-              <input
-                type="date"
-                id="dateDebut"
-                formControlName="dateDebut"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-              @if (generatorForm.get('dateDebut')?.touched && generatorForm.get('dateDebut')?.errors) {
-                <p class="text-red-500 text-sm mt-1">La date de début est obligatoire</p>
-              }
-            </div>
-
-            <!-- Date fin -->
-            <div>
-              <label for="dateFin" class="block text-sm font-medium text-gray-700 mb-2">
-                Date de fin <span class="text-red-500">*</span>
-              </label>
-              <input
-                type="date"
-                id="dateFin"
-                formControlName="dateFin"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-              @if (generatorForm.get('dateFin')?.touched && generatorForm.get('dateFin')?.errors) {
-                <p class="text-red-500 text-sm mt-1">La date de fin est obligatoire</p>
-              }
-            </div>
-          </div>
-        </div>
-
-        <!-- Configuration avancée -->
-        <div class="mb-6">
-          <h3 class="text-lg font-semibold text-gray-800 mb-4">Configuration avancée</h3>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <!-- Créneaux par jour -->
-            <div>
-              <label for="creneauxParJour" class="block text-sm font-medium text-gray-700 mb-2">
-                Créneaux par jour
-              </label>
-              <input
-                type="number"
-                id="creneauxParJour"
-                formControlName="creneauxParJour"
-                min="1"
-                max="12"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-            </div>
-
-            <!-- Durée créneau -->
-            <div>
-              <label for="dureeCreneauMinutes" class="block text-sm font-medium text-gray-700 mb-2">
-                Durée du créneau (minutes)
-              </label>
-              <input
-                type="number"
-                id="dureeCreneauMinutes"
-                formControlName="dureeCreneauMinutes"
-                min="30"
-                max="240"
-                step="15"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-            </div>
-
-            <!-- Heure début -->
-            <div>
-              <label for="heureDebutJournee" class="block text-sm font-medium text-gray-700 mb-2">
-                Heure de début
-              </label>
-              <input
-                type="time"
-                id="heureDebutJournee"
-                formControlName="heureDebutJournee"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-            </div>
-
-            <!-- Heure fin -->
-            <div>
-              <label for="heureFinJournee" class="block text-sm font-medium text-gray-700 mb-2">
-                Heure de fin
-              </label>
-              <input
-                type="time"
-                id="heureFinJournee"
-                formControlName="heureFinJournee"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-            </div>
-
-            <!-- Pause -->
-            <div>
-              <label for="pauseEntreCreneauxMinutes" class="block text-sm font-medium text-gray-700 mb-2">
-                Pause entre créneaux (minutes)
-              </label>
-              <input
-                type="number"
-                id="pauseEntreCreneauxMinutes"
-                formControlName="pauseEntreCreneauxMinutes"
-                min="0"
-                max="60"
-                step="5"
-                class="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent">
-            </div>
-          </div>
-        </div>
-
-        <!-- Actions -->
-        <div class="flex gap-3 pt-4 border-t">
-          <button
-            type="submit"
-            [disabled]="isLoading() || generatorForm.invalid"
-            class="flex-1 bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-medium px-6 py-3 rounded-lg transition-colors flex items-center justify-center">
-            @if (isLoading()) {
-              <svg class="animate-spin h-5 w-5 mr-2" fill="none" viewBox="0 0 24 24">
-                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-              </svg>
-              Génération en cours...
-            } @else {
-              Générer l'emploi du temps
-            }
-          </button>
-
-          <button
-            type="button"
-            (click)="resetForm()"
-            [disabled]="isLoading()"
-            class="bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 disabled:cursor-not-allowed text-gray-800 font-medium px-6 py-3 rounded-lg transition-colors">
-            Réinitialiser
-          </button>
-        </div>
-      </form>
-    }
-  </div>
 </div>

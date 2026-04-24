@@ -24,6 +24,7 @@ public interface ReservationMapper {
     @Mapping(target = "cours", ignore = true)
     @Mapping(target = "salle", ignore = true)
     @Mapping(target = "groupeEtudiant", ignore = true)
+    @Mapping(target = "statut", constant = "TEMPORAIRE")
     Reservation toEntity(ReservationRequest request);
 
     @BeanMapping(nullValuePropertyMappingStrategy = NullValuePropertyMappingStrategy.IGNORE)

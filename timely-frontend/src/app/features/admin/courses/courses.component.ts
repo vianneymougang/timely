@@ -1,29 +1,53 @@
 import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  phosphorBooks, phosphorPlus, phosphorPencil, phosphorTrash, phosphorX,
+  phosphorMagnifyingGlass, phosphorArrowClockwise, phosphorTag,
+} from '@ng-icons/phosphor-icons/regular';
+import { NgmMotionDirective } from '@scripttype/ng-motion';
+import { FADE_UP, SPRING_DEFAULT, SPRING_SNAPPY } from '../../../core/animations/motion.variants';
 import { CoursService } from '../../../core/services/cours.service';
 import { UEService } from '../../../core/services/ue.service';
 import { FiliereService } from '../../../core/services/filiere.service';
+import { ClasseService } from '../../../core/services/classe.service';
+import { TeacherService } from '../../../core/services/teacher.service';
 import { Cours, UE, Filiere, CreateCoursDTO, CreateUEDTO } from '../../../core/models/cours.model';
+import { Classe } from '../../../core/models/academic.model';
+import { Teacher } from '../../../core/models/teacher.model';
 
 @Component({
   selector: 'app-courses-management',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, NgIcon, NgmMotionDirective],
+  providers: [
+    provideIcons({
+      phosphorBooks, phosphorPlus, phosphorPencil, phosphorTrash, phosphorX,
+      phosphorMagnifyingGlass, phosphorArrowClockwise, phosphorTag,
+    }),
+  ],
   templateUrl: './courses.component.html',
   styleUrls: ['./courses.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class CoursesComponent implements OnInit {
+  readonly FADE_UP = FADE_UP;
+  readonly SPRING_DEFAULT = SPRING_DEFAULT;
+  readonly SPRING_SNAPPY = SPRING_SNAPPY;
+
   private coursService = inject(CoursService);
   private ueService = inject(UEService);
   private filiereService = inject(FiliereService);
+  private classeService = inject(ClasseService);
+  private teacherService = inject(TeacherService);
   private fb = inject(FormBuilder);
 
-  // Signaux pour les données
   cours = signal<Cours[]>([]);
   ues = signal<UE[]>([]);
   filieres = signal<Filiere[]>([]);
+  classes = signal<Classe[]>([]);
+  teachers = signal<Teacher[]>([]);
 
   // Section active (cours ou ue)
   activeSection = signal<'cours' | 'ue'>('cours');
@@ -50,8 +74,9 @@ export class CoursesComponent implements OnInit {
       intitule: ['', [Validators.required, Validators.minLength(3)]],
       volumeHoraire: [0, [Validators.required, Validators.min(1)]],
       typeCours: ['CM', Validators.required],
-      coefficient: [1, [Validators.required, Validators.min(0.5), Validators.max(5)]],
-      ueId: ['', Validators.required]
+      classeId: ['', Validators.required],
+      ueId: ['', Validators.required],
+      enseignantId: ['', Validators.required]
     });
 
     this.ueForm = this.fb.group({
@@ -67,6 +92,8 @@ export class CoursesComponent implements OnInit {
     this.coursService.getCours().subscribe(data => this.cours.set(data));
     this.ueService.getUE().subscribe(data => this.ues.set(data));
     this.filiereService.getFilieres().subscribe(data => this.filieres.set(data));
+    this.classeService.getClasses().subscribe(data => this.classes.set(data));
+    this.teacherService.getTeachers().subscribe(data => this.teachers.set(data));
   }
 
   // Gestion des sections
@@ -78,10 +105,13 @@ export class CoursesComponent implements OnInit {
   openCoursModal(cours?: Cours): void {
     if (cours) {
       this.editingCours.set(cours);
-      this.coursForm.patchValue(cours);
+      this.coursForm.patchValue({
+        ...cours,
+        enseignantId: cours.enseignantId ?? ''
+      });
     } else {
       this.editingCours.set(null);
-      this.coursForm.reset({ typeCours: 'CM', coefficient: 1 });
+      this.coursForm.reset({ typeCours: 'CM' });
     }
     this.showCoursModal.set(true);
   }
@@ -172,6 +202,11 @@ export class CoursesComponent implements OnInit {
   getUEName(ueId: string): string {
     const ue = this.ues().find(u => u.id === ueId);
     return ue ? ue.intituleUE : 'UE inconnue';
+  }
+
+  getTeacherName(enseignantId: string): string {
+    const t = this.teachers().find(t => t.id === enseignantId);
+    return t ? `${t.firstName} ${t.lastName}` : 'Enseignant inconnu';
   }
 
   getFiliereName(filiereId: string): string {

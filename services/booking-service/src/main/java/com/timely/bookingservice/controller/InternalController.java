@@ -20,10 +20,14 @@ import org.springframework.web.bind.annotation.RestController;
 import com.timely.bookingservice.dto.request.AutoAssignSalleRequest;
 import com.timely.bookingservice.dto.request.ReservationRequest;
 import com.timely.bookingservice.dto.response.CoursResponse;
+import com.timely.bookingservice.dto.response.EcoleResponse;
+import com.timely.bookingservice.dto.response.EtudiantResponse;
 import com.timely.bookingservice.dto.response.GroupeEtudiantResponse;
 import com.timely.bookingservice.dto.response.ReservationResponse;
 import com.timely.bookingservice.dto.response.SalleResponse;
 import com.timely.bookingservice.service.CoursService;
+import com.timely.bookingservice.service.EcoleService;
+import com.timely.bookingservice.service.EtudiantService;
 import com.timely.bookingservice.service.GroupeEtudiantService;
 import com.timely.bookingservice.service.ReservationService;
 import com.timely.bookingservice.service.SalleAssignmentService;
@@ -47,8 +51,22 @@ public class InternalController {
     private final ReservationService reservationService;
     private final GroupeEtudiantService groupeEtudiantService;
     private final SalleAssignmentService salleAssignmentService;
+    private final EcoleService ecoleService;
+    private final EtudiantService etudiantService;
+
+    // ==================== ECOLE ENDPOINTS ====================
+
+    @GetMapping("/ecoles")
+    public ResponseEntity<List<EcoleResponse>> getAllEcoles() {
+        return ResponseEntity.ok(ecoleService.getAll());
+    }
 
     // ==================== COURS ENDPOINTS ====================
+
+    @GetMapping("/cours")
+    public ResponseEntity<List<CoursResponse>> getAllCours() {
+        return ResponseEntity.ok(coursService.getAll(Pageable.unpaged()).getContent());
+    }
 
     @GetMapping("/cours/{id}")
     public ResponseEntity<CoursResponse> getCours(@PathVariable UUID id) {
@@ -77,6 +95,11 @@ public class InternalController {
 
     // ==================== SALLE ENDPOINTS ====================
 
+    @GetMapping("/salles")
+    public ResponseEntity<List<SalleResponse>> getAllSalles() {
+        return ResponseEntity.ok(salleService.getAll(Pageable.unpaged()).getContent());
+    }
+
     @GetMapping("/salles/{id}")
     public ResponseEntity<SalleResponse> getSalle(@PathVariable UUID id) {
         return ResponseEntity.ok(salleService.getById(id));
@@ -104,7 +127,25 @@ public class InternalController {
         return ResponseEntity.ok(salles);
     }
 
+    // ==================== ETUDIANT ENDPOINTS ====================
+
+    @GetMapping("/etudiants")
+    public ResponseEntity<List<EtudiantResponse>> getAllEtudiants() {
+        return ResponseEntity.ok(etudiantService.getAll(Pageable.unpaged()).getContent());
+    }
+
     // ==================== RESERVATION ENDPOINTS ====================
+
+    @GetMapping("/reservations")
+    public ResponseEntity<List<ReservationResponse>> getAllReservations(
+            @RequestParam(required = false) LocalDate dateDebut,
+            @RequestParam(required = false) LocalDate dateFin) {
+        List<ReservationResponse> all = reservationService.getAll(Pageable.unpaged()).getContent();
+        return ResponseEntity.ok(all.stream()
+                .filter(r -> dateDebut == null || !r.getDateReservation().isBefore(dateDebut))
+                .filter(r -> dateFin == null || !r.getDateReservation().isAfter(dateFin))
+                .toList());
+    }
 
     @GetMapping("/reservations/{id}")
     public ResponseEntity<ReservationResponse> getReservation(@PathVariable UUID id) {
@@ -146,5 +187,10 @@ public class InternalController {
     @GetMapping("/groupes/cours/{coursId}")
     public ResponseEntity<List<GroupeEtudiantResponse>> getGroupesByCours(@PathVariable UUID coursId) {
         return ResponseEntity.ok(groupeEtudiantService.getByCoursId(coursId));
+    }
+
+    @GetMapping("/groupes/{id}")
+    public ResponseEntity<GroupeEtudiantResponse> getGroupe(@PathVariable UUID id) {
+        return ResponseEntity.ok(groupeEtudiantService.getById(id));
     }
 }

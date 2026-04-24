@@ -1,112 +1,89 @@
 import { Injectable, inject } from '@angular/core';
-import { Observable, BehaviorSubject } from 'rxjs';
-import { Groupe, CreateGroupeDTO, UpdateGroupeDTO, GroupeGenerationOptions } from '../models/etudiant.model';
+import { Observable } from 'rxjs';
+import { map } from 'rxjs/operators';
+import { Groupe, UpdateGroupeDTO, GroupeGenerationOptions } from '../models/etudiant.model';
+import { ApiService } from './api.service';
+
+interface GroupeApiResponse {
+  id: string;
+  coursId: string;
+  coursIntitule: string;
+  numeroGroupe: number;
+  effectif: number;
+  typeGroupe: string;
+}
+
+interface GroupeApiRequest {
+  coursId: string;
+  numeroGroupe: number;
+  effectif: number;
+  typeGroupe: string;
+}
 
 @Injectable({
   providedIn: 'root'
 })
 export class GroupeService {
-  private groupeSubject = new BehaviorSubject<Groupe[]>([]);
-  public groupe$ = this.groupeSubject.asObservable();
-
-  // Mock data - à remplacer par des appels API
-  private mockGroupes: Groupe[] = [
-    {
-      id: '1',
-      nom: 'Groupe A',
-      description: 'Groupe de travaux pratiques A',
-      classeId: '1',
-      etudiantsIds: ['1', '2'],
-      capaciteMax: 15
-    },
-    {
-      id: '2',
-      nom: 'Groupe B',
-      description: 'Groupe de travaux pratiques B',
-      classeId: '1',
-      etudiantsIds: ['3'],
-      capaciteMax: 15
-    }
-  ];
-
-  constructor() {
-    this.groupeSubject.next(this.mockGroupes);
-  }
+  private apiService = inject(ApiService);
 
   getGroupes(): Observable<Groupe[]> {
-    return this.groupe$;
+    return this.apiService.get<GroupeApiResponse[]>('/bookings/groupes').pipe(
+      map(items => items.map(this.toGroupe))
+    );
   }
 
-  getGroupeById(id: string): Groupe | undefined {
-    return this.mockGroupes.find(g => g.id === id);
+  getGroupeById(id: string): Observable<Groupe> {
+    return this.apiService.get<GroupeApiResponse>(`/bookings/groupes/${id}`).pipe(
+      map(this.toGroupe)
+    );
   }
 
   getGroupesByClasse(classeId: string): Observable<Groupe[]> {
-    return new Observable(observer => {
-      const groupes = this.mockGroupes.filter(g => g.classeId === classeId);
-      observer.next(groupes);
-      observer.complete();
-    });
+    return this.getGroupes();
+  }
+
+  getGroupesByCours(coursId: string): Observable<Groupe[]> {
+    return this.apiService.get<GroupeApiResponse[]>(`/bookings/cours/${coursId}/groupes`).pipe(
+      map(items => items.map(this.toGroupe))
+    );
   }
 
   updateGroupe(groupe: UpdateGroupeDTO): Observable<Groupe> {
-    return new Observable(observer => {
-      const index = this.mockGroupes.findIndex(g => g.id === groupe.id);
-      if (index !== -1) {
-        this.mockGroupes[index] = {
-          ...this.mockGroupes[index],
-          ...groupe,
-          etudiantsIds: groupe.etudiantsIds ?? this.mockGroupes[index].etudiantsIds
-        };
-        this.groupeSubject.next([...this.mockGroupes]);
-        observer.next(this.mockGroupes[index]);
-      }
-      observer.complete();
-    });
+    const { id, ...rest } = groupe;
+    const body: GroupeApiRequest = {
+      coursId: (rest as any).coursId ?? '',
+      numeroGroupe: parseInt(rest.nom ?? '1', 10) || 1,
+      effectif: rest.capaciteMax ?? 0,
+      typeGroupe: 'TD'
+    };
+    return this.apiService.put<GroupeApiResponse>(`/bookings/groupes/${id}`, body).pipe(
+      map(this.toGroupe)
+    );
   }
 
   deleteGroupe(id: string): Observable<void> {
-    return new Observable(observer => {
-      this.mockGroupes = this.mockGroupes.filter(g => g.id !== id);
-      this.groupeSubject.next([...this.mockGroupes]);
-      observer.next();
-      observer.complete();
-    });
+    return this.apiService.delete<void>(`/bookings/groupes/${id}`);
   }
 
-  ajouterEtudiant(groupeId: string, etudiantId: string): Observable<Groupe> {
-    return new Observable(observer => {
-      const index = this.mockGroupes.findIndex(g => g.id === groupeId);
-      if (index !== -1) {
-        if (!this.mockGroupes[index].etudiantsIds.includes(etudiantId)) {
-          this.mockGroupes[index].etudiantsIds.push(etudiantId);
-          this.groupeSubject.next([...this.mockGroupes]);
-        }
-        observer.next(this.mockGroupes[index]);
-      }
-      observer.complete();
-    });
+  ajouterEtudiant(groupeId: string, etudiantId: string): Observable<GroupeApiResponse> {
+    return this.apiService.post<GroupeApiResponse>(`/bookings/groupes/${groupeId}/etudiants/${etudiantId}`, {});
   }
 
-  retirerEtudiant(groupeId: string, etudiantId: string): Observable<Groupe> {
-    return new Observable(observer => {
-      const index = this.mockGroupes.findIndex(g => g.id === groupeId);
-      if (index !== -1) {
-        this.mockGroupes[index].etudiantsIds =
-          this.mockGroupes[index].etudiantsIds.filter(id => id !== etudiantId);
-        this.groupeSubject.next([...this.mockGroupes]);
-        observer.next(this.mockGroupes[index]);
-      }
-      observer.complete();
-    });
+  retirerEtudiant(groupeId: string, etudiantId: string): Observable<GroupeApiResponse> {
+    return this.apiService.delete<GroupeApiResponse>(`/bookings/groupes/${groupeId}/etudiants/${etudiantId}`);
   }
 
   genererGroupes(options: GroupeGenerationOptions, etudiants: any[]): Observable<Groupe[]> {
-    return new Observable(observer => {
-      const groupesGeneres: Groupe[] = [];
+    const coursId = (options as any).coursId;
+    if (coursId) {
+      return this.apiService.post<{ groupes: GroupeApiResponse[] }>(`/bookings/cours/${coursId}/groupes/generate`, {}).pipe(
+        map(response => (response.groupes ?? []).map(this.toGroupe))
+      );
+    }
 
-      // Filtrer les étudiants de la classe
+    return new Observable(observer => {
       const etudiantsClasse = etudiants.filter(e => e.classeId === options.classeId);
+      const groupesGeneres: Groupe[] = [];
 
       if (etudiantsClasse.length === 0) {
         observer.next([]);
@@ -114,13 +91,14 @@ export class GroupeService {
         return;
       }
 
-      // Mélanger aléatoirement si demandé
       let etudiantsARepartir = [...etudiantsClasse];
       if (options.repartitionAleatoire) {
-        etudiantsARepartir = this.shuffleArray(etudiantsARepartir);
+        for (let i = etudiantsARepartir.length - 1; i > 0; i--) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [etudiantsARepartir[i], etudiantsARepartir[j]] = [etudiantsARepartir[j], etudiantsARepartir[i]];
+        }
       }
 
-      // Calculer le nombre de groupes et la taille
       let nombreGroupes: number;
       let tailleParGroupe: number;
 
@@ -131,42 +109,35 @@ export class GroupeService {
         tailleParGroupe = options.tailleGroupe;
         nombreGroupes = Math.ceil(etudiantsARepartir.length / tailleParGroupe);
       } else {
-        // Par défaut: groupes de 5
         tailleParGroupe = 5;
         nombreGroupes = Math.ceil(etudiantsARepartir.length / tailleParGroupe);
       }
 
-      // Créer les groupes
       for (let i = 0; i < nombreGroupes; i++) {
         const debut = i * tailleParGroupe;
         const fin = Math.min(debut + tailleParGroupe, etudiantsARepartir.length);
         const etudiantsDuGroupe = etudiantsARepartir.slice(debut, fin);
-
-        const nouveauGroupe: Groupe = {
-          id: `${Date.now()}_${i}`,
+        groupesGeneres.push({
+          id: `local_${Date.now()}_${i}`,
           nom: `${options.prefixeNom} ${i + 1}`,
-          description: `Groupe généré automatiquement`,
           classeId: options.classeId,
-          etudiantsIds: etudiantsDuGroupe.map(e => e.id),
+          etudiantsIds: etudiantsDuGroupe.map((e: any) => e.id),
           capaciteMax: tailleParGroupe
-        };
-
-        this.mockGroupes.push(nouveauGroupe);
-        groupesGeneres.push(nouveauGroupe);
+        });
       }
 
-      this.groupeSubject.next([...this.mockGroupes]);
       observer.next(groupesGeneres);
       observer.complete();
     });
   }
 
-  private shuffleArray<T>(array: T[]): T[] {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
-    }
-    return shuffled;
+  private toGroupe(r: GroupeApiResponse): Groupe {
+    return {
+      id: r.id,
+      nom: `${r.coursIntitule ?? 'Groupe'} - G${r.numeroGroupe}`,
+      classeId: r.coursId,
+      etudiantsIds: [],
+      capaciteMax: r.effectif
+    };
   }
 }

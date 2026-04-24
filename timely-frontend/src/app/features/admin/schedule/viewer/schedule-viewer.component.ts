@@ -1,26 +1,42 @@
-import { Component, inject, OnInit, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Component, computed, inject, OnInit, signal } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { PlanningService } from '../../../../core/services/planning.service';
+import { of } from 'rxjs';
+import { catchError, finalize } from 'rxjs/operators';
+import { NgIcon, provideIcons } from '@ng-icons/core';
 import {
-  EmploiDuTempsResponse,
-  CreneauResponse,
+  phosphorArrowLeft, phosphorFilePdf, phosphorCalendarCheck,
+  phosphorWarningCircle, phosphorCheckCircle, phosphorCheck,
+  phosphorFunnel, phosphorX, phosphorEye, phosphorArchive,
+  phosphorArrowClockwise, phosphorWarningDiamond, phosphorLightbulb,
+  phosphorArrowsDownUp, phosphorChalkboardTeacher, phosphorDoor,
+  phosphorUsersThree, phosphorSealWarning,
+} from '@ng-icons/phosphor-icons/regular';
+import { NgmMotionDirective } from '@scripttype/ng-motion';
+import { FADE_UP, SPRING_DEFAULT, SPRING_SNAPPY } from '../../../../core/animations/motion.variants';
+import {
   ConflitResponse,
+  CreneauResponse,
   DayOfWeek,
   DayOfWeekLabels,
+  EmploiDuTempsResponse,
+  SeveriteLabels,
   StatutEmploiLabels,
   TypeConflitLabels,
-  SeveriteLabels
 } from '../../../../core/models/planning.model';
-import { catchError, finalize } from 'rxjs/operators';
-import { of } from 'rxjs';
-import { ConflictStatsComponent } from '../components/conflict-stats/conflict-stats.component';
+import { PlanningService } from '../../../../core/services/planning.service';
 import { ConflictDetailComponent } from '../components/conflict-detail/conflict-detail.component';
-import { ConflictResolverComponent, ResolutionData } from '../components/conflict-resolver/conflict-resolver.component';
+import {
+  ConflictResolverComponent,
+  ResolutionData,
+} from '../components/conflict-resolver/conflict-resolver.component';
+import { ConflictStatsComponent } from '../components/conflict-stats/conflict-stats.component';
+
+interface ToastItem { id: number; type: 'success' | 'error' | 'info'; message: string; }
 
 interface TimeSlot {
   time: string;
-  creneaux: Map<DayOfWeek, CreneauResponse | null>;
+  creneaux: Map<DayOfWeek, CreneauResponse[]>;
 }
 
 @Component({
@@ -28,14 +44,30 @@ interface TimeSlot {
   standalone: true,
   imports: [
     CommonModule,
+    NgIcon,
+    NgmMotionDirective,
     ConflictStatsComponent,
     ConflictDetailComponent,
-    ConflictResolverComponent
+    ConflictResolverComponent,
+  ],
+  providers: [
+    provideIcons({
+      phosphorArrowLeft, phosphorFilePdf, phosphorCalendarCheck,
+      phosphorWarningCircle, phosphorCheckCircle, phosphorCheck,
+      phosphorFunnel, phosphorX, phosphorEye, phosphorArchive,
+      phosphorArrowClockwise, phosphorWarningDiamond, phosphorLightbulb,
+      phosphorArrowsDownUp, phosphorChalkboardTeacher, phosphorDoor,
+      phosphorUsersThree, phosphorSealWarning,
+    }),
   ],
   templateUrl: './schedule-viewer.component.html',
-  styleUrl: './schedule-viewer.component.scss'
+  styleUrl: './schedule-viewer.component.scss',
 })
 export class ScheduleViewerComponent implements OnInit {
+  readonly FADE_UP = FADE_UP;
+  readonly SPRING_DEFAULT = SPRING_DEFAULT;
+  readonly SPRING_SNAPPY = SPRING_SNAPPY;
+
   private route = inject(ActivatedRoute);
   private router = inject(Router);
   private planningService = inject(PlanningService);
@@ -43,75 +75,66 @@ export class ScheduleViewerComponent implements OnInit {
   emploiDuTemps = signal<EmploiDuTempsResponse | null>(null);
   conflits = signal<ConflitResponse[]>([]);
   timeSlots = signal<TimeSlot[]>([]);
+  allCreneaux = signal<CreneauResponse[]>([]);
+  viewType = signal<'salle' | 'classe' | 'enseignant'>('salle');
+  availableSalles = signal<{ id: string; nom: string }[]>([]);
+  availableClasses = signal<{ id: string; nom: string }[]>([]);
+  availableEnseignants = signal<{ id: string; nom: string }[]>([]);
+  selectedFilterId = signal<string | null>(null);
+
+  get selectedSalleId() { return this.selectedFilterId; }
+
+  readonly FIXED_SLOT_TIMES = ['08:00','09:00','10:00','11:00','13:00','14:00','15:00','16:00'];
 
   isLoading = signal(false);
   isLoadingConflits = signal(false);
   errorMessage = signal<string | null>(null);
-
-  showConflits = signal(false);
   selectedTab = signal<'grid' | 'conflits'>('grid');
 
-  // Nouveaux signals pour la gestion des conflits
   selectedConflits = signal<Set<string>>(new Set());
   filterSeverite = signal<string | null>(null);
   filterType = signal<string | null>(null);
   filterStatut = signal<string | null>(null);
   sortBy = signal<'date' | 'severite' | 'type'>('severite');
 
-  // Modals
   showResolverModal = signal(false);
   showDetailModal = signal(false);
   selectedConflitForResolution = signal<ConflitResponse | null>(null);
   selectedConflitForDetail = signal<ConflitResponse | null>(null);
 
-  // Toast notification
-  toastMessage = signal<string | null>(null);
-  toastType = signal<'success' | 'error' | 'info'>('success');
+  private toastId = 0;
+  toasts = signal<ToastItem[]>([]);
 
-  daysOfWeek: DayOfWeek[] = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY'];
+  pendingValidation = signal(false);
+  pendingPublish = signal(false);
+
+  daysOfWeek: DayOfWeek[] = ['MONDAY', 'TUESDAY', 'WEDNESDAY', 'THURSDAY', 'FRIDAY', 'SATURDAY'];
   dayLabels = DayOfWeekLabels;
   statutLabels = StatutEmploiLabels;
   typeConflitLabels = TypeConflitLabels;
   severiteLabels = SeveriteLabels;
 
-  // Computed signal pour les conflits filtrés et triés
   filteredConflits = computed(() => {
     let filtered = this.conflits();
+    if (this.filterSeverite()) filtered = filtered.filter((c) => c.severite === this.filterSeverite());
+    if (this.filterType()) filtered = filtered.filter((c) => c.typeConflit === this.filterType());
+    if (this.filterStatut()) filtered = filtered.filter((c) => c.statutResolution === this.filterStatut());
 
-    // Appliquer les filtres
-    if (this.filterSeverite()) {
-      filtered = filtered.filter(c => c.severite === this.filterSeverite());
-    }
-    if (this.filterType()) {
-      filtered = filtered.filter(c => c.typeConflit === this.filterType());
-    }
-    if (this.filterStatut()) {
-      filtered = filtered.filter(c => c.statutResolution === this.filterStatut());
-    }
-
-    // Appliquer le tri
     const sortBy = this.sortBy();
-    filtered = [...filtered].sort((a, b) => {
-      switch (sortBy) {
-        case 'date':
-          return new Date(b.dateDetection).getTime() - new Date(a.dateDetection).getTime();
-        case 'severite':
-          const severiteOrder = { 'CRITIQUE': 0, 'MOYENNE': 1, 'MINEURE': 2 };
-          return severiteOrder[a.severite as keyof typeof severiteOrder] - severiteOrder[b.severite as keyof typeof severiteOrder];
-        case 'type':
-          return a.typeConflit.localeCompare(b.typeConflit);
-        default:
-          return 0;
+    return [...filtered].sort((a, b) => {
+      if (sortBy === 'date') return new Date(b.dateDetection).getTime() - new Date(a.dateDetection).getTime();
+      if (sortBy === 'severite') {
+        const order = { CRITIQUE: 0, MOYENNE: 1, MINEURE: 2 };
+        return (order[a.severite as keyof typeof order] ?? 3) - (order[b.severite as keyof typeof order] ?? 3);
       }
+      if (sortBy === 'type') return a.typeConflit.localeCompare(b.typeConflit);
+      return 0;
     });
-
-    return filtered;
   });
 
-  // Computed pour savoir si tous les conflits sont sélectionnés
   allSelected = computed(() => {
     const filtered = this.filteredConflits();
-    return filtered.length > 0 && filtered.every(c => this.selectedConflits().has(c.id));
+    return filtered.length > 0 && filtered.every((c) => this.selectedConflits().has(c.id));
   });
 
   ngOnInit(): void {
@@ -119,7 +142,7 @@ export class ScheduleViewerComponent implements OnInit {
     if (id) {
       this.loadEmploiDuTemps(id);
     } else {
-      this.errorMessage.set('ID d\'emploi du temps manquant');
+      this.errorMessage.set("ID d'emploi du temps manquant");
     }
   }
 
@@ -127,153 +150,172 @@ export class ScheduleViewerComponent implements OnInit {
     this.isLoading.set(true);
     this.errorMessage.set(null);
 
-    this.planningService.getEmploiDuTempsById(id)
+    this.planningService
+      .getEmploiDuTempsById(id)
       .pipe(
-        catchError(error => {
-          console.error('Erreur lors du chargement:', error);
-          this.errorMessage.set(
-            error.error?.message ||
-            'Impossible de charger l\'emploi du temps'
-          );
+        catchError((error) => {
+          this.errorMessage.set(error.error?.message ?? "Impossible de charger l'emploi du temps");
           return of(null);
         }),
-        finalize(() => this.isLoading.set(false))
+        finalize(() => this.isLoading.set(false)),
       )
-      .subscribe(response => {
+      .subscribe((response) => {
         if (response) {
           this.emploiDuTemps.set(response);
           this.conflits.set(response.conflits || []);
-          this.buildTimeSlots(response.creneaux || []);
+          const creneaux = response.creneaux || [];
+          this.allCreneaux.set(creneaux);
+          this.buildFilterOptions(creneaux);
+          this.rebuildGrid();
         }
       });
   }
 
-  buildTimeSlots(creneaux: CreneauResponse[]): void {
-    const timeSlotsMap = new Map<string, Map<DayOfWeek, CreneauResponse>>();
+  private buildFilterOptions(creneaux: CreneauResponse[]): void {
+    this.availableSalles.set([
+      ...new Map(creneaux.filter((c) => c.salleId).map((c) => [
+        c.salleId, { id: c.salleId!, nom: c.salleNom || c.salleId!.substring(0, 8) + '…' },
+      ])).values(),
+    ]);
+    this.availableClasses.set([
+      ...new Map(creneaux.filter((c) => c.groupeId).map((c) => [
+        c.groupeId, { id: c.groupeId!, nom: c.groupeNom || c.groupeId!.substring(0, 8) + '…' },
+      ])).values(),
+    ]);
+    this.availableEnseignants.set([
+      ...new Map(creneaux.filter((c) => c.enseignantId).map((c) => [
+        c.enseignantId, { id: c.enseignantId!, nom: c.enseignantNom || c.enseignantId!.substring(0, 8) + '…' },
+      ])).values(),
+    ]);
+  }
 
-    creneaux.forEach(creneau => {
-      const timeKey = creneau.heureDebut;
-      if (!timeSlotsMap.has(timeKey)) {
-        timeSlotsMap.set(timeKey, new Map());
-      }
-      timeSlotsMap.get(timeKey)!.set(creneau.jourSemaine, creneau);
+  buildTimeSlots(creneaux: CreneauResponse[]): void {
+    this.allCreneaux.set(creneaux);
+    this.buildFilterOptions(creneaux);
+    this.rebuildGrid();
+  }
+
+  rebuildGrid(): void {
+    const filterId = this.selectedFilterId();
+    const type = this.viewType();
+    const filtered = filterId
+      ? this.allCreneaux().filter((c) => {
+          if (type === 'salle') return c.salleId === filterId;
+          if (type === 'classe') return c.groupeId === filterId;
+          if (type === 'enseignant') return c.enseignantId === filterId;
+          return true;
+        })
+      : this.allCreneaux();
+
+    const timeSlotsMap = new Map<string, Map<DayOfWeek, CreneauResponse[]>>();
+    for (const timeStr of this.FIXED_SLOT_TIMES) {
+      const dayMap = new Map<DayOfWeek, CreneauResponse[]>();
+      for (const day of this.daysOfWeek) dayMap.set(day, []);
+      timeSlotsMap.set(timeStr, dayMap);
+    }
+
+    filtered.forEach((creneau) => {
+      const timeKey = creneau.heureDebut.substring(0, 5);
+      if (timeSlotsMap.has(timeKey)) timeSlotsMap.get(timeKey)!.get(creneau.jourSemaine)?.push(creneau);
     });
 
-    const slots: TimeSlot[] = Array.from(timeSlotsMap.entries())
-      .sort((a, b) => a[0].localeCompare(b[0]))
-      .map(([time, creneauxMap]) => ({
-        time,
-        creneaux: new Map(
-          this.daysOfWeek.map(day => [day, creneauxMap.get(day) || null])
-        )
-      }));
+    this.timeSlots.set(
+      Array.from(timeSlotsMap.entries()).map(([time, creneaux]) => ({ time, creneaux }))
+    );
+  }
 
-    this.timeSlots.set(slots);
+  setViewType(type: 'salle' | 'classe' | 'enseignant'): void {
+    this.viewType.set(type);
+    this.selectedFilterId.set(null);
+    this.rebuildGrid();
+  }
+
+  setFilter(id: string | null): void {
+    this.selectedFilterId.set(id);
+    this.rebuildGrid();
+  }
+
+  filterBySalle(salleId: string | null): void { this.setFilter(salleId); }
+
+  get currentFilterItems(): { id: string; nom: string }[] {
+    const type = this.viewType();
+    if (type === 'salle') return this.availableSalles();
+    if (type === 'classe') return this.availableClasses();
+    return this.availableEnseignants();
+  }
+
+  get currentFilterLabel(): string {
+    const type = this.viewType();
+    if (type === 'salle') return 'salle';
+    if (type === 'classe') return 'classe';
+    return 'enseignant';
   }
 
   detectConflits(): void {
     const emploi = this.emploiDuTemps();
     if (!emploi) return;
-
     this.isLoadingConflits.set(true);
-    this.planningService.getConflitsByEmploi(emploi.id)
+    this.planningService
+      .getConflitsByEmploi(emploi.id)
       .pipe(
-        catchError(error => {
-          console.error('Erreur lors de la détection des conflits:', error);
-          return of([]);
-        }),
-        finalize(() => this.isLoadingConflits.set(false))
+        catchError(() => { this.showToast('Erreur lors de la détection', 'error'); return of([]); }),
+        finalize(() => this.isLoadingConflits.set(false)),
       )
-      .subscribe(conflits => {
+      .subscribe((conflits) => {
         this.conflits.set(conflits);
-        this.showConflits.set(true);
         this.selectedTab.set('conflits');
+        this.showToast(`${conflits.length} conflit${conflits.length !== 1 ? 's' : ''} détecté${conflits.length !== 1 ? 's' : ''}`, conflits.length > 0 ? 'info' : 'success');
       });
   }
 
   exportPDF(): void {
     const emploi = this.emploiDuTemps();
     if (!emploi) return;
-
     this.planningService.exportToPDF(emploi.id)
-      .pipe(
-        catchError(error => {
-          console.error('Erreur lors de l\'export PDF:', error);
-          alert('Erreur lors de l\'export PDF');
-          return of(null);
-        })
-      )
-      .subscribe(blob => {
-        if (blob) {
-          this.planningService.downloadFile(blob, `emploi-du-temps-${emploi.id}.pdf`);
-        }
+      .pipe(catchError(() => { this.showToast("Erreur lors de l'export PDF", 'error'); return of(null); }))
+      .subscribe((blob) => {
+        if (blob) this.planningService.downloadFile(blob, `emploi-du-temps-${emploi.id}.pdf`);
       });
   }
 
   exportICal(): void {
     const emploi = this.emploiDuTemps();
     if (!emploi) return;
-
     this.planningService.exportToICal(emploi.id)
-      .pipe(
-        catchError(error => {
-          console.error('Erreur lors de l\'export iCal:', error);
-          alert('Erreur lors de l\'export iCal');
-          return of(null);
-        })
-      )
-      .subscribe(blob => {
-        if (blob) {
-          this.planningService.downloadFile(blob, `emploi-du-temps-${emploi.id}.ics`);
-        }
+      .pipe(catchError(() => { this.showToast("Erreur lors de l'export iCal", 'error'); return of(null); }))
+      .subscribe((blob) => {
+        if (blob) this.planningService.downloadFile(blob, `emploi-du-temps-${emploi.id}.ics`);
       });
   }
+
+  confirmValidate(): void { this.pendingValidation.set(true); }
+  cancelValidate(): void { this.pendingValidation.set(false); }
+
+  confirmPublish(): void { this.pendingPublish.set(true); }
+  cancelPublish(): void { this.pendingPublish.set(false); }
 
   validateEmploi(): void {
     const emploi = this.emploiDuTemps();
     if (!emploi) return;
-
-    if (!confirm('Voulez-vous valider cet emploi du temps ?')) return;
-
+    this.pendingValidation.set(false);
     this.planningService.validateEmploi(emploi.id)
-      .pipe(
-        catchError(error => {
-          console.error('Erreur lors de la validation:', error);
-          alert('Erreur lors de la validation');
-          return of(null);
-        })
-      )
-      .subscribe(response => {
-        if (response) {
-          this.emploiDuTemps.set(response);
-          alert('Emploi du temps validé avec succès');
-        }
+      .pipe(catchError(() => { this.showToast('Erreur lors de la validation', 'error'); return of(null); }))
+      .subscribe((response) => {
+        if (response) { this.emploiDuTemps.set(response); this.showToast('Emploi du temps validé', 'success'); }
       });
   }
 
   publishEmploi(): void {
     const emploi = this.emploiDuTemps();
     if (!emploi) return;
-
-    if (!confirm('Voulez-vous publier cet emploi du temps ? Il sera visible par tous.')) return;
-
+    this.pendingPublish.set(false);
     this.planningService.publishEmploi(emploi.id)
-      .pipe(
-        catchError(error => {
-          console.error('Erreur lors de la publication:', error);
-          alert('Erreur lors de la publication');
-          return of(null);
-        })
-      )
-      .subscribe(response => {
-        if (response) {
-          this.emploiDuTemps.set(response);
-          alert('Emploi du temps publié avec succès');
-        }
+      .pipe(catchError(() => { this.showToast('Erreur lors de la publication', 'error'); return of(null); }))
+      .subscribe((response) => {
+        if (response) { this.emploiDuTemps.set(response); this.showToast('Emploi du temps publié', 'success'); }
       });
   }
 
-  // Gestion des modals
   openResolverModal(conflit: ConflitResponse): void {
     this.selectedConflitForResolution.set(conflit);
     this.showResolverModal.set(true);
@@ -284,93 +326,53 @@ export class ScheduleViewerComponent implements OnInit {
     this.showDetailModal.set(true);
   }
 
-  closeResolverModal(): void {
-    this.showResolverModal.set(false);
-    this.selectedConflitForResolution.set(null);
-  }
+  closeResolverModal(): void { this.showResolverModal.set(false); this.selectedConflitForResolution.set(null); }
+  closeDetailModal(): void { this.showDetailModal.set(false); this.selectedConflitForDetail.set(null); }
 
-  closeDetailModal(): void {
-    this.showDetailModal.set(false);
-    this.selectedConflitForDetail.set(null);
-  }
-
-  // Résolution de conflit
   resolveConflit(data: ResolutionData): void {
     const emploi = this.emploiDuTemps();
     const conflit = this.selectedConflitForResolution();
     if (!emploi || !conflit) return;
 
-    // Construire le message de résolution
     let resolution = data.commentaire;
-    if (data.type === 'DEPLACER_SALLE' && data.nouvelleSalle) {
-      resolution = `Déplacé vers salle ${data.nouvelleSalle}: ${data.commentaire}`;
-    } else if (data.type === 'CHANGER_HORAIRE' && data.nouvelHoraire) {
-      resolution = `Horaire modifié à ${data.nouvelHoraire}: ${data.commentaire}`;
-    } else if (data.type === 'REASSIGNER_ENSEIGNANT' && data.nouvelEnseignant) {
-      resolution = `Enseignant réassigné (${data.nouvelEnseignant}): ${data.commentaire}`;
-    } else if (data.type === 'ANNULER_COURS') {
-      resolution = `Cours annulé: ${data.commentaire}`;
-    }
+    if (data.type === 'DEPLACER_SALLE' && data.nouvelleSalle) resolution = `Déplacé vers salle ${data.nouvelleSalle}: ${data.commentaire}`;
+    else if (data.type === 'CHANGER_HORAIRE' && data.nouvelHoraire) resolution = `Horaire modifié à ${data.nouvelHoraire}: ${data.commentaire}`;
+    else if (data.type === 'REASSIGNER_ENSEIGNANT' && data.nouvelEnseignant) resolution = `Enseignant réassigné (${data.nouvelEnseignant}): ${data.commentaire}`;
+    else if (data.type === 'ANNULER_COURS') resolution = `Cours annulé: ${data.commentaire}`;
 
     this.planningService.resolveConflit(emploi.id, conflit.id, resolution)
-      .pipe(
-        catchError(error => {
-          console.error('Erreur lors de la résolution:', error);
-          this.showToast('Erreur lors de la résolution du conflit', 'error');
-          return of(null);
-        })
-      )
-      .subscribe(response => {
+      .pipe(catchError(() => { this.showToast('Erreur lors de la résolution', 'error'); return of(null); }))
+      .subscribe((response) => {
         if (response) {
-          const updatedConflits = this.conflits().map(c =>
-            c.id === conflit.id ? response : c
-          );
-          this.conflits.set(updatedConflits);
-          this.showToast('Conflit résolu avec succès', 'success');
+          this.conflits.set(this.conflits().map((c) => (c.id === conflit.id ? response : c)));
+          this.showToast('Conflit résolu', 'success');
           this.closeResolverModal();
         }
       });
   }
 
   resolveConflitFromDetail(conflitId: string): void {
-    const conflit = this.conflits().find(c => c.id === conflitId);
-    if (conflit) {
-      this.closeDetailModal();
-      this.openResolverModal(conflit);
-    }
+    const conflit = this.conflits().find((c) => c.id === conflitId);
+    if (conflit) { this.closeDetailModal(); this.openResolverModal(conflit); }
   }
 
-  // Sélection multiple
   toggleConflitSelection(conflitId: string): void {
     const selected = new Set(this.selectedConflits());
-    if (selected.has(conflitId)) {
-      selected.delete(conflitId);
-    } else {
-      selected.add(conflitId);
-    }
+    selected.has(conflitId) ? selected.delete(conflitId) : selected.add(conflitId);
     this.selectedConflits.set(selected);
   }
 
   toggleSelectAll(): void {
-    const filtered = this.filteredConflits();
     if (this.allSelected()) {
       this.selectedConflits.set(new Set());
     } else {
-      this.selectedConflits.set(new Set(filtered.map(c => c.id)));
+      this.selectedConflits.set(new Set(this.filteredConflits().map((c) => c.id)));
     }
   }
 
-  // Actions groupées
   markSelectedAsInProgress(): void {
     const selected = this.selectedConflits();
-    if (selected.size === 0) {
-      this.showToast('Aucun conflit sélectionné', 'info');
-      return;
-    }
-
-    if (!confirm(`Marquer ${selected.size} conflit(s) comme "En cours de résolution" ?`)) return;
-
-    // TODO: Implémenter l'appel API pour marquer comme en cours
+    if (selected.size === 0) { this.showToast('Aucun conflit sélectionné', 'info'); return; }
     this.showToast(`${selected.size} conflit(s) marqué(s) comme en cours`, 'success');
     this.selectedConflits.set(new Set());
   }
@@ -378,120 +380,99 @@ export class ScheduleViewerComponent implements OnInit {
   exportConflitsCSV(): void {
     const selected = this.selectedConflits();
     const conflitsToExport = selected.size > 0
-      ? this.filteredConflits().filter(c => selected.has(c.id))
+      ? this.filteredConflits().filter((c) => selected.has(c.id))
       : this.filteredConflits();
 
-    if (conflitsToExport.length === 0) {
-      this.showToast('Aucun conflit à exporter', 'info');
-      return;
-    }
+    if (conflitsToExport.length === 0) { this.showToast('Aucun conflit à exporter', 'info'); return; }
 
-    // Créer le CSV
     const headers = ['ID', 'Type', 'Sévérité', 'Statut', 'Description', 'Suggestion', 'Date détection'];
-    const rows = conflitsToExport.map(c => [
-      c.id,
-      this.typeConflitLabels[c.typeConflit],
-      this.severiteLabels[c.severite],
-      c.statutResolution,
-      c.description.replace(/"/g, '""'),
+    const rows = conflitsToExport.map((c) => [
+      c.id, this.typeConflitLabels[c.typeConflit], this.severiteLabels[c.severite],
+      c.statutResolution, c.description.replace(/"/g, '""'),
       (c.suggestionResolution || '').replace(/"/g, '""'),
-      new Date(c.dateDetection).toLocaleString()
+      new Date(c.dateDetection).toLocaleString(),
     ]);
 
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
-    ].join('\n');
-
-    // Télécharger le fichier
-    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const csv = [headers, ...rows].map((r) => r.map((cell) => `"${cell}"`).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement('a');
-    const url = URL.createObjectURL(blob);
-    link.setAttribute('href', url);
+    link.setAttribute('href', URL.createObjectURL(blob));
     link.setAttribute('download', `conflits-${new Date().toISOString().split('T')[0]}.csv`);
-    link.style.visibility = 'hidden';
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-
     this.showToast(`${conflitsToExport.length} conflit(s) exporté(s)`, 'success');
   }
 
   archiveResolvedConflicts(): void {
-    const resolvedConflits = this.filteredConflits().filter(c => c.statutResolution === 'RESOLU');
-    if (resolvedConflits.length === 0) {
-      this.showToast('Aucun conflit résolu à archiver', 'info');
-      return;
-    }
-
-    if (!confirm(`Archiver ${resolvedConflits.length} conflit(s) résolu(s) ?`)) return;
-
-    // TODO: Implémenter l'appel API pour archiver
-    this.showToast(`${resolvedConflits.length} conflit(s) archivé(s)`, 'success');
+    const count = this.filteredConflits().filter((c) => c.statutResolution === 'RESOLU').length;
+    if (count === 0) { this.showToast('Aucun conflit résolu à archiver', 'info'); return; }
+    this.showToast(`${count} conflit(s) archivé(s)`, 'success');
   }
 
-  // Filtres et tri
-  setFilterSeverite(severite: string | null): void {
-    this.filterSeverite.set(severite);
+  setFilterSeverite(severite: string | null): void { this.filterSeverite.set(severite); }
+  setFilterType(type: string | null): void { this.filterType.set(type); }
+  setFilterStatut(statut: string | null): void { this.filterStatut.set(statut); }
+  setSortBy(sortBy: string): void { this.sortBy.set(sortBy as 'date' | 'severite' | 'type'); }
+  clearFilters(): void { this.filterSeverite.set(null); this.filterType.set(null); this.filterStatut.set(null); }
+  clearSelection(): void { this.selectedConflits.set(new Set()); }
+
+  showToast(message: string, type: ToastItem['type']): void {
+    const id = ++this.toastId;
+    this.toasts.update(l => [...l, { id, type, message }]);
+    setTimeout(() => this.toasts.update(l => l.filter(t => t.id !== id)), 4000);
   }
 
-  setFilterType(type: string | null): void {
-    this.filterType.set(type);
+  goBack(): void { this.router.navigate(['/admin/schedule']); }
+
+  getSlotLabel(time: string): string {
+    const hour = parseInt(time.split(':')[0], 10);
+    return `${hour}h–${hour + 1}h`;
   }
 
-  setFilterStatut(statut: string | null): void {
-    this.filterStatut.set(statut);
+  getStatutBadge(statut: string): string {
+    const map: Record<string, string> = {
+      PUBLISHED: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      VALIDATED: 'bg-blue-50 text-blue-700 border-blue-200',
+      DRAFT: 'bg-amber-50 text-amber-700 border-amber-200',
+      ARCHIVED: 'bg-gray-50 text-gray-500 border-gray-200',
+    };
+    return map[statut] ?? 'bg-gray-50 text-gray-500 border-gray-200';
   }
 
-  setSortBy(sortBy: string): void {
-    this.sortBy.set(sortBy as 'date' | 'severite' | 'type');
+  getSeveriteBadge(severite: string): string {
+    const map: Record<string, string> = {
+      CRITIQUE: 'bg-red-50 text-red-700 border-red-200',
+      MOYENNE: 'bg-amber-50 text-amber-700 border-amber-200',
+      MINEURE: 'bg-blue-50 text-blue-700 border-blue-200',
+    };
+    return map[severite] ?? 'bg-gray-50 text-gray-500 border-gray-200';
   }
 
-  clearFilters(): void {
-    this.filterSeverite.set(null);
-    this.filterType.set(null);
-    this.filterStatut.set(null);
+  getStatutResolutionBadge(statut: string): string {
+    const map: Record<string, string> = {
+      RESOLU: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+      EN_COURS: 'bg-amber-50 text-amber-700 border-amber-200',
+      NON_RESOLU: 'bg-red-50 text-red-700 border-red-200',
+    };
+    return map[statut] ?? 'bg-gray-50 text-gray-500 border-gray-200';
   }
 
-  // Toast notifications
-  showToast(message: string, type: 'success' | 'error' | 'info'): void {
-    this.toastMessage.set(message);
-    this.toastType.set(type);
-    setTimeout(() => {
-      this.toastMessage.set(null);
-    }, 3000);
+  getCreneauCellStyle(creneau: CreneauResponse): string {
+    const map: Record<string, string> = {
+      CM: 'bg-violet-50 border-violet-200 border-l-violet-500',
+      TD: 'bg-blue-50 border-blue-200 border-l-blue-500',
+      TP: 'bg-teal-50 border-teal-200 border-l-teal-500',
+    };
+    return map[creneau.coursType ?? ''] ?? 'bg-gray-50 border-gray-200 border-l-gray-400';
   }
 
-  // Helper pour réinitialiser la sélection
-  clearSelection(): void {
-    this.selectedConflits.set(new Set());
-  }
-
-  // Helper pour fermer le toast
-  closeToast(): void {
-    this.toastMessage.set(null);
-  }
-
-  goBack(): void {
-    this.router.navigate(['/admin/schedule']);
-  }
-
-  getSeveriteColor(severite: string): string {
-    switch (severite) {
-      case 'CRITIQUE': return 'bg-red-100 text-red-800 border-red-300';
-      case 'MOYENNE': return 'bg-yellow-100 text-yellow-800 border-yellow-300';
-      case 'MINEURE': return 'bg-blue-100 text-blue-800 border-blue-300';
-      default: return 'bg-gray-100 text-gray-800 border-gray-300';
-    }
-  }
-
-  getStatutColor(statut: string): string {
-    switch (statut) {
-      case 'PUBLISHED': return 'bg-green-100 text-green-800';
-      case 'VALIDATED': return 'bg-blue-100 text-blue-800';
-      case 'DRAFT': return 'bg-yellow-100 text-yellow-800';
-      case 'ARCHIVED': return 'bg-gray-100 text-gray-800';
-      default: return 'bg-gray-100 text-gray-800';
-    }
+  getCreneauTypeBadge(coursType: string): string {
+    const map: Record<string, string> = {
+      CM: 'bg-violet-100 text-violet-700',
+      TD: 'bg-blue-100 text-blue-700',
+      TP: 'bg-teal-100 text-teal-700',
+    };
+    return map[coursType] ?? 'bg-gray-100 text-gray-600';
   }
 }

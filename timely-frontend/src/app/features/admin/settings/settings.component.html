@@ -1,1 +1,328 @@
-<p>settings.component works!</p>
+<div class="flex-1 p-6 space-y-5 min-h-0">
+
+  <div class="fixed top-5 right-5 z-50 flex flex-col gap-2 pointer-events-none">
+    @for (t of toasts(); track t.id) {
+      <div class="pointer-events-auto flex items-center gap-3 px-4 py-3 rounded-xl shadow-[0_8px_24px_rgba(17,24,39,0.14)] text-sm font-medium border min-w-[280px]"
+           [class]="t.type === 'success' ? 'bg-white text-green-800 border-green-100' : 'bg-white text-red-800 border-red-100'"
+           ngmMotion [initial]="{ opacity: 0, x: 24 }" [animate]="{ opacity: 1, x: 0 }"
+           [exit]="{ opacity: 0, x: 24 }" [transition]="SPRING_SNAPPY">
+        <ng-icon [name]="t.type === 'success' ? 'phosphorCheckCircle' : 'phosphorWarningCircle'"
+                 style="font-size:0.9rem" class="flex-shrink-0"></ng-icon>
+        <span class="flex-1">{{ t.message }}</span>
+        <button (click)="dismissToast(t.id)" class="text-gray-400 hover:text-gray-600 flex-shrink-0">
+          <ng-icon name="phosphorX" style="font-size:0.75rem"></ng-icon>
+        </button>
+      </div>
+    }
+  </div>
+
+  <div ngmMotion [initial]="'hidden'" [animate]="'visible'" [variants]="FADE_UP" [transition]="SPRING_DEFAULT">
+    <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.15em] mb-0.5">Administration</p>
+    <h1 class="font-display text-2xl font-semibold text-gray-900 tracking-tight">Paramètres</h1>
+  </div>
+
+  <div class="flex gap-6"
+       ngmMotion [initial]="'hidden'" [animate]="'visible'" [variants]="FADE_UP"
+       [transition]="{ type: 'spring', stiffness: 280, damping: 24, delay: 0.06 }">
+
+    <div class="w-52 flex-shrink-0">
+      <nav class="space-y-1">
+        @for (tab of tabs; track tab.id) {
+          <button (click)="activeTab.set(tab.id)"
+                  ngmMotion [whileTap]="{ scale: 0.98 }"
+                  [class]="'w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-sm font-medium transition-all ' +
+                    (activeTab() === tab.id
+                      ? 'bg-accent-500 text-white shadow-[0_2px_8px_rgba(99,102,241,0.2)]'
+                      : 'text-gray-600 hover:bg-gray-100')">
+            <ng-icon [name]="tab.icon" style="font-size:0.9rem"></ng-icon>
+            {{ tab.label }}
+          </button>
+        }
+      </nav>
+    </div>
+
+    <div class="flex-1 min-w-0">
+
+      @if (activeTab() === 'profil') {
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-[0_1px_4px_rgba(17,24,39,0.05)] overflow-hidden"
+             ngmMotion [initial]="{ opacity: 0, x: 8 }" [animate]="{ opacity: 1, x: 0 }" [transition]="SPRING_DEFAULT">
+          <div class="px-6 py-4 border-b border-gray-50">
+            <p class="text-sm font-semibold text-gray-900">Informations personnelles</p>
+            <p class="text-xs text-gray-400 mt-0.5">Modifiez vos informations de profil</p>
+          </div>
+          <div class="p-6 space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1.5">Prénom</label>
+                <input type="text" [ngModel]="profil().name" (ngModelChange)="updateProfilField('name', $event)"
+                       class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1.5">Nom</label>
+                <input type="text" [ngModel]="profil().surname" (ngModelChange)="updateProfilField('surname', $event)"
+                       class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">Email</label>
+              <input type="email" [ngModel]="profil().email" (ngModelChange)="updateProfilField('email', $event)"
+                     class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">Téléphone</label>
+              <input type="tel" [ngModel]="profil().phone" (ngModelChange)="updateProfilField('phone', $event)"
+                     class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all" />
+            </div>
+            @if (profil().role) {
+              <div class="flex items-center gap-2 py-2 px-3 bg-gray-50 rounded-xl">
+                <ng-icon name="phosphorUser" class="text-gray-400" style="font-size:0.8rem"></ng-icon>
+                <span class="text-xs text-gray-500">Rôle : <span class="font-semibold text-gray-700">{{ profil().role }}</span></span>
+              </div>
+            }
+            <div class="pt-2">
+              <button (click)="saveProfil()" [disabled]="savingProfil()"
+                      ngmMotion [whileTap]="{ scale: 0.97 }"
+                      class="flex items-center gap-2 h-9 px-5 rounded-xl bg-accent-500 hover:bg-accent-600 disabled:opacity-50 text-white text-sm font-semibold transition-colors shadow-[0_2px_8px_rgba(99,102,241,0.25)]">
+                @if (savingProfil()) {
+                  <svg class="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                  <span>Sauvegarde…</span>
+                } @else {
+                  <span>Sauvegarder</span>
+                }
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (activeTab() === 'securite') {
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-[0_1px_4px_rgba(17,24,39,0.05)] overflow-hidden"
+             ngmMotion [initial]="{ opacity: 0, x: 8 }" [animate]="{ opacity: 1, x: 0 }" [transition]="SPRING_DEFAULT">
+          <div class="px-6 py-4 border-b border-gray-50">
+            <p class="text-sm font-semibold text-gray-900">Changer le mot de passe</p>
+          </div>
+          <div class="p-6 space-y-4">
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">Mot de passe actuel</label>
+              <div class="relative">
+                <input [type]="showCurrent() ? 'text' : 'password'"
+                       [ngModel]="password().current" (ngModelChange)="updatePasswordField('current', $event)"
+                       class="w-full h-9 px-3 pr-9 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all" />
+                <button type="button" (click)="toggleShowCurrent()"
+                        class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  <ng-icon [name]="showCurrent() ? 'phosphorEyeSlash' : 'phosphorEye'" style="font-size:0.85rem"></ng-icon>
+                </button>
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">Nouveau mot de passe</label>
+              <div class="relative">
+                <input [type]="showNext() ? 'text' : 'password'"
+                       [ngModel]="password().next" (ngModelChange)="updatePasswordField('next', $event)"
+                       class="w-full h-9 px-3 pr-9 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all" />
+                <button type="button" (click)="toggleShowNext()"
+                        class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  <ng-icon [name]="showNext() ? 'phosphorEyeSlash' : 'phosphorEye'" style="font-size:0.85rem"></ng-icon>
+                </button>
+              </div>
+              @if (password().next) {
+                <div class="mt-2 space-y-1">
+                  @for (rule of passwordRules(); track rule.text) {
+                    <div class="flex items-center gap-1.5 text-xs" [class]="rule.ok ? 'text-green-600' : 'text-gray-400'">
+                      <ng-icon [name]="rule.ok ? 'phosphorCheckCircle' : 'phosphorWarningCircle'" style="font-size:0.7rem"></ng-icon>
+                      {{ rule.text }}
+                    </div>
+                  }
+                </div>
+              }
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">Confirmer le nouveau mot de passe</label>
+              <div class="relative">
+                <input [type]="showConfirm() ? 'text' : 'password'"
+                       [ngModel]="password().confirm" (ngModelChange)="updatePasswordField('confirm', $event)"
+                       class="w-full h-9 px-3 pr-9 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all" />
+                <button type="button" (click)="toggleShowConfirm()"
+                        class="absolute right-2.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  <ng-icon [name]="showConfirm() ? 'phosphorEyeSlash' : 'phosphorEye'" style="font-size:0.85rem"></ng-icon>
+                </button>
+              </div>
+            </div>
+            <div class="pt-2">
+              <button (click)="savePassword()" [disabled]="savingPassword()"
+                      ngmMotion [whileTap]="{ scale: 0.97 }"
+                      class="flex items-center gap-2 h-9 px-5 rounded-xl bg-accent-500 hover:bg-accent-600 disabled:opacity-50 text-white text-sm font-semibold transition-colors shadow-[0_2px_8px_rgba(99,102,241,0.25)]">
+                @if (savingPassword()) { <span>Modification…</span> } @else { <span>Modifier le mot de passe</span> }
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (activeTab() === 'etablissement') {
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-[0_1px_4px_rgba(17,24,39,0.05)] overflow-hidden"
+             ngmMotion [initial]="{ opacity: 0, x: 8 }" [animate]="{ opacity: 1, x: 0 }" [transition]="SPRING_DEFAULT">
+          <div class="px-6 py-4 border-b border-gray-50">
+            <p class="text-sm font-semibold text-gray-900">Informations de l'établissement</p>
+          </div>
+          <div class="p-6 space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1.5">Nom</label>
+                <input type="text" [ngModel]="etablissement().nom" (ngModelChange)="updateEtabField('nom', $event)"
+                       class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1.5">Code</label>
+                <input type="text" [ngModel]="etablissement().code" (ngModelChange)="updateEtabField('code', $event)"
+                       class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1.5">Adresse</label>
+              <input type="text" [ngModel]="etablissement().adresse" (ngModelChange)="updateEtabField('adresse', $event)"
+                     class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all" />
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1.5">Téléphone</label>
+                <input type="tel" [ngModel]="etablissement().telephone" (ngModelChange)="updateEtabField('telephone', $event)"
+                       class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all" />
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1.5">Email</label>
+                <input type="email" [ngModel]="etablissement().email" (ngModelChange)="updateEtabField('email', $event)"
+                       class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all" />
+              </div>
+            </div>
+            <div class="pt-2">
+              <button (click)="saveEtablissement()" [disabled]="savingEtab()"
+                      ngmMotion [whileTap]="{ scale: 0.97 }"
+                      class="flex items-center gap-2 h-9 px-5 rounded-xl bg-accent-500 hover:bg-accent-600 disabled:opacity-50 text-white text-sm font-semibold transition-colors shadow-[0_2px_8px_rgba(99,102,241,0.25)]">
+                @if (savingEtab()) { <span>Sauvegarde…</span> } @else { <span>Sauvegarder</span> }
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+      @if (activeTab() === 'notifications') {
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-[0_1px_4px_rgba(17,24,39,0.05)] overflow-hidden"
+             ngmMotion [initial]="{ opacity: 0, x: 8 }" [animate]="{ opacity: 1, x: 0 }" [transition]="SPRING_DEFAULT">
+          <div class="px-6 py-4 border-b border-gray-50">
+            <p class="text-sm font-semibold text-gray-900">Préférences de notifications</p>
+          </div>
+          <div class="divide-y divide-gray-50">
+            @for (entry of [
+              { key: 'conflits',       label: 'Conflits d\'emploi du temps',   desc: 'Alertes en temps réel' },
+              { key: 'reservations',   label: 'Réservations de salles',        desc: 'Confirmations et modifications' },
+              { key: 'rappels',        label: 'Rappels de cours',              desc: 'Avant chaque séance' },
+              { key: 'rapports',       label: 'Rapports générés',              desc: 'Notification de disponibilité' },
+              { key: 'connexions',     label: 'Connexions suspectes',          desc: 'Sécurité du compte' },
+              { key: 'emailConflits',  label: 'Email — Conflits',              desc: 'Résumé par email' },
+              { key: 'emailRapports',  label: 'Email — Rapports',              desc: 'Envoi des rapports par email' }
+            ]; track entry.key) {
+              <div class="flex items-center justify-between px-6 py-3.5">
+                <div>
+                  <p class="text-sm font-medium text-gray-800">{{ entry.label }}</p>
+                  <p class="text-xs text-gray-400">{{ entry.desc }}</p>
+                </div>
+                <button type="button"
+                        (click)="toggleNotif($any(entry.key))"
+                        ngmMotion [whileTap]="{ scale: 0.92 }"
+                        [class]="'relative w-10 h-5.5 rounded-full transition-colors flex-shrink-0 ' +
+                          (getNotif($any(entry.key)) ? 'bg-accent-500' : 'bg-gray-200')">
+                  <span [class]="'absolute top-0.5 w-4.5 h-4.5 rounded-full bg-white shadow-sm transition-transform ' +
+                    (getNotif($any(entry.key)) ? 'translate-x-5' : 'translate-x-0.5')"></span>
+                </button>
+              </div>
+            }
+          </div>
+          <div class="px-6 py-4 border-t border-gray-50">
+            <button (click)="saveNotifications()" [disabled]="savingNotifications()"
+                    ngmMotion [whileTap]="{ scale: 0.97 }"
+                    class="flex items-center gap-2 h-9 px-5 rounded-xl bg-accent-500 hover:bg-accent-600 disabled:opacity-50 text-white text-sm font-semibold transition-colors shadow-[0_2px_8px_rgba(99,102,241,0.25)]">
+              Sauvegarder les préférences
+            </button>
+          </div>
+        </div>
+      }
+
+      @if (activeTab() === 'systeme') {
+        <div class="bg-white rounded-2xl border border-gray-100 shadow-[0_1px_4px_rgba(17,24,39,0.05)] overflow-hidden"
+             ngmMotion [initial]="{ opacity: 0, x: 8 }" [animate]="{ opacity: 1, x: 0 }" [transition]="SPRING_DEFAULT">
+          <div class="px-6 py-4 border-b border-gray-50">
+            <p class="text-sm font-semibold text-gray-900">Paramètres système</p>
+          </div>
+          <div class="p-6 space-y-4">
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1.5">Langue</label>
+                <select [ngModel]="systeme().langue" (ngModelChange)="updateSystemeField('langue', $event)"
+                        class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all bg-white">
+                  <option value="fr">Français</option>
+                  <option value="en">English</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1.5">Fuseau horaire</label>
+                <select [ngModel]="systeme().fuseau" (ngModelChange)="updateSystemeField('fuseau', $event)"
+                        class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all bg-white">
+                  <option value="Africa/Douala">Africa/Douala (UTC+1)</option>
+                  <option value="Europe/Paris">Europe/Paris (UTC+1/+2)</option>
+                  <option value="UTC">UTC</option>
+                </select>
+              </div>
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1.5">Format de date</label>
+                <select [ngModel]="systeme().formatDate" (ngModelChange)="updateSystemeField('formatDate', $event)"
+                        class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all bg-white">
+                  <option value="dd/MM/yyyy">dd/MM/yyyy</option>
+                  <option value="MM/dd/yyyy">MM/dd/yyyy</option>
+                  <option value="yyyy-MM-dd">yyyy-MM-dd</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-xs font-medium text-gray-600 mb-1.5">Timeout de session</label>
+                <select [ngModel]="systeme().sessionTimeout" (ngModelChange)="updateSystemeField('sessionTimeout', $event)"
+                        class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all bg-white">
+                  <option value="15">15 minutes</option>
+                  <option value="30">30 minutes</option>
+                  <option value="60">1 heure</option>
+                  <option value="120">2 heures</option>
+                </select>
+              </div>
+            </div>
+            <div class="flex items-center justify-between py-2 border-t border-gray-50">
+              <div>
+                <p class="text-sm font-medium text-gray-800">Mode compact</p>
+                <p class="text-xs text-gray-400">Interface plus dense</p>
+              </div>
+              <button type="button" (click)="updateSystemeField('denseMode', !systeme().denseMode)"
+                      ngmMotion [whileTap]="{ scale: 0.92 }"
+                      [class]="'relative w-10 h-5.5 rounded-full transition-colors ' +
+                        (systeme().denseMode ? 'bg-accent-500' : 'bg-gray-200')">
+                <span [class]="'absolute top-0.5 w-4.5 h-4.5 rounded-full bg-white shadow-sm transition-transform ' +
+                  (systeme().denseMode ? 'translate-x-5' : 'translate-x-0.5')"></span>
+              </button>
+            </div>
+            <div class="pt-2">
+              <button (click)="saveSysteme()" [disabled]="savingSysteme()"
+                      ngmMotion [whileTap]="{ scale: 0.97 }"
+                      class="flex items-center gap-2 h-9 px-5 rounded-xl bg-accent-500 hover:bg-accent-600 disabled:opacity-50 text-white text-sm font-semibold transition-colors shadow-[0_2px_8px_rgba(99,102,241,0.25)]">
+                @if (savingSysteme()) { <span>Sauvegarde…</span> } @else { <span>Sauvegarder</span> }
+              </button>
+            </div>
+          </div>
+        </div>
+      }
+
+    </div>
+  </div>
+
+</div>

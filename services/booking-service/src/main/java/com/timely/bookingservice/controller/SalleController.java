@@ -33,13 +33,13 @@ public class SalleController {
     private final SalleService salleService;
 
     @PostMapping("/salles")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<SalleResponse> create(@Valid @RequestBody SalleRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(salleService.create(request));
     }
 
     @GetMapping("/salles")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<Page<SalleResponse>> getAll(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size) {
@@ -47,13 +47,13 @@ public class SalleController {
     }
 
     @GetMapping("/salles/{id}")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<SalleResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(salleService.getById(id));
     }
 
     @GetMapping("/ecoles/{ecoleId}/salles")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<Page<SalleResponse>> getByEcoleId(
             @PathVariable UUID ecoleId,
             @RequestParam(defaultValue = "0") int page,
@@ -62,7 +62,7 @@ public class SalleController {
     }
 
     @GetMapping("/salles/disponibles")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Page<SalleResponse>> getDisponibles(
             @RequestParam(defaultValue = "0") Integer capaciteMin,
             @RequestParam(required = false) TypeSalle typeSalle,
@@ -72,13 +72,13 @@ public class SalleController {
     }
 
     @PutMapping("/salles/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<SalleResponse> update(@PathVariable UUID id, @Valid @RequestBody SalleRequest request) {
         return ResponseEntity.ok(salleService.update(id, request));
     }
 
     @DeleteMapping("/salles/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         salleService.delete(id);
         return ResponseEntity.noContent().build();

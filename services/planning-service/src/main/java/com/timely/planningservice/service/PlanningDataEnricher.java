@@ -80,9 +80,15 @@ public class PlanningDataEnricher {
             log.warn("Failed to fetch salle for creneau {}: {}", creneau.getId(), e.getMessage());
         }
 
-        // Pour les groupes, on utilise l'ID directement car BookingService n'a pas d'endpoint dédié
-        if (creneau.getGroupeId() != null) {
-            nomGroupe = "Groupe " + creneau.getGroupeId().toString().substring(0, 8);
+        try {
+            if (creneau.getGroupeId() != null) {
+                BookingServiceClient.GroupeDTO groupe = bookingServiceClient.getGroupe(creneau.getGroupeId());
+                if (groupe != null) {
+                    nomGroupe = groupe.typeGroupe() + " " + groupe.numeroGroupe();
+                }
+            }
+        } catch (Exception e) {
+            log.warn("Failed to fetch groupe for creneau {}: {}", creneau.getId(), e.getMessage());
         }
 
         return new EnrichedCreneau(

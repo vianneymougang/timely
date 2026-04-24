@@ -23,6 +23,9 @@ import com.timely.planningservice.config.FeignClientConfig;
 )
 public interface BookingServiceClient {
 
+    @GetMapping("/ecoles")
+    List<EcoleDTO> getAllEcoles();
+
     @GetMapping("/cours/{id}")
     CoursDTO getCours(@PathVariable("id") UUID id);
 
@@ -56,8 +59,20 @@ public interface BookingServiceClient {
     @GetMapping("/groupes/cours/{coursId}")
     List<GroupeDTO> getGroupesByCours(@PathVariable UUID coursId);
 
+    @GetMapping("/groupes/{id}")
+    GroupeDTO getGroupe(@PathVariable("id") UUID id);
+
+    @GetMapping("/salles/ecole/{ecoleId}")
+    List<SalleDTO> getSallesByEcole(@PathVariable UUID ecoleId);
+
     @PostMapping("/reservations/auto-assign")
     SalleDTO autoAssignSalle(@RequestBody AutoAssignSalleRequest request);
+
+    record EcoleDTO(
+            UUID id,
+            String nom,
+            String code
+    ) {}
 
     record CoursDTO(
             UUID id,
@@ -96,7 +111,8 @@ public interface BookingServiceClient {
     record GroupeDTO(
             UUID id,
             Integer numeroGroupe,
-            Integer effectif
+            Integer effectif,
+            String typeGroupe
     ) {}
 
     record CreateReservationRequest(

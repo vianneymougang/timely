@@ -2,8 +2,7 @@ package com.timely.bookingservice.dto.request;
 
 import java.util.UUID;
 
-import com.timely.bookingservice.entity.enums.Niveau;
-
+import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -17,8 +16,10 @@ public class ClasseRequest {
     @NotNull(message = "La filière est obligatoire")
     private UUID filiereId;
 
-    @NotNull(message = "Le niveau est obligatoire")
-    private Niveau niveau;
+    @NotNull(message = "L'année est obligatoire")
+    @Min(value = 1, message = "L'année doit être au moins 1")
+    @Max(value = 5, message = "L'année doit être au plus 5")
+    private Integer yearIndex;
 
     @NotBlank(message = "Le code est obligatoire")
     private String code;

@@ -16,6 +16,8 @@ public interface ClasseMapper {
 
     @Mapping(source = "filiere.id", target = "filiereId")
     @Mapping(source = "filiere.nom", target = "filiereNom")
+    @Mapping(expression = "java(classe.getFiliere() != null && classe.getFiliere().getCycleType() != null ? classe.getFiliere().getCycleType().name() : null)", target = "cycleType")
+    @Mapping(expression = "java(classe.getFiliere() != null && classe.getFiliere().getCycleType() != null && classe.getYearIndex() != null ? classe.getFiliere().getCycleType().getDisplayLabel(classe.getYearIndex()) : null)", target = "displayLevel")
     ClasseResponse toResponse(Classe classe);
 
     @Mapping(target = "filiere", ignore = true)

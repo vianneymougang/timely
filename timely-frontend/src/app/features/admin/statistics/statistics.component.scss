@@ -1,0 +1,112 @@
+// ─── Spinner ───────────────────────────────────────────────────────────────
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+.spinning {
+  animation: spin 0.85s linear infinite;
+  display: inline-block;
+}
+
+// ─── Toasts ────────────────────────────────────────────────────────────────
+@keyframes slideIn {
+  from { opacity: 0; transform: translateX(16px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+
+.toast-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 16px;
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+  animation: slideIn 0.22s ease-out;
+  max-width: 360px;
+
+  &.toast-success {
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    color: #15803d;
+  }
+  &.toast-error {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+  }
+  &.toast-info {
+    background: #f0f9ff;
+    border: 1px solid #bae6fd;
+    color: #0369a1;
+  }
+}
+
+// ─── Stat cards ────────────────────────────────────────────────────────────
+.stat-card {
+  transition: box-shadow 0.2s, transform 0.2s;
+  &:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    transform: translateY(-1px);
+  }
+}
+
+// ─── Badge statut ──────────────────────────────────────────────────────────
+.rapport-badge {
+  display: inline-block;
+  padding: 2px 10px;
+  border-radius: 9999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+
+  &.badge-success { background: #d1fae5; color: #065f46; }
+  &.badge-warning  { background: #fef3c7; color: #92400e; }
+  &.badge-error    { background: #fee2e2; color: #991b1b; }
+  &.badge-info     { background: #e0f2fe; color: #075985; }
+}
+
+// ─── Icônes type rapport ───────────────────────────────────────────────────
+.icon-bg-teal   { background: #ccfbf1; }
+.icon-bg-green  { background: #dcfce7; }
+.icon-bg-blue   { background: #dbeafe; }
+.icon-bg-purple { background: #ede9fe; }
+.icon-bg-gray   { background: #f1f5f9; }
+
+.icon-teal   { color: #0d9488 !important; }
+.icon-green  { color: #16a34a !important; }
+.icon-blue   { color: #2563eb !important; }
+.icon-purple { color: #7c3aed !important; }
+.icon-gray   { color: #64748b !important; }
+
+// ─── Boutons générer rapport ───────────────────────────────────────────────
+.generate-btn { transition: all 0.18s ease; }
+
+// ─── Animations pour le modal ──────────────────────────────────────────────
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes zoom-in-95 {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to   {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-in {
+  animation-duration: 0.2s;
+  animation-timing-function: ease-out;
+  animation-fill-mode: both;
+}
+
+.fade-in {
+  animation-name: fade-in;
+}
+
+.zoom-in-95 {
+  animation-name: zoom-in-95;
+}

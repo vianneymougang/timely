@@ -3,6 +3,12 @@ package com.timely.reportservice.service;
 import com.timely.reportservice.client.BookingServiceClient;
 import com.timely.reportservice.client.PlanningServiceClient;
 import com.timely.reportservice.client.UserServiceClient;
+import com.timely.reportservice.dto.client.ChargeHoraireDTO;
+import com.timely.reportservice.dto.client.ConflitDTO;
+import com.timely.reportservice.dto.client.CoursDTO;
+import com.timely.reportservice.dto.client.ReservationDTO;
+import com.timely.reportservice.dto.client.SalleDTO;
+import com.timely.reportservice.dto.client.TeacherSummaryDTO;
 import com.timely.reportservice.dto.response.DashboardResponse;
 import com.timely.reportservice.dto.response.KPIResponse;
 import com.timely.reportservice.dto.response.StatistiquesCoursResponse;
@@ -18,11 +24,9 @@ import org.springframework.transaction.annotation.Transactional;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -41,20 +45,16 @@ public class KPIService {
         log.info("Calcul des KPIs pour la période du {} au {}", dateDebut, dateFin);
 
         try {
-            // Calcul du taux d'occupation des salles
             BigDecimal tauxOccupation = calculateTauxOccupationSalles(null, dateDebut, dateFin);
             saveKPI("taux_occupation_salles", tauxOccupation, "%", dateDebut, "PERIODE");
 
-            // Calcul du nombre de cours
-            List<Object> cours = bookingServiceClient.getCours();
+            List<CoursDTO> cours = bookingServiceClient.getCours();
             saveKPI("nombre_cours_total", new BigDecimal(cours.size()), "cours", dateDebut, "PERIODE");
 
-            // Calcul du nombre d'enseignants
-            List<Object> enseignants = userServiceClient.getEnseignants();
+            List<TeacherSummaryDTO> enseignants = userServiceClient.getEnseignants();
             saveKPI("nombre_enseignants", new BigDecimal(enseignants.size()), "enseignants", dateDebut, "PERIODE");
 
-            // Calcul du nombre de conflits
-            List<Object> conflits = planningServiceClient.getConflits(null);
+            List<ConflitDTO> conflits = planningServiceClient.getConflits();
             saveKPI("nombre_conflits", new BigDecimal(conflits.size()), "conflits", dateDebut, "PERIODE");
 
             log.info("Calcul des KPIs terminé avec succès");
@@ -93,22 +93,17 @@ public class KPIService {
         log.info("Génération du dashboard pour l'école: {}", ecoleId);
 
         try {
-            // Calcul du taux d'occupation des salles
             BigDecimal tauxOccupation = calculateTauxOccupationSalles(ecoleId, null, null);
 
-            // Nombre de cours
-            List<Object> cours = bookingServiceClient.getCours();
+            List<CoursDTO> cours = bookingServiceClient.getCours();
             int nombreCours = cours.size();
 
-            // Nombre d'enseignants
-            List<Object> enseignants = userServiceClient.getEnseignants();
+            List<TeacherSummaryDTO> enseignants = userServiceClient.getEnseignants();
             int nombreEnseignants = enseignants.size();
 
-            // Nombre de conflits
-            List<Object> conflits = planningServiceClient.getConflits(null);
+            List<ConflitDTO> conflits = planningServiceClient.getConflits();
             int nombreConflits = conflits.size();
 
-            // KPIs récents (30 derniers jours)
             LocalDate dateFin = LocalDate.now();
             LocalDate dateDebut = dateFin.minusDays(30);
             List<KPIHistorique> kpisRecents = kpiHistoriqueRepository.findByDateBetween(dateDebut, dateFin);
@@ -135,39 +130,37 @@ public class KPIService {
         log.info("Calcul des statistiques des salles pour l'école: {}", ecoleId);
 
         try {
-            List<Object> salles = bookingServiceClient.getSalles();
-            List<Object> reservations = bookingServiceClient.getReservations(ecoleId, null, null);
+            List<SalleDTO> salles = bookingServiceClient.getSalles();
+            List<ReservationDTO> reservations = bookingServiceClient.getReservations(null, null);
 
             int nombreSallesTotal = salles.size();
-            int nombreSallesOccupees = (int) reservations.stream()
-                    .map(r -> extractField(r, "salleId"))
+            long nombreSallesOccupees = reservations.stream()
+                    .map(ReservationDTO::salleId)
                     .distinct()
                     .count();
 
             BigDecimal tauxOccupationMoyen = calculateTauxOccupationSalles(ecoleId, null, null);
 
-            // Occupation par salle (simulée - à adapter selon la structure réelle)
             Map<String, BigDecimal> occupationParSalle = new HashMap<>();
             Map<String, Integer> reservationsParSalle = new HashMap<>();
 
-            for (Object salle : salles) {
-                String salleId = extractField(salle, "id").toString();
+            for (SalleDTO salle : salles) {
+                String salleIdStr = salle.id().toString();
                 long nbReservations = reservations.stream()
-                        .filter(r -> salleId.equals(extractField(r, "salleId").toString()))
+                        .filter(r -> salle.id().equals(r.salleId()))
                         .count();
 
-                reservationsParSalle.put(salleId, (int) nbReservations);
-                // Calcul simplifié du taux d'occupation
+                reservationsParSalle.put(salleIdStr, (int) nbReservations);
                 BigDecimal taux = BigDecimal.valueOf(nbReservations)
                         .multiply(BigDecimal.valueOf(100))
                         .divide(BigDecimal.valueOf(Math.max(reservations.size(), 1)), 2, RoundingMode.HALF_UP);
-                occupationParSalle.put(salleId, taux);
+                occupationParSalle.put(salleIdStr, taux);
             }
 
             return StatistiquesSallesResponse.builder()
                     .ecoleId(ecoleId)
                     .nombreSallesTotal(nombreSallesTotal)
-                    .nombreSallesOccupees(nombreSallesOccupees)
+                    .nombreSallesOccupees((int) nombreSallesOccupees)
                     .tauxOccupationMoyen(tauxOccupationMoyen)
                     .occupationParSalle(occupationParSalle)
                     .reservationsParSalle(reservationsParSalle)
@@ -183,35 +176,36 @@ public class KPIService {
         log.info("Calcul des statistiques des enseignants");
 
         try {
-            List<Object> enseignants = userServiceClient.getEnseignants();
+            List<TeacherSummaryDTO> enseignants = userServiceClient.getEnseignants();
             int nombreEnseignants = enseignants.size();
 
-            List<BigDecimal> chargesHoraires = new ArrayList<>();
             Map<String, BigDecimal> chargeParEnseignant = new HashMap<>();
 
-            for (Object enseignant : enseignants) {
+            for (TeacherSummaryDTO enseignant : enseignants) {
                 try {
-                    UUID enseignantId = UUID.fromString(extractField(enseignant, "id").toString());
-                    Object chargeData = userServiceClient.getChargeHoraire(enseignantId);
-
-                    BigDecimal charge = extractBigDecimalField(chargeData, "chargeHoraire", BigDecimal.ZERO);
-                    chargesHoraires.add(charge);
-                    chargeParEnseignant.put(enseignantId.toString(), charge);
+                    ChargeHoraireDTO charge = userServiceClient.getChargeHoraire(enseignant.id());
+                    BigDecimal heures = charge.totalHeures() != null
+                            ? BigDecimal.valueOf(charge.totalHeures())
+                            : BigDecimal.ZERO;
+                    chargeParEnseignant.put(enseignant.id().toString(), heures);
                 } catch (Exception e) {
-                    log.warn("Impossible de récupérer la charge horaire pour un enseignant: {}", e.getMessage());
+                    log.warn("Impossible de récupérer la charge horaire pour {}: {}", enseignant.id(), e.getMessage());
+                    chargeParEnseignant.put(enseignant.id().toString(), BigDecimal.ZERO);
                 }
             }
 
-            BigDecimal chargeHoraireMoyenne = chargesHoraires.isEmpty() ? BigDecimal.ZERO :
-                    chargesHoraires.stream()
-                            .reduce(BigDecimal.ZERO, BigDecimal::add)
-                            .divide(BigDecimal.valueOf(chargesHoraires.size()), 2, RoundingMode.HALF_UP);
+            List<BigDecimal> charges = List.copyOf(chargeParEnseignant.values());
 
-            BigDecimal chargeHoraireMax = chargesHoraires.stream()
+            BigDecimal chargeHoraireMoyenne = charges.isEmpty() ? BigDecimal.ZERO :
+                    charges.stream()
+                            .reduce(BigDecimal.ZERO, BigDecimal::add)
+                            .divide(BigDecimal.valueOf(charges.size()), 2, RoundingMode.HALF_UP);
+
+            BigDecimal chargeHoraireMax = charges.stream()
                     .max(BigDecimal::compareTo)
                     .orElse(BigDecimal.ZERO);
 
-            BigDecimal chargeHoraireMin = chargesHoraires.stream()
+            BigDecimal chargeHoraireMin = charges.stream()
                     .min(BigDecimal::compareTo)
                     .orElse(BigDecimal.ZERO);
 
@@ -233,23 +227,24 @@ public class KPIService {
         log.info("Calcul des statistiques des cours");
 
         try {
-            List<Object> cours = bookingServiceClient.getCours();
-            List<Object> etudiants = bookingServiceClient.getEtudiants();
-
+            List<CoursDTO> cours = bookingServiceClient.getCours();
             int nombreCoursTotal = cours.size();
-            int nombreEtudiantsTotal = etudiants.size();
 
-            // Statistiques par type (à adapter selon la structure réelle)
-            Map<String, Integer> coursParType = new HashMap<>();
-            Map<String, Integer> coursParDepartement = new HashMap<>();
+            int nombreEtudiantsTotal = bookingServiceClient.getEtudiants().size();
 
-            for (Object c : cours) {
-                String type = extractStringField(c, "type", "INCONNU");
-                coursParType.merge(type, 1, Integer::sum);
+            Map<String, Integer> coursParType = cours.stream()
+                    .filter(c -> c.typeCours() != null)
+                    .collect(Collectors.toMap(
+                            CoursDTO::typeCours,
+                            c -> 1,
+                            Integer::sum));
 
-                String departement = extractStringField(c, "departement", "INCONNU");
-                coursParDepartement.merge(departement, 1, Integer::sum);
-            }
+            Map<String, Integer> coursParDepartement = cours.stream()
+                    .filter(c -> c.ecoleId() != null)
+                    .collect(Collectors.toMap(
+                            c -> c.ecoleId().toString(),
+                            c -> 1,
+                            Integer::sum));
 
             return StatistiquesCoursResponse.builder()
                     .nombreCoursTotal(nombreCoursTotal)
@@ -266,17 +261,16 @@ public class KPIService {
 
     private BigDecimal calculateTauxOccupationSalles(UUID ecoleId, LocalDate dateDebut, LocalDate dateFin) {
         try {
-            List<Object> salles = bookingServiceClient.getSalles();
-            List<Object> reservations = bookingServiceClient.getReservations(ecoleId, dateDebut, dateFin);
+            List<SalleDTO> salles = bookingServiceClient.getSalles();
+            List<ReservationDTO> reservations = bookingServiceClient.getReservations(dateDebut, dateFin);
 
             if (salles.isEmpty()) {
                 return BigDecimal.ZERO;
             }
 
-            // Calcul simplifié du taux d'occupation
-            int nombreSallesOccupees = (int) reservations.stream()
-                    .map(r -> extractField(r, "salleId"))
-                    .filter(Objects::nonNull)
+            long nombreSallesOccupees = reservations.stream()
+                    .map(ReservationDTO::salleId)
+                    .filter(id -> id != null)
                     .distinct()
                     .count();
 
@@ -298,30 +292,5 @@ public class KPIService {
                 .date(kpi.getDate())
                 .periode(kpi.getPeriode())
                 .build();
-    }
-
-    private Object extractField(Object obj, String fieldName) {
-        try {
-            if (obj instanceof Map<?, ?> map) {
-                return map.get(fieldName);
-            }
-            return null;
-        } catch (Exception e) {
-            log.warn("Impossible d'extraire le champ {}: {}", fieldName, e.getMessage());
-            return null;
-        }
-    }
-
-    private String extractStringField(Object obj, String fieldName, String defaultValue) {
-        Object value = extractField(obj, fieldName);
-        return value != null ? value.toString() : defaultValue;
-    }
-
-    private BigDecimal extractBigDecimalField(Object obj, String fieldName, BigDecimal defaultValue) {
-        Object value = extractField(obj, fieldName);
-        if (value instanceof Number number) {
-            return BigDecimal.valueOf(number.doubleValue());
-        }
-        return defaultValue;
     }
 }

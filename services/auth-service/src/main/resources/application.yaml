@@ -6,7 +6,7 @@ spring:
 
   # Database Configuration
   datasource:
-    url: jdbc:postgresql://localhost:5432/auth-service-db
+    url: jdbc:postgresql://localhost:5001/auth-service-db
     username: postgres
     password: ${DB_PASSWORD:changeme}
     driver-class-name: org.postgresql.Driver

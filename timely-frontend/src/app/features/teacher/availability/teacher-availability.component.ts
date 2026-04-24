@@ -1,22 +1,23 @@
 import { CommonModule } from '@angular/common';
-import { Component, inject, OnInit, signal } from '@angular/core';
+import { Component, inject, OnInit, signal, computed } from '@angular/core';
+import { FormsModule } from '@angular/forms';
 import { AuthService } from '../../../core/services/auth.service';
 import {
   AvailabilityRequestDto,
   AvailabilityService,
+  WeeklyOverrideItem,
+  WeeklyOverridesRequestDto,
 } from '../../../core/services/availability.service';
 
 interface TimeSlot {
   hour: string;
-  slots: {
-    [key: string]: boolean; // lundi, mardi, etc.
-  };
+  slots: { [key: string]: boolean };
 }
 
 @Component({
   selector: 'app-teacher-availability',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, FormsModule],
   templateUrl: './teacher-availability.component.html',
   styleUrls: ['./teacher-availability.component.scss'],
 })
@@ -25,67 +26,82 @@ export class TeacherAvailabilityComponent implements OnInit {
   private availabilityService = inject(AvailabilityService);
 
   currentUser = this.authService.currentUser;
+
+  activeTab = signal<'template' | 'exceptions'>('template');
+
+  // — Template tab state —
   isSaving = signal(false);
   successMessage = signal('');
   isDragging = signal(false);
   dragMode = signal<'select' | 'deselect'>('select');
-
-  // Jours de la semaine
-  weekDays = [
-    { key: 'lundi', label: 'Lundi' },
-    { key: 'mardi', label: 'Mardi' },
-    { key: 'mercredi', label: 'Mercredi' },
-    { key: 'jeudi', label: 'Jeudi' },
-    { key: 'vendredi', label: 'Vendredi' },
-    { key: 'samedi', label: 'Samedi' },
-  ];
-
-  // Créneaux horaires (8h - 17h)
   timeSlots = signal<TimeSlot[]>([]);
+
+  // — Exceptions tab state —
+  selectedWeek = signal<string>(this.getCurrentMondayIso());
+  exceptionSlots = signal<TimeSlot[]>([]);
+  isSavingExceptions = signal(false);
+  exceptionsSuccess = signal('');
+  isLoadingExceptions = signal(false);
+
+  weekDays = [
+    { key: 'lundi',    label: 'Lundi',    dayOfWeek: 'MONDAY'    },
+    { key: 'mardi',    label: 'Mardi',    dayOfWeek: 'TUESDAY'   },
+    { key: 'mercredi', label: 'Mercredi', dayOfWeek: 'WEDNESDAY' },
+    { key: 'jeudi',    label: 'Jeudi',    dayOfWeek: 'THURSDAY'  },
+    { key: 'vendredi', label: 'Vendredi', dayOfWeek: 'FRIDAY'    },
+    { key: 'samedi',   label: 'Samedi',   dayOfWeek: 'SATURDAY'  },
+  ];
 
   ngOnInit(): void {
     this.initializeTimeSlots();
     this.loadSavedAvailability();
   }
 
+  // ─── Shared helpers ───────────────────────────────────────────
+
   initializeTimeSlots(): void {
     const slots: TimeSlot[] = [];
-
-    // Créer tous les créneaux de 8h à 17h (9 créneaux)
     for (let hour = 8; hour < 17; hour++) {
       slots.push({
         hour: `${hour}h - ${hour + 1}h`,
-        slots: {
-          lundi: false,
-          mardi: false,
-          mercredi: false,
-          jeudi: false,
-          vendredi: false,
-          samedi: false,
-        },
+        slots: { lundi: false, mardi: false, mercredi: false, jeudi: false, vendredi: false, samedi: false },
       });
     }
-
     this.timeSlots.set(slots);
+    this.exceptionSlots.set(JSON.parse(JSON.stringify(slots)));
   }
 
   isPauseSlot(hourIndex: number): boolean {
-    // L'index 4 correspond à 12h-13h (8h=0, 9h=1, 10h=2, 11h=3, 12h=4)
-    return hourIndex === 4;
+    return hourIndex === 4; // 12h-13h
+  }
+
+  getCurrentMondayIso(): string {
+    const today = new Date();
+    const day = today.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    const monday = new Date(today);
+    monday.setDate(today.getDate() + diff);
+    return monday.toISOString().split('T')[0];
+  }
+
+  // ─── Template tab ─────────────────────────────────────────────
+
+  switchTab(tab: 'template' | 'exceptions'): void {
+    this.activeTab.set(tab);
+    if (tab === 'exceptions') {
+      this.loadExceptionSlots();
+    }
   }
 
   loadSavedAvailability(): void {
     this.availabilityService.getMyAvailability().subscribe({
       next: (data) => {
-        if (data && data.timeSlots) {
+        if (data?.timeSlots) {
           this.timeSlots.set(data.timeSlots);
         }
       },
       error: (error) => {
-        // 404 means teacher hasn't set availability yet, show empty grid
-        if (error?.status === 404) {
-          console.log('No availability set yet');
-        } else {
+        if (error?.status !== 404) {
           console.error('Error loading availability:', error);
         }
       },
@@ -93,55 +109,27 @@ export class TeacherAvailabilityComponent implements OnInit {
   }
 
   toggleSlot(hourIndex: number, day: string): void {
-    // Ne pas permettre la modification des créneaux de pause
-    if (this.isPauseSlot(hourIndex)) {
-      return;
-    }
-
-    // Créer une copie profonde complète
-    const currentSlots = this.timeSlots();
-    const newSlots = JSON.parse(JSON.stringify(currentSlots));
-
-    // Modifier uniquement le slot ciblé
-    newSlots[hourIndex].slots[day] = !newSlots[hourIndex].slots[day];
-
-    // Mettre à jour avec la nouvelle référence
-    this.timeSlots.set(newSlots);
+    if (this.isPauseSlot(hourIndex)) return;
+    const slots = JSON.parse(JSON.stringify(this.timeSlots()));
+    slots[hourIndex].slots[day] = !slots[hourIndex].slots[day];
+    this.timeSlots.set(slots);
     this.successMessage.set('');
   }
 
   onMouseDown(hourIndex: number, day: string, event: MouseEvent): void {
     event.preventDefault();
-
-    // Ne pas permettre la sélection des créneaux de pause
-    if (this.isPauseSlot(hourIndex)) {
-      return;
-    }
-
+    if (this.isPauseSlot(hourIndex)) return;
     this.isDragging.set(true);
-
-    // Déterminer le mode (sélection ou désélection)
-    const currentValue = this.timeSlots()[hourIndex].slots[day];
-    this.dragMode.set(currentValue ? 'deselect' : 'select');
-
-    // Appliquer le changement
+    this.dragMode.set(this.timeSlots()[hourIndex].slots[day] ? 'deselect' : 'select');
     this.toggleSlot(hourIndex, day);
   }
 
   onMouseEnter(hourIndex: number, day: string): void {
-    // Ne pas permettre la sélection des créneaux de pause
-    if (this.isPauseSlot(hourIndex)) {
-      return;
-    }
-
-    if (this.isDragging()) {
-      const currentValue = this.timeSlots()[hourIndex].slots[day];
-      const shouldSelect = this.dragMode() === 'select';
-
-      // Appliquer seulement si l'état est différent du mode
-      if ((shouldSelect && !currentValue) || (!shouldSelect && currentValue)) {
-        this.toggleSlot(hourIndex, day);
-      }
+    if (this.isPauseSlot(hourIndex) || !this.isDragging()) return;
+    const currentValue = this.timeSlots()[hourIndex].slots[day];
+    const shouldSelect = this.dragMode() === 'select';
+    if ((shouldSelect && !currentValue) || (!shouldSelect && currentValue)) {
+      this.toggleSlot(hourIndex, day);
     }
   }
 
@@ -150,67 +138,34 @@ export class TeacherAvailabilityComponent implements OnInit {
   }
 
   clearAll(): void {
-    const currentSlots = this.timeSlots();
-    const slots = JSON.parse(JSON.stringify(currentSlots));
-
+    const slots = JSON.parse(JSON.stringify(this.timeSlots()));
     slots.forEach((slot: TimeSlot, index: number) => {
-      // Ne pas modifier les créneaux de pause
       if (!this.isPauseSlot(index)) {
-        slot.slots = {
-          lundi: false,
-          mardi: false,
-          mercredi: false,
-          jeudi: false,
-          vendredi: false,
-          samedi: false,
-        };
+        Object.keys(slot.slots).forEach(k => slot.slots[k] = false);
       }
     });
-
     this.timeSlots.set(slots);
     this.successMessage.set('');
   }
 
   selectAll(): void {
-    const currentSlots = this.timeSlots();
-    const slots = JSON.parse(JSON.stringify(currentSlots));
-
+    const slots = JSON.parse(JSON.stringify(this.timeSlots()));
     slots.forEach((slot: TimeSlot, index: number) => {
-      // Ne pas sélectionner les créneaux de pause
       if (!this.isPauseSlot(index)) {
-        slot.slots = {
-          lundi: true,
-          mardi: true,
-          mercredi: true,
-          jeudi: true,
-          vendredi: true,
-          samedi: true,
-        };
+        Object.keys(slot.slots).forEach(k => slot.slots[k] = true);
       }
     });
-
     this.timeSlots.set(slots);
     this.successMessage.set('');
   }
 
   selectWorkDays(): void {
-    const currentSlots = this.timeSlots();
-    const slots = JSON.parse(JSON.stringify(currentSlots));
-
+    const slots = JSON.parse(JSON.stringify(this.timeSlots()));
     slots.forEach((slot: TimeSlot, index: number) => {
-      // Ne pas sélectionner les créneaux de pause
       if (!this.isPauseSlot(index)) {
-        slot.slots = {
-          lundi: true,
-          mardi: true,
-          mercredi: true,
-          jeudi: true,
-          vendredi: true,
-          samedi: false,
-        };
+        slot.slots = { lundi: true, mardi: true, mercredi: true, jeudi: true, vendredi: true, samedi: false };
       }
     });
-
     this.timeSlots.set(slots);
     this.successMessage.set('');
   }
@@ -218,39 +173,116 @@ export class TeacherAvailabilityComponent implements OnInit {
   submitAvailability(): void {
     this.isSaving.set(true);
     this.successMessage.set('');
-
-    const availabilityData: AvailabilityRequestDto = {
-      timeSlots: this.timeSlots(),
-    };
-
+    const availabilityData: AvailabilityRequestDto = { timeSlots: this.timeSlots() };
     this.availabilityService.saveMyAvailability(availabilityData).subscribe({
       next: () => {
         this.successMessage.set('✓ Disponibilités enregistrées avec succès !');
         this.isSaving.set(false);
-
-        setTimeout(() => {
-          this.successMessage.set('');
-        }, 5000);
+        setTimeout(() => this.successMessage.set(''), 5000);
       },
       error: (error) => {
         console.error('Error saving availability:', error);
-        let errorMessage = "Erreur lors de l'enregistrement";
-        if (error?.error?.message) {
-          errorMessage = error.error.message;
-        }
-        alert(errorMessage);
+        alert(error?.error?.message ?? "Erreur lors de l'enregistrement");
         this.isSaving.set(false);
       },
     });
   }
 
   getSelectedSlotsCount(): number {
-    return this.timeSlots().reduce((total, slot) => {
-      return total + Object.values(slot.slots).filter((v) => v).length;
-    }, 0);
+    return this.timeSlots().reduce((total, slot) =>
+      total + Object.values(slot.slots).filter(v => v).length, 0);
   }
 
   getSelectedHoursCount(): number {
     return this.getSelectedSlotsCount();
+  }
+
+  // ─── Exceptions tab ───────────────────────────────────────────
+
+  loadExceptionSlots(): void {
+    this.isLoadingExceptions.set(true);
+    this.exceptionsSuccess.set('');
+    this.availabilityService.getEffectiveAvailability(this.selectedWeek()).subscribe({
+      next: (data) => {
+        if (data?.timeSlots) {
+          this.exceptionSlots.set(data.timeSlots);
+        }
+        this.isLoadingExceptions.set(false);
+      },
+      error: (error) => {
+        console.error('Error loading effective availability:', error);
+        this.exceptionSlots.set(JSON.parse(JSON.stringify(this.timeSlots())));
+        this.isLoadingExceptions.set(false);
+      },
+    });
+  }
+
+  onWeekChange(value: string): void {
+    const date = new Date(value);
+    const day = date.getDay();
+    const diff = day === 0 ? -6 : 1 - day;
+    date.setDate(date.getDate() + diff);
+    const monday = date.toISOString().split('T')[0];
+    this.selectedWeek.set(monday);
+    this.loadExceptionSlots();
+  }
+
+  toggleExceptionSlot(hourIndex: number, day: string): void {
+    if (this.isPauseSlot(hourIndex)) return;
+    const slots = JSON.parse(JSON.stringify(this.exceptionSlots()));
+    slots[hourIndex].slots[day] = !slots[hourIndex].slots[day];
+    this.exceptionSlots.set(slots);
+    this.exceptionsSuccess.set('');
+  }
+
+  saveExceptions(): void {
+    this.isSavingExceptions.set(true);
+    this.exceptionsSuccess.set('');
+
+    const overrides: WeeklyOverrideItem[] = [];
+    const template = this.timeSlots();
+    const exceptions = this.exceptionSlots();
+
+    for (let i = 0; i < template.length; i++) {
+      if (this.isPauseSlot(i)) continue;
+      const hourStart = 8 + i;
+      for (const day of this.weekDays) {
+        const inTemplate = template[i].slots[day.key];
+        const inExceptions = exceptions[i].slots[day.key];
+        if (inTemplate && !inExceptions) {
+          overrides.push({ dayOfWeek: day.dayOfWeek, hourStart, hourEnd: hourStart + 1, overrideType: 'UNAVAILABLE' });
+        } else if (!inTemplate && inExceptions) {
+          overrides.push({ dayOfWeek: day.dayOfWeek, hourStart, hourEnd: hourStart + 1, overrideType: 'AVAILABLE' });
+        }
+      }
+    }
+
+    const request: WeeklyOverridesRequestDto = { weekStart: this.selectedWeek(), overrides };
+
+    this.availabilityService.saveWeeklyOverrides(request).subscribe({
+      next: () => {
+        this.exceptionsSuccess.set('✓ Exceptions enregistrées avec succès !');
+        this.isSavingExceptions.set(false);
+        setTimeout(() => this.exceptionsSuccess.set(''), 5000);
+      },
+      error: (error) => {
+        console.error('Error saving overrides:', error);
+        alert(error?.error?.message ?? "Erreur lors de l'enregistrement des exceptions");
+        this.isSavingExceptions.set(false);
+      },
+    });
+  }
+
+  getExceptionsCount(): number {
+    const template = this.timeSlots();
+    const exceptions = this.exceptionSlots();
+    let count = 0;
+    for (let i = 0; i < template.length; i++) {
+      if (this.isPauseSlot(i)) continue;
+      for (const day of this.weekDays) {
+        if (template[i].slots[day.key] !== exceptions[i].slots[day.key]) count++;
+      }
+    }
+    return count;
   }
 }

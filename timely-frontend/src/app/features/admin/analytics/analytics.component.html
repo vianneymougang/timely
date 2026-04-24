@@ -1,0 +1,248 @@
+<div class="flex-1 p-6 space-y-5 min-h-0">
+
+  <div class="flex items-start justify-between"
+       ngmMotion [initial]="'hidden'" [animate]="'visible'" [variants]="FADE_UP" [transition]="SPRING_DEFAULT">
+    <div>
+      <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.15em] mb-0.5">Données</p>
+      <h1 class="font-display text-2xl font-semibold text-gray-900 tracking-tight">Analytiques</h1>
+    </div>
+
+    <div class="relative">
+      <button (click)="showPeriodMenu.set(!showPeriodMenu())"
+              ngmMotion [whileTap]="{ scale: 0.94 }"
+              class="flex items-center gap-2 px-3.5 py-2 rounded-xl bg-white border border-gray-200 text-sm font-medium text-gray-700 hover:border-accent-300 transition-colors shadow-[0_1px_4px_rgba(17,24,39,0.06)]">
+        {{ periodLabel() }}
+        <ng-icon name="phosphorCaretDown"
+                 [class]="'transition-transform duration-200 ' + (showPeriodMenu() ? 'rotate-180' : '')"
+                 style="font-size: 0.8rem"></ng-icon>
+      </button>
+      @if (showPeriodMenu()) {
+        <div class="absolute right-0 top-full mt-1.5 bg-white rounded-xl border border-gray-100 shadow-[0_8px_24px_rgba(17,24,39,0.12)] py-1 z-10 min-w-[160px]"
+             ngmMotion [initial]="{ opacity: 0, y: -8, scale: 0.96 }" [animate]="{ opacity: 1, y: 0, scale: 1 }" [exit]="{ opacity: 0, y: -8 }" [transition]="SPRING_SNAPPY">
+          @for (opt of [['week','Cette semaine'],['month','Ce mois'],['semester','Ce semestre'],['year','Cette année']]; track opt[0]) {
+            <button (click)="setPeriod(opt[0])"
+                    [class]="'w-full text-left px-4 py-2.5 text-sm transition-colors ' + (selectedPeriod() === opt[0] ? 'text-accent-600 font-semibold bg-accent-50' : 'text-gray-700 hover:bg-gray-50')">
+              {{ opt[1] }}
+            </button>
+          }
+        </div>
+      }
+    </div>
+  </div>
+
+  <div class="flex gap-1 bg-white rounded-xl border border-gray-100 p-1 w-fit shadow-[0_1px_4px_rgba(17,24,39,0.05)]"
+       ngmMotion [initial]="'hidden'" [animate]="'visible'" [variants]="FADE_UP" [transition]="{ type: 'spring', stiffness: 280, damping: 24, delay: 0.04 }">
+    <button (click)="activeTab.set('overview')"
+            [class]="activeTab() === 'overview'
+              ? 'px-4 py-2 rounded-lg bg-gray-900 text-white text-sm font-semibold'
+              : 'px-4 py-2 rounded-lg text-gray-500 text-sm font-medium hover:text-gray-700 transition-colors'">
+      Vue d'ensemble
+    </button>
+    <button (click)="activeTab.set('reports')"
+            [class]="activeTab() === 'reports'
+              ? 'px-4 py-2 rounded-lg bg-gray-900 text-white text-sm font-semibold'
+              : 'px-4 py-2 rounded-lg text-gray-500 text-sm font-medium hover:text-gray-700 transition-colors'">
+      Rapports
+    </button>
+  </div>
+
+  @if (activeTab() === 'overview') {
+
+    <div class="grid grid-cols-3 gap-4"
+         ngmMotion [initial]="'hidden'" [animate]="'visible'" [variants]="FADE_UP" [transition]="{ type: 'spring', stiffness: 280, damping: 24, delay: 0.08 }">
+      <div class="bg-white rounded-xl border border-gray-100 p-5 shadow-[0_2px_8px_rgba(17,24,39,0.06)]">
+        <div class="flex items-start gap-3">
+          <div class="w-9 h-9 rounded-lg bg-accent-50 flex items-center justify-center flex-shrink-0">
+            <ng-icon name="phosphorChartBar" class="text-accent-500" style="font-size: 1rem"></ng-icon>
+          </div>
+          <div>
+            <p class="text-xs font-medium text-gray-500 mb-0.5">Taux d'occupation</p>
+            <p class="text-2xl font-bold font-mono text-gray-900">{{ tauxOccupation }}%</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-100 p-5 shadow-[0_2px_8px_rgba(17,24,39,0.06)]">
+        <div class="flex items-start gap-3">
+          <div class="w-9 h-9 rounded-lg bg-red-50 flex items-center justify-center flex-shrink-0">
+            <ng-icon name="phosphorWarningCircle" class="text-red-400" style="font-size: 1rem"></ng-icon>
+          </div>
+          <div>
+            <p class="text-xs font-medium text-gray-500 mb-0.5">Conflits détectés</p>
+            <p class="text-2xl font-bold font-mono" [class]="conflitsDetectes > 0 ? 'text-red-500' : 'text-gray-900'">{{ conflitsDetectes }}</p>
+          </div>
+        </div>
+      </div>
+      <div class="bg-white rounded-xl border border-gray-100 p-5 shadow-[0_2px_8px_rgba(17,24,39,0.06)]">
+        <div class="flex items-start gap-3">
+          <div class="w-9 h-9 rounded-lg bg-green-50 flex items-center justify-center flex-shrink-0">
+            <ng-icon name="phosphorUsers" class="text-green-500" style="font-size: 1rem"></ng-icon>
+          </div>
+          <div>
+            <p class="text-xs font-medium text-gray-500 mb-0.5">Enseignants actifs</p>
+            <p class="text-2xl font-bold font-mono text-gray-900">{{ enseignantsActifs }}</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-[0_4px_16px_rgba(17,24,39,0.07)]"
+           ngmMotion [initial]="'hidden'" [animate]="'visible'" [variants]="FADE_UP" [transition]="{ type: 'spring', stiffness: 280, damping: 24, delay: 0.12 }">
+        <div class="px-5 pt-5 pb-3 flex items-center justify-between">
+          <div>
+            <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.12em] mb-0.5">Salles</p>
+            <h2 class="text-sm font-semibold text-gray-900">Taux d'occupation</h2>
+          </div>
+          <span class="text-[11px] text-accent-600 font-medium bg-accent-50 px-2.5 py-1 rounded-full border border-accent-100">{{ periodLabel() }}</span>
+        </div>
+
+        <div class="px-5 pb-5">
+          <div class="p-1.5 bg-gray-50 rounded-xl border border-gray-100">
+            <div class="bg-white rounded-[calc(0.75rem-2px)] p-4 shadow-[inset_0_1px_2px_rgba(17,24,39,0.04)]">
+              <div class="flex items-end justify-around gap-1" style="height: 128px;">
+                @for (d of occupationData(); track d.day; let i = $index) {
+                  <div class="flex flex-col items-center gap-0.5 flex-1 group"
+                       ngmMotion [initial]="{ opacity: 0 }" [animate]="{ opacity: 1 }" [transition]="{ type: 'spring', stiffness: 280, damping: 24, delay: i * 0.05 }">
+                    <div class="w-full flex items-end justify-center gap-0.5" style="height: 120px;">
+                      <div class="w-3 bg-accent-300 rounded-t transition-all hover:bg-accent-400" [style.height.px]="barH(d.amphi)" title="Amphi"></div>
+                      <div class="w-3 bg-teal-400 rounded-t transition-all hover:bg-teal-500" [style.height.px]="barH(d.labo)" title="Labo"></div>
+                      <div class="w-3 bg-emerald-400 rounded-t transition-all hover:bg-emerald-500" [style.height.px]="barH(d.td)" title="TD"></div>
+                    </div>
+                    <span class="text-[9px] text-gray-400 font-medium">{{ d.day }}</span>
+                  </div>
+                }
+              </div>
+              <div class="flex justify-center gap-4 mt-3 pt-3 border-t border-gray-50">
+                <div class="flex items-center gap-1"><div class="w-2 h-2 rounded-sm bg-accent-300"></div><span class="text-[10px] text-gray-500">Amphi</span></div>
+                <div class="flex items-center gap-1"><div class="w-2 h-2 rounded-sm bg-teal-400"></div><span class="text-[10px] text-gray-500">Labo</span></div>
+                <div class="flex items-center gap-1"><div class="w-2 h-2 rounded-sm bg-emerald-400"></div><span class="text-[10px] text-gray-500">TD</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white rounded-2xl border border-gray-100 shadow-[0_4px_16px_rgba(17,24,39,0.07)]"
+           ngmMotion [initial]="'hidden'" [animate]="'visible'" [variants]="FADE_UP" [transition]="{ type: 'spring', stiffness: 280, damping: 24, delay: 0.16 }">
+        <div class="px-5 pt-5 pb-3">
+          <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.12em] mb-0.5">Tendances</p>
+          <h2 class="text-sm font-semibold text-gray-900">Conflits & Réservations</h2>
+        </div>
+
+        <div class="px-5 pb-5">
+          <div class="p-1.5 bg-gray-50 rounded-xl border border-gray-100">
+            <div class="bg-white rounded-[calc(0.75rem-2px)] p-4 shadow-[inset_0_1px_2px_rgba(17,24,39,0.04)]">
+              <svg viewBox="0 0 280 110" class="w-full" style="height: 120px;">
+                <polyline [attr.points]="linePoints('reservations')" fill="none" stroke="#6366F1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+                <polyline [attr.points]="linePoints('conflits')" fill="none" stroke="#EF4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" opacity="0.7"/>
+                @for (d of trendData(); track d.label; let i = $index) {
+                  <text [attr.x]="(i / (trendData().length - 1)) * 280" y="108" text-anchor="middle" class="text-[8px] fill-gray-400" style="font-size: 8px; fill: #9ca3af;">{{ d.label }}</text>
+                }
+              </svg>
+              <div class="flex justify-center gap-4 mt-1 pt-2 border-t border-gray-50">
+                <div class="flex items-center gap-1"><div class="w-5 h-0.5 bg-accent-500 rounded opacity-70"></div><span class="text-[10px] text-gray-500">Réservations</span></div>
+                <div class="flex items-center gap-1"><div class="w-5 h-0.5 bg-red-400 rounded opacity-70"></div><span class="text-[10px] text-gray-500">Conflits</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  }
+
+  @if (activeTab() === 'reports') {
+
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-3"
+         ngmMotion [initial]="'hidden'" [animate]="'visible'" [variants]="FADE_UP" [transition]="{ type: 'spring', stiffness: 280, damping: 24, delay: 0.08 }">
+      @for (type of REPORT_TYPES; track type; let i = $index) {
+        <button (click)="generateReport(type)"
+                [disabled]="generatingType() === type"
+                ngmMotion [whileTap]="{ scale: 0.97 }"
+                class="p-4 bg-white rounded-xl border border-gray-200/80 hover:border-accent-300 hover:shadow-[0_4px_16px_rgba(99,102,241,0.10)] transition-all text-left group disabled:opacity-60 shadow-[0_2px_8px_rgba(17,24,39,0.06)]">
+          <div [class]="'w-8 h-8 rounded-lg flex items-center justify-center mb-3 ' + TYPE_META[type].bg">
+            @if (generatingType() === type) {
+              <svg class="animate-spin w-4 h-4" [class]="TYPE_META[type].color" fill="none" viewBox="0 0 24 24">
+                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+              </svg>
+            } @else {
+              <ng-icon [name]="TYPE_META[type].icon" [class]="TYPE_META[type].color" style="font-size: 1rem"></ng-icon>
+            }
+          </div>
+          <p class="text-xs font-semibold text-gray-800 leading-snug mb-0.5">{{ TYPE_META[type].label }}</p>
+          <p class="text-[10px] text-gray-400">Générer PDF</p>
+        </button>
+      }
+    </div>
+
+    <div class="bg-white rounded-2xl border border-gray-100 shadow-[0_4px_16px_rgba(17,24,39,0.07)]"
+         ngmMotion [initial]="'hidden'" [animate]="'visible'" [variants]="FADE_UP" [transition]="{ type: 'spring', stiffness: 280, damping: 24, delay: 0.12 }">
+      <div class="px-6 pt-6 pb-4 border-b border-gray-50 flex items-center justify-between">
+        <div>
+          <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.12em] mb-0.5">Archive</p>
+          <h2 class="text-sm font-semibold text-gray-900">Historique des rapports</h2>
+        </div>
+        <span class="text-[11px] font-medium text-gray-400">{{ historiqueRapports().length }} rapport(s)</span>
+      </div>
+
+      <div class="divide-y divide-gray-50">
+        @for (rapport of historiqueRapports(); track rapport.id; let i = $index) {
+          <div class="flex items-center gap-4 px-6 py-4"
+               ngmMotion [initial]="{ opacity: 0, x: -8 }" [animate]="{ opacity: 1, x: 0 }" [transition]="{ type: 'spring', stiffness: 280, damping: 24, delay: i * 0.04 }">
+            <div [class]="'w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ' + TYPE_META[rapport.type].bg">
+              <ng-icon [name]="TYPE_META[rapport.type].icon" [class]="TYPE_META[rapport.type].color" style="font-size: 0.9rem"></ng-icon>
+            </div>
+            <div class="flex-1 min-w-0">
+              <p class="text-sm font-medium text-gray-800 truncate">{{ rapport.typeLabel }}</p>
+              <p class="text-xs text-gray-400 mt-0.5">{{ rapport.periode }}</p>
+            </div>
+            <div class="flex items-center gap-3 flex-shrink-0">
+              @if (rapport.taille) {
+                <span class="text-[11px] text-gray-400 font-mono">{{ rapport.taille }}</span>
+              }
+              <span class="text-[11px] font-medium text-green-600 bg-green-50 border border-green-100 px-2 py-0.5 rounded-full">
+                {{ rapport.statut }}
+              </span>
+              <button (click)="downloadRapport(rapport)"
+                      [disabled]="downloadingId() === rapport.id"
+                      ngmMotion [whileTap]="{ scale: 0.88 }"
+                      class="w-7 h-7 rounded-lg flex items-center justify-center border border-gray-200 text-gray-400 hover:border-accent-300 hover:text-accent-500 transition-colors disabled:opacity-40">
+                @if (downloadingId() === rapport.id) {
+                  <svg class="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
+                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                  </svg>
+                } @else {
+                  <ng-icon name="phosphorDownloadSimple" style="font-size: 0.8rem"></ng-icon>
+                }
+              </button>
+            </div>
+          </div>
+        }
+      </div>
+    </div>
+
+  }
+
+</div>
+
+<div class="fixed bottom-6 right-6 space-y-2 z-10">
+  @for (toast of toasts(); track toast.id) {
+    <div [class]="'flex items-center gap-3 px-4 py-3 rounded-xl shadow-[0_8px_24px_rgba(17,24,39,0.15)] text-sm font-medium border max-w-sm '
+                + (toast.type === 'success' ? 'bg-white border-green-100 text-green-700' : 'bg-white border-red-100 text-red-600')"
+         ngmMotion
+         [initial]="{ opacity: 0, x: 24, scale: 0.96 }"
+         [animate]="{ opacity: 1, x: 0, scale: 1 }"
+         [exit]="{ opacity: 0, x: 24 }"
+         [transition]="SPRING_SNAPPY">
+      <ng-icon [name]="toast.type === 'success' ? 'phosphorCheckCircle' : 'phosphorWarningCircle'"
+               style="font-size: 1rem" class="flex-shrink-0"></ng-icon>
+      <span class="flex-1">{{ toast.message }}</span>
+      <button (click)="dismissToast(toast.id)" class="opacity-50 hover:opacity-100 transition-opacity flex-shrink-0">
+        <ng-icon name="phosphorX" style="font-size: 0.8rem"></ng-icon>
+      </button>
+    </div>
+  }
+</div>

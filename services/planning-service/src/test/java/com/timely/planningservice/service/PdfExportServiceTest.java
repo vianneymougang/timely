@@ -84,7 +84,7 @@ class PdfExportServiceTest {
                 PeriodeEmploi.SEMAINE
         );
         emploiDuTemps.setId(emploiId);
-        emploiDuTemps.setStatut(StatutEmploi.PUBLIE);
+        emploiDuTemps.setStatut(StatutEmploi.PUBLISHED);
     }
 
     @Test
@@ -396,7 +396,7 @@ class PdfExportServiceTest {
     private Creneau createCreneau(EmploiDuTemps emploi, DayOfWeek day, LocalTime debut, LocalTime fin) {
         Creneau creneau = new Creneau(emploi, day, debut, fin, TypeRecurrence.HEBDOMADAIRE);
         creneau.setId(UUID.randomUUID());
-        creneau.setStatutCreneau(StatutCreneau.ACTIF);
+        creneau.setStatutCreneau(StatutCreneau.RESERVE);
         creneau.setCoursId(UUID.randomUUID());
         creneau.setEnseignantId(UUID.randomUUID());
         creneau.setSalleId(UUID.randomUUID());

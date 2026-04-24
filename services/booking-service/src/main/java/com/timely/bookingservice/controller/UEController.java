@@ -30,37 +30,37 @@ public class UEController {
     private final UEService ueService;
 
     @PostMapping("/ues")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UEResponse> create(@Valid @RequestBody UERequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(ueService.create(request));
     }
 
     @GetMapping("/ues")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<List<UEResponse>> getAll() {
         return ResponseEntity.ok(ueService.getAll());
     }
 
     @GetMapping("/ues/{id}")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<UEResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(ueService.getById(id));
     }
 
     @GetMapping("/filieres/{filiereId}/ues")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<List<UEResponse>> getByFiliereId(@PathVariable UUID filiereId) {
         return ResponseEntity.ok(ueService.getByFiliereId(filiereId));
     }
 
     @PutMapping("/ues/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<UEResponse> update(@PathVariable UUID id, @Valid @RequestBody UERequest request) {
         return ResponseEntity.ok(ueService.update(id, request));
     }
 
     @DeleteMapping("/ues/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         ueService.delete(id);
         return ResponseEntity.noContent().build();

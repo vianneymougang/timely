@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["src/app/shared/components/schedule-grid/schedule-grid.component.scss"],
+  "sourcesContent": ["table {\n  table-layout: fixed;\n  width: 100%;\n\n  th:first-child,\n  td:first-child {\n    width: 100px;\n    min-width: 100px;\n  }\n\n  th:not(:first-child),\n  td:not(:first-child) {\n    width: calc((100% - 100px) / 5);\n    min-width: 150px;\n  }\n}\n\n@media (max-width: 768px) {\n  table {\n    display: block;\n    overflow-x: auto;\n    white-space: nowrap;\n  }\n}\n"],
+  "mappings": ";AAAA;AACE,gBAAA;AACA,SAAA;;AAEA,MAAA,EAAA;AAAA,MAAA,EAAA;AAEE,SAAA;AACA,aAAA;;AAGF,MAAA,EAAA,KAAA;AAAA,MAAA,EAAA,KAAA;AAEE,SAAA,KAAA,CAAA,KAAA,EAAA,OAAA,EAAA;AACA,aAAA;;AAIJ,OAAA,CAAA,SAAA,EAAA;AACE;AACE,aAAA;AACA,gBAAA;AACA,iBAAA;;;",
+  "names": []
+}

@@ -1,352 +1,209 @@
-<div class="p-8 max-w-7xl mx-auto">
-  <!-- En-tête -->
-  <div class="mb-8">
-    <h1 class="text-3xl font-bold text-slate-800 mb-2">Gestion Académique</h1>
-    <p class="text-slate-600">Gérez les écoles, filières et classes</p>
-  </div>
+<div class="flex-1 p-6 space-y-5 min-h-0">
 
-  <!-- Tabs de navigation -->
-  <div class="flex gap-4 mb-6 border-b border-slate-200">
-    <button
-      (click)="setActiveSection('ecole')"
-      [class.border-teal-600]="activeSection() === 'ecole'"
-      [class.text-teal-600]="activeSection() === 'ecole'"
-      [class.text-slate-600]="activeSection() !== 'ecole'"
-      class="pb-3 px-4 font-medium border-b-2 transition-colors hover:text-teal-600"
-    >
-      <span class="flex items-center gap-2">
-        <span class="material-icons text-xl">apartment</span>
-        Écoles ({{ ecoles().length }})
-      </span>
-    </button>
-    <button
-      (click)="setActiveSection('filiere')"
-      [class.border-teal-600]="activeSection() === 'filiere'"
-      [class.text-teal-600]="activeSection() === 'filiere'"
-      [class.text-slate-600]="activeSection() !== 'filiere'"
-      class="pb-3 px-4 font-medium border-b-2 transition-colors hover:text-teal-600"
-    >
-      <span class="flex items-center gap-2">
-        <span class="material-icons text-xl">account_tree</span>
-        Filières ({{ filieres().length }})
-      </span>
-    </button>
-    <button
-      (click)="setActiveSection('classe')"
-      [class.border-teal-600]="activeSection() === 'classe'"
-      [class.text-teal-600]="activeSection() === 'classe'"
-      [class.text-slate-600]="activeSection() !== 'classe'"
-      class="pb-3 px-4 font-medium border-b-2 transition-colors hover:text-teal-600"
-    >
-      <span class="flex items-center gap-2">
-        <span class="material-icons text-xl">group</span>
-        Classes ({{ classes().length }})
-      </span>
+  <div class="flex items-start justify-between"
+       ngmMotion [initial]="'hidden'" [animate]="'visible'" [variants]="FADE_UP" [transition]="SPRING_DEFAULT">
+    <div>
+      <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.15em] mb-0.5">Gestion académique</p>
+      <h1 class="font-display text-2xl font-semibold text-gray-900 tracking-tight">Structure académique</h1>
+    </div>
+    <button (click)="activeSection() === 'ecole' ? openEcoleModal() : (activeSection() === 'filiere' ? openFiliereModal() : openClasseModal())"
+            ngmMotion [whileTap]="{ scale: 0.95 }"
+            class="flex items-center gap-1.5 h-9 px-4 rounded-xl bg-accent-500 hover:bg-accent-600 text-white text-sm font-semibold transition-colors shadow-[0_2px_8px_rgba(99,102,241,0.25)]">
+      <ng-icon name="phosphorPlus" style="font-size:0.85rem"></ng-icon>
+      Ajouter
     </button>
   </div>
 
-  <!-- Section Écoles -->
+  <div class="flex items-center gap-2"
+       ngmMotion [initial]="'hidden'" [animate]="'visible'" [variants]="FADE_UP"
+       [transition]="{ type: 'spring', stiffness: 280, damping: 24, delay: 0.04 }">
+    @for (tab of [
+      { key: 'ecole', label: 'Écoles', count: ecoles().length, icon: 'phosphorBuildings' },
+      { key: 'filiere', label: 'Filières', count: filieres().length, icon: 'phosphorListDashes' },
+      { key: 'classe', label: 'Classes', count: classes().length, icon: 'phosphorGraduationCap' }
+    ]; track tab.key) {
+      <button (click)="setActiveSection($any(tab.key))"
+              ngmMotion [whileTap]="{ scale: 0.96 }"
+              [class]="'flex items-center gap-1.5 h-8 px-4 rounded-lg text-sm font-semibold transition-all ' +
+                (activeSection() === tab.key
+                  ? 'bg-accent-500 text-white shadow-[0_2px_8px_rgba(99,102,241,0.2)]'
+                  : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-300')">
+        <ng-icon [name]="tab.icon" style="font-size:0.85rem"></ng-icon>
+        {{ tab.label }}
+        <span [class]="'text-[10px] px-1.5 py-0.5 rounded-full font-bold ' +
+          (activeSection() === tab.key ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-600')">
+          {{ tab.count }}
+        </span>
+      </button>
+    }
+  </div>
+
   @if (activeSection() === 'ecole') {
-    <div>
-      <!-- Bouton d'ajout -->
-      <div class="mb-6 flex justify-between items-center">
-        <div class="text-slate-600">
-          <span class="font-medium">{{ ecoles().length }}</span> écoles au total
+    @if (ecoles().length === 0) {
+      <div class="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-dashed border-gray-200 text-center"
+           ngmMotion [initial]="{ opacity: 0, scale: 0.96 }" [animate]="{ opacity: 1, scale: 1 }" [transition]="SPRING_DEFAULT">
+        <div class="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mb-3">
+          <ng-icon name="phosphorBuildings" class="text-gray-300" style="font-size:1.4rem"></ng-icon>
         </div>
-        <button
-          (click)="openEcoleModal()"
-          class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-        >
-          <span class="material-icons">add</span>
-          Nouvelle école
-        </button>
+        <p class="text-sm font-semibold text-gray-700">Aucune école créée</p>
       </div>
-
-      <!-- Grille de cartes d'écoles -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        @for (ecole of ecoles(); track ecole.id) {
-          <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border border-slate-200">
-            <!-- En-tête de la carte -->
-            <div class="flex items-start gap-3 mb-4">
-              <div class="bg-teal-100 rounded-lg p-3">
-                <span class="material-icons text-teal-600 text-2xl">apartment</span>
+    } @else {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"
+           ngmMotion [initial]="'hidden'" [animate]="'visible'" [variants]="FADE_UP"
+           [transition]="{ type: 'spring', stiffness: 280, damping: 24, delay: 0.08 }">
+        @for (ecole of ecoles(); track ecole.id; let i = $index) {
+          <div class="bg-white rounded-xl border border-gray-200/80 p-4 hover:border-accent-200 hover:shadow-[0_4px_16px_rgba(99,102,241,0.08)] transition-all"
+               ngmMotion [initial]="'hidden'" [animate]="'visible'" [variants]="FADE_UP"
+               [transition]="{ type: 'spring', stiffness: 280, damping: 24, delay: i * 0.04 }">
+            <div class="flex items-start justify-between mb-2">
+              <div class="w-8 h-8 rounded-lg bg-accent-50 flex items-center justify-center flex-shrink-0">
+                <ng-icon name="phosphorBuildings" class="text-accent-500" style="font-size:0.9rem"></ng-icon>
               </div>
-              <div class="flex-1">
-                <h3 class="text-lg font-semibold text-slate-800 mb-1">{{ ecole.nom }}</h3>
-                <p class="text-sm text-slate-500 flex items-center gap-1">
-                  <span class="material-icons text-xs">person</span>
-                  {{ ecole.directeur }}
-                </p>
+              <div class="flex items-center gap-1">
+                <button (click)="openEcoleModal(ecole)" ngmMotion [whileTap]="{ scale: 0.9 }"
+                        class="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-accent-600 hover:bg-accent-50 transition-colors">
+                  <ng-icon name="phosphorPencil" style="font-size:0.75rem"></ng-icon>
+                </button>
+                <button (click)="deleteEcole(ecole.id)" ngmMotion [whileTap]="{ scale: 0.9 }"
+                        class="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors">
+                  <ng-icon name="phosphorTrash" style="font-size:0.75rem"></ng-icon>
+                </button>
               </div>
             </div>
-
-            <!-- Description -->
-            <p class="text-sm text-slate-600 mb-4 line-clamp-3">{{ ecole.description }}</p>
-
-            <!-- Actions -->
-            <div class="flex gap-2 pt-4 border-t border-slate-200">
-              <button
-                (click)="openEcoleModal(ecole)"
-                class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1"
-              >
-                <span class="material-icons text-sm">edit</span>
-                Modifier
-              </button>
-              <button
-                (click)="deleteEcole(ecole.id!)"
-                class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center"
-              >
-                <span class="material-icons text-sm">delete</span>
-              </button>
-            </div>
-          </div>
-        } @empty {
-          <div class="col-span-3 text-center py-12">
-            <span class="material-icons text-6xl text-slate-300 mb-4">apartment</span>
-            <p class="text-slate-500">Aucune école pour le moment</p>
-            <button
-              (click)="openEcoleModal()"
-              class="mt-4 text-teal-600 hover:text-teal-700 font-medium"
-            >
-              Créer votre première école
-            </button>
+            <p class="text-sm font-semibold text-gray-900 mb-0.5">{{ ecole.nom }}</p>
+            <p class="text-xs text-gray-500 mb-2">Directeur : {{ ecole.directeur }}</p>
+            @if (ecole.description) {
+              <p class="text-xs text-gray-400 line-clamp-2">{{ ecole.description }}</p>
+            }
           </div>
         }
       </div>
-    </div>
+    }
   }
 
-  <!-- Section Filières -->
   @if (activeSection() === 'filiere') {
-    <div>
-      <!-- Bouton d'ajout -->
-      <div class="mb-6 flex justify-between items-center">
-        <div class="text-slate-600">
-          <span class="font-medium">{{ filieres().length }}</span> filières au total
+    @if (filieres().length === 0) {
+      <div class="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-dashed border-gray-200 text-center"
+           ngmMotion [initial]="{ opacity: 0, scale: 0.96 }" [animate]="{ opacity: 1, scale: 1 }" [transition]="SPRING_DEFAULT">
+        <div class="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mb-3">
+          <ng-icon name="phosphorListDashes" class="text-gray-300" style="font-size:1.4rem"></ng-icon>
         </div>
-        <button
-          (click)="openFiliereModal()"
-          class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-        >
-          <span class="material-icons">add</span>
-          Nouvelle filière
-        </button>
+        <p class="text-sm font-semibold text-gray-700">Aucune filière créée</p>
       </div>
-
-      <!-- Grille de cartes de filières -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        @for (filiere of filieres(); track filiere.id) {
-          <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border border-slate-200">
-            <!-- En-tête de la carte -->
-            <div class="flex items-start gap-3 mb-4">
-              <div class="bg-blue-100 rounded-lg p-3">
-                <span class="material-icons text-blue-600 text-2xl">account_tree</span>
+    } @else {
+      <div class="bg-white rounded-xl border border-gray-100 shadow-[0_1px_4px_rgba(17,24,39,0.05)] overflow-hidden"
+           ngmMotion [initial]="'hidden'" [animate]="'visible'" [variants]="FADE_UP"
+           [transition]="{ type: 'spring', stiffness: 280, damping: 24, delay: 0.08 }">
+        <div class="divide-y divide-gray-50">
+          @for (filiere of filieres(); track filiere.id; let i = $index) {
+            <div class="flex items-center gap-4 px-4 py-3 hover:bg-gray-50/50 transition-colors group">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2 mb-0.5">
+                  <p class="text-sm font-semibold text-gray-900 truncate">{{ filiere.nom }}</p>
+                  <span class="text-[10px] font-mono font-semibold text-accent-600 bg-accent-50 px-1.5 py-0.5 rounded-md">{{ filiere.code }}</span>
+                </div>
+                <div class="flex items-center gap-3 text-xs text-gray-400">
+                  <span>{{ getEcoleName(filiere.ecoleId) }}</span>
+                  <span class="px-1.5 py-0.5 rounded-md bg-gray-50 border border-gray-100">{{ filiere.cycleType }}</span>
+                </div>
               </div>
-              <div class="flex-1">
-                <h3 class="text-lg font-semibold text-slate-800 mb-1">{{ filiere.nom }}</h3>
-                <p class="text-sm text-slate-500 flex items-center gap-1">
-                  <span class="material-icons text-xs">apartment</span>
-                  {{ getEcoleName(filiere.ecoleId) }}
-                </p>
+              <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button (click)="openFiliereModal(filiere)" ngmMotion [whileTap]="{ scale: 0.9 }"
+                        class="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-accent-600 hover:bg-accent-50 transition-colors">
+                  <ng-icon name="phosphorPencil" style="font-size:0.75rem"></ng-icon>
+                </button>
+                <button (click)="deleteFiliere(filiere.id)" ngmMotion [whileTap]="{ scale: 0.9 }"
+                        class="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors">
+                  <ng-icon name="phosphorTrash" style="font-size:0.75rem"></ng-icon>
+                </button>
               </div>
             </div>
-
-            <!-- Description -->
-            <p class="text-sm text-slate-600 mb-4 line-clamp-3">{{ filiere.description }}</p>
-
-            <!-- Actions -->
-            <div class="flex gap-2 pt-4 border-t border-slate-200">
-              <button
-                (click)="openFiliereModal(filiere)"
-                class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1"
-              >
-                <span class="material-icons text-sm">edit</span>
-                Modifier
-              </button>
-              <button
-                (click)="deleteFiliere(filiere.id!)"
-                class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center"
-              >
-                <span class="material-icons text-sm">delete</span>
-              </button>
-            </div>
-          </div>
-        } @empty {
-          <div class="col-span-3 text-center py-12">
-            <span class="material-icons text-6xl text-slate-300 mb-4">account_tree</span>
-            <p class="text-slate-500">Aucune filière pour le moment</p>
-            <button
-              (click)="openFiliereModal()"
-              class="mt-4 text-teal-600 hover:text-teal-700 font-medium"
-            >
-              Créer votre première filière
-            </button>
-          </div>
-        }
+          }
+        </div>
       </div>
-    </div>
+    }
   }
 
-  <!-- Section Classes -->
   @if (activeSection() === 'classe') {
-    <div>
-      <!-- Bouton d'ajout -->
-      <div class="mb-6 flex justify-between items-center">
-        <div class="text-slate-600">
-          <span class="font-medium">{{ classes().length }}</span> classes au total
+    @if (classes().length === 0) {
+      <div class="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-dashed border-gray-200 text-center"
+           ngmMotion [initial]="{ opacity: 0, scale: 0.96 }" [animate]="{ opacity: 1, scale: 1 }" [transition]="SPRING_DEFAULT">
+        <div class="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mb-3">
+          <ng-icon name="phosphorGraduationCap" class="text-gray-300" style="font-size:1.4rem"></ng-icon>
         </div>
-        <button
-          (click)="openClasseModal()"
-          class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-        >
-          <span class="material-icons">add</span>
-          Nouvelle classe
-        </button>
+        <p class="text-sm font-semibold text-gray-700">Aucune classe créée</p>
       </div>
-
-      <!-- Grille de cartes de classes -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        @for (classe of classes(); track classe.id) {
-          <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border border-slate-200">
-            <!-- En-tête de la carte -->
-            <div class="flex items-start gap-3 mb-4">
-              <div class="bg-purple-100 rounded-lg p-3">
-                <span class="material-icons text-purple-600 text-2xl">group</span>
+    } @else {
+      <div class="bg-white rounded-xl border border-gray-100 shadow-[0_1px_4px_rgba(17,24,39,0.05)] overflow-hidden"
+           ngmMotion [initial]="'hidden'" [animate]="'visible'" [variants]="FADE_UP"
+           [transition]="{ type: 'spring', stiffness: 280, damping: 24, delay: 0.08 }">
+        <div class="divide-y divide-gray-50">
+          @for (classe of classes(); track classe.id; let i = $index) {
+            <div class="flex items-center gap-4 px-4 py-3 hover:bg-gray-50/50 transition-colors group">
+              <div class="w-8 h-8 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center text-xs font-bold font-mono text-gray-600 flex-shrink-0">
+                {{ classe.yearIndex }}
               </div>
-              <div class="flex-1">
-                <h3 class="text-lg font-semibold text-slate-800 mb-1">{{ classe.nom }}</h3>
-                <p class="text-sm text-slate-500 flex items-center gap-1">
-                  <span class="material-icons text-xs">account_tree</span>
-                  {{ getFiliereName(classe.filiereId) }}
-                </p>
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-gray-900 truncate">{{ classe.nom }}</p>
+                <div class="flex items-center gap-2 text-xs text-gray-400">
+                  <span>{{ getFiliereName(classe.filiereId) }}</span>
+                  <span class="px-1.5 py-0.5 rounded-md bg-gray-50 border border-gray-100">{{ classe.cycleType }}</span>
+                  <span class="text-gray-300">{{ classe.displayLevel }}</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button (click)="openClasseModal(classe)" ngmMotion [whileTap]="{ scale: 0.9 }"
+                        class="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-accent-600 hover:bg-accent-50 transition-colors">
+                  <ng-icon name="phosphorPencil" style="font-size:0.75rem"></ng-icon>
+                </button>
+                <button (click)="deleteClasse(classe.id)" ngmMotion [whileTap]="{ scale: 0.9 }"
+                        class="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors">
+                  <ng-icon name="phosphorTrash" style="font-size:0.75rem"></ng-icon>
+                </button>
               </div>
             </div>
-
-            <!-- Informations -->
-            <div class="bg-slate-50 rounded-lg p-3 mb-4">
-              <div class="text-xs text-slate-500 mb-1">Niveau</div>
-              <div class="text-sm font-semibold text-slate-700">{{ classe.niveau }}</div>
-            </div>
-
-            <!-- Actions -->
-            <div class="flex gap-2 pt-4 border-t border-slate-200">
-              <button
-                (click)="openClasseModal(classe)"
-                class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1"
-              >
-                <span class="material-icons text-sm">edit</span>
-                Modifier
-              </button>
-              <button
-                (click)="deleteClasse(classe.id!)"
-                class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center"
-              >
-                <span class="material-icons text-sm">delete</span>
-              </button>
-            </div>
-          </div>
-        } @empty {
-          <div class="col-span-3 text-center py-12">
-            <span class="material-icons text-6xl text-slate-300 mb-4">group</span>
-            <p class="text-slate-500">Aucune classe pour le moment</p>
-            <button
-              (click)="openClasseModal()"
-              class="mt-4 text-teal-600 hover:text-teal-700 font-medium"
-            >
-              Créer votre première classe
-            </button>
-          </div>
-        }
+          }
+        </div>
       </div>
-    </div>
+    }
   }
 
-  <!-- Modal École -->
   @if (showEcoleModal()) {
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <!-- En-tête du modal -->
-        <div class="flex justify-between items-center p-6 border-b border-slate-200">
-          <h2 class="text-2xl font-bold text-slate-800">
-            {{ editingEcole() ? 'Modifier l\'école' : 'Nouvelle école' }}
-          </h2>
-          <button
-            (click)="closeEcoleModal()"
-            class="text-slate-400 hover:text-slate-600 transition-colors"
-          >
-            <span class="material-icons">close</span>
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4"
+         ngmMotion [initial]="{ opacity: 0 }" [animate]="{ opacity: 1 }" [exit]="{ opacity: 0 }" [transition]="{ duration: 0.15 }">
+      <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" (click)="closeEcoleModal()"></div>
+      <div class="relative bg-white rounded-2xl shadow-[0_24px_64px_rgba(17,24,39,0.18)] w-full max-w-md"
+           ngmMotion [initial]="{ scale: 0.95, opacity: 0 }" [animate]="{ scale: 1, opacity: 1 }"
+           [exit]="{ scale: 0.95, opacity: 0 }" [transition]="SPRING_SNAPPY">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <h3 class="text-base font-semibold text-gray-900">{{ editingEcole() ? 'Modifier l\'école' : 'Ajouter une école' }}</h3>
+          <button (click)="closeEcoleModal()" ngmMotion [whileTap]="{ scale: 0.9 }"
+                  class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+            <ng-icon name="phosphorX" style="font-size:0.9rem"></ng-icon>
           </button>
         </div>
-
-        <!-- Formulaire -->
-        <form [formGroup]="ecoleForm" (ngSubmit)="saveEcole()" class="p-6">
-          <div class="space-y-4">
-            <!-- Nom -->
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">
-                Nom de l'école *
-              </label>
-              <input
-                type="text"
-                formControlName="nom"
-                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                placeholder="Ex: École Nationale Supérieure Polytechnique"
-              />
-              @if (ecoleForm.get('nom')?.invalid && ecoleForm.get('nom')?.touched) {
-                <p class="text-red-600 text-sm mt-1">Le nom est requis (min. 3 caractères)</p>
-              }
-            </div>
-
-            <!-- Directeur -->
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">
-                Directeur *
-              </label>
-              <input
-                type="text"
-                formControlName="directeur"
-                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                placeholder="Ex: Dr. Jean Dupont"
-              />
-              @if (ecoleForm.get('directeur')?.invalid && ecoleForm.get('directeur')?.touched) {
-                <p class="text-red-600 text-sm mt-1">Le nom du directeur est requis (min. 3 caractères)</p>
-              }
-            </div>
-
-            <!-- Description -->
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">
-                Description *
-              </label>
-              <textarea
-                formControlName="description"
-                rows="4"
-                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
-                placeholder="Décrivez l'école..."
-              ></textarea>
-              @if (ecoleForm.get('description')?.invalid && ecoleForm.get('description')?.touched) {
-                <p class="text-red-600 text-sm mt-1">La description est requise (min. 10 caractères)</p>
-              }
-            </div>
+        <form [formGroup]="ecoleForm" (ngSubmit)="saveEcole()" class="p-6 space-y-4">
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Nom <span class="text-red-400">*</span></label>
+            <input type="text" formControlName="nom"
+                   class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all" />
           </div>
-
-          <!-- Actions -->
-          <div class="flex gap-3 mt-6 pt-6 border-t border-slate-200">
-            <button
-              type="button"
-              (click)="closeEcoleModal()"
-              class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors"
-            >
-              Annuler
-            </button>
-            <button
-              type="submit"
-              [disabled]="ecoleForm.invalid"
-              [class.opacity-50]="ecoleForm.invalid"
-              [class.cursor-not-allowed]="ecoleForm.invalid"
-              class="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors disabled:hover:bg-teal-600"
-            >
-              {{ editingEcole() ? 'Enregistrer' : 'Créer' }}
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Directeur <span class="text-red-400">*</span></label>
+            <input type="text" formControlName="directeur"
+                   class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all" />
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Description</label>
+            <textarea formControlName="description" rows="2"
+                      class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all resize-none"></textarea>
+          </div>
+          <div class="flex gap-3 pt-2">
+            <button type="button" (click)="closeEcoleModal()" ngmMotion [whileTap]="{ scale: 0.97 }"
+                    class="flex-1 h-9 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:border-gray-300 transition-colors">Annuler</button>
+            <button type="submit" [disabled]="ecoleForm.invalid" ngmMotion [whileTap]="{ scale: 0.97 }"
+                    class="flex-1 h-9 rounded-xl bg-accent-500 hover:bg-accent-600 disabled:opacity-50 text-white text-sm font-semibold transition-colors">
+              {{ editingEcole() ? 'Mettre à jour' : 'Créer' }}
             </button>
           </div>
         </form>
@@ -354,95 +211,64 @@
     </div>
   }
 
-  <!-- Modal Filière -->
   @if (showFiliereModal()) {
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <!-- En-tête du modal -->
-        <div class="flex justify-between items-center p-6 border-b border-slate-200">
-          <h2 class="text-2xl font-bold text-slate-800">
-            {{ editingFiliere() ? 'Modifier la filière' : 'Nouvelle filière' }}
-          </h2>
-          <button
-            (click)="closeFiliereModal()"
-            class="text-slate-400 hover:text-slate-600 transition-colors"
-          >
-            <span class="material-icons">close</span>
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4"
+         ngmMotion [initial]="{ opacity: 0 }" [animate]="{ opacity: 1 }" [exit]="{ opacity: 0 }" [transition]="{ duration: 0.15 }">
+      <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" (click)="closeFiliereModal()"></div>
+      <div class="relative bg-white rounded-2xl shadow-[0_24px_64px_rgba(17,24,39,0.18)] w-full max-w-md"
+           ngmMotion [initial]="{ scale: 0.95, opacity: 0 }" [animate]="{ scale: 1, opacity: 1 }"
+           [exit]="{ scale: 0.95, opacity: 0 }" [transition]="SPRING_SNAPPY">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <h3 class="text-base font-semibold text-gray-900">{{ editingFiliere() ? 'Modifier la filière' : 'Ajouter une filière' }}</h3>
+          <button (click)="closeFiliereModal()" ngmMotion [whileTap]="{ scale: 0.9 }"
+                  class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+            <ng-icon name="phosphorX" style="font-size:0.9rem"></ng-icon>
           </button>
         </div>
-
-        <!-- Formulaire -->
-        <form [formGroup]="filiereForm" (ngSubmit)="saveFiliere()" class="p-6">
-          <div class="space-y-4">
-            <!-- Nom -->
+        <form [formGroup]="filiereForm" (ngSubmit)="saveFiliere()" class="p-6 space-y-4">
+          <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">
-                Nom de la filière *
-              </label>
-              <input
-                type="text"
-                formControlName="nom"
-                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                placeholder="Ex: Génie Informatique"
-              />
-              @if (filiereForm.get('nom')?.invalid && filiereForm.get('nom')?.touched) {
-                <p class="text-red-600 text-sm mt-1">Le nom est requis (min. 3 caractères)</p>
-              }
+              <label class="block text-xs font-medium text-gray-600 mb-1">Nom <span class="text-red-400">*</span></label>
+              <input type="text" formControlName="nom"
+                     class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all" />
             </div>
-
-            <!-- École -->
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">
-                École *
-              </label>
-              <select
-                formControlName="ecoleId"
-                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-              >
-                <option value="">Sélectionnez une école</option>
-                @for (ecole of ecoles(); track ecole.id) {
-                  <option [value]="ecole.id">{{ ecole.nom }}</option>
-                }
-              </select>
-              @if (filiereForm.get('ecoleId')?.invalid && filiereForm.get('ecoleId')?.touched) {
-                <p class="text-red-600 text-sm mt-1">Veuillez sélectionner une école</p>
-              }
-            </div>
-
-            <!-- Description -->
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">
-                Description *
-              </label>
-              <textarea
-                formControlName="description"
-                rows="4"
-                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent resize-none"
-                placeholder="Décrivez la filière..."
-              ></textarea>
-              @if (filiereForm.get('description')?.invalid && filiereForm.get('description')?.touched) {
-                <p class="text-red-600 text-sm mt-1">La description est requise (min. 10 caractères)</p>
-              }
+              <label class="block text-xs font-medium text-gray-600 mb-1">Code <span class="text-red-400">*</span></label>
+              <input type="text" formControlName="code"
+                     class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all" />
             </div>
           </div>
-
-          <!-- Actions -->
-          <div class="flex gap-3 mt-6 pt-6 border-t border-slate-200">
-            <button
-              type="button"
-              (click)="closeFiliereModal()"
-              class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors"
-            >
-              Annuler
-            </button>
-            <button
-              type="submit"
-              [disabled]="filiereForm.invalid"
-              [class.opacity-50]="filiereForm.invalid"
-              [class.cursor-not-allowed]="filiereForm.invalid"
-              class="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors disabled:hover:bg-teal-600"
-            >
-              {{ editingFiliere() ? 'Enregistrer' : 'Créer' }}
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">École <span class="text-red-400">*</span></label>
+            <select formControlName="ecoleId"
+                    class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all bg-white">
+              <option value="">Sélectionner une école</option>
+              @for (ecole of ecoles(); track ecole.id) {
+                <option [value]="ecole.id">{{ ecole.nom }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Type de cycle <span class="text-red-400">*</span></label>
+            <select formControlName="cycleType"
+                    class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all bg-white">
+              <option value="">Sélectionner</option>
+              @for (opt of cycleTypeOptions; track opt.value) {
+                <option [value]="opt.value">{{ opt.label }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Description</label>
+            <textarea formControlName="description" rows="2"
+                      class="w-full px-3 py-2 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all resize-none"></textarea>
+          </div>
+          <div class="flex gap-3 pt-2">
+            <button type="button" (click)="closeFiliereModal()" ngmMotion [whileTap]="{ scale: 0.97 }"
+                    class="flex-1 h-9 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:border-gray-300 transition-colors">Annuler</button>
+            <button type="submit" [disabled]="filiereForm.invalid" ngmMotion [whileTap]="{ scale: 0.97 }"
+                    class="flex-1 h-9 rounded-xl bg-accent-500 hover:bg-accent-600 disabled:opacity-50 text-white text-sm font-semibold transition-colors">
+              {{ editingFiliere() ? 'Mettre à jour' : 'Créer' }}
             </button>
           </div>
         </form>
@@ -450,99 +276,52 @@
     </div>
   }
 
-  <!-- Modal Classe -->
   @if (showClasseModal()) {
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <!-- En-tête du modal -->
-        <div class="flex justify-between items-center p-6 border-b border-slate-200">
-          <h2 class="text-2xl font-bold text-slate-800">
-            {{ editingClasse() ? 'Modifier la classe' : 'Nouvelle classe' }}
-          </h2>
-          <button
-            (click)="closeClasseModal()"
-            class="text-slate-400 hover:text-slate-600 transition-colors"
-          >
-            <span class="material-icons">close</span>
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4"
+         ngmMotion [initial]="{ opacity: 0 }" [animate]="{ opacity: 1 }" [exit]="{ opacity: 0 }" [transition]="{ duration: 0.15 }">
+      <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" (click)="closeClasseModal()"></div>
+      <div class="relative bg-white rounded-2xl shadow-[0_24px_64px_rgba(17,24,39,0.18)] w-full max-w-md"
+           ngmMotion [initial]="{ scale: 0.95, opacity: 0 }" [animate]="{ scale: 1, opacity: 1 }"
+           [exit]="{ scale: 0.95, opacity: 0 }" [transition]="SPRING_SNAPPY">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <h3 class="text-base font-semibold text-gray-900">{{ editingClasse() ? 'Modifier la classe' : 'Ajouter une classe' }}</h3>
+          <button (click)="closeClasseModal()" ngmMotion [whileTap]="{ scale: 0.9 }"
+                  class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+            <ng-icon name="phosphorX" style="font-size:0.9rem"></ng-icon>
           </button>
         </div>
-
-        <!-- Formulaire -->
-        <form [formGroup]="classeForm" (ngSubmit)="saveClasse()" class="p-6">
-          <div class="space-y-4">
-            <!-- Nom -->
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">
-                Nom de la classe *
-              </label>
-              <input
-                type="text"
-                formControlName="nom"
-                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                placeholder="Ex: GI-3A"
-              />
-              @if (classeForm.get('nom')?.invalid && classeForm.get('nom')?.touched) {
-                <p class="text-red-600 text-sm mt-1">Le nom est requis (min. 2 caractères)</p>
-              }
-            </div>
-
-            <!-- Niveau -->
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">
-                Niveau *
-              </label>
-              <input
-                type="text"
-                formControlName="niveau"
-                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                placeholder="Ex: Licence 3"
-              />
-              @if (classeForm.get('niveau')?.invalid && classeForm.get('niveau')?.touched) {
-                <p class="text-red-600 text-sm mt-1">Le niveau est requis (min. 2 caractères)</p>
-              }
-            </div>
-
-            <!-- Filière -->
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">
-                Filière *
-              </label>
-              <select
-                formControlName="filiereId"
-                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-              >
-                <option value="">Sélectionnez une filière</option>
-                @for (filiere of filieres(); track filiere.id) {
-                  <option [value]="filiere.id">{{ filiere.nom }} - {{ getEcoleName(filiere.ecoleId) }}</option>
-                }
-              </select>
-              @if (classeForm.get('filiereId')?.invalid && classeForm.get('filiereId')?.touched) {
-                <p class="text-red-600 text-sm mt-1">Veuillez sélectionner une filière</p>
-              }
-            </div>
+        <form [formGroup]="classeForm" (ngSubmit)="saveClasse()" class="p-6 space-y-4">
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Nom <span class="text-red-400">*</span></label>
+            <input type="text" formControlName="nom"
+                   class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all" />
           </div>
-
-          <!-- Actions -->
-          <div class="flex gap-3 mt-6 pt-6 border-t border-slate-200">
-            <button
-              type="button"
-              (click)="closeClasseModal()"
-              class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors"
-            >
-              Annuler
-            </button>
-            <button
-              type="submit"
-              [disabled]="classeForm.invalid"
-              [class.opacity-50]="classeForm.invalid"
-              [class.cursor-not-allowed]="classeForm.invalid"
-              class="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors disabled:hover:bg-teal-600"
-            >
-              {{ editingClasse() ? 'Enregistrer' : 'Créer' }}
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Filière <span class="text-red-400">*</span></label>
+            <select formControlName="filiereId"
+                    class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all bg-white">
+              <option value="">Sélectionner une filière</option>
+              @for (f of filieres(); track f.id) {
+                <option [value]="f.id">{{ f.nom }}</option>
+              }
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Indice d'année <span class="text-red-400">*</span></label>
+            <input type="number" formControlName="yearIndex" min="1" max="10"
+                   class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all" />
+          </div>
+          <div class="flex gap-3 pt-2">
+            <button type="button" (click)="closeClasseModal()" ngmMotion [whileTap]="{ scale: 0.97 }"
+                    class="flex-1 h-9 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:border-gray-300 transition-colors">Annuler</button>
+            <button type="submit" [disabled]="classeForm.invalid" ngmMotion [whileTap]="{ scale: 0.97 }"
+                    class="flex-1 h-9 rounded-xl bg-accent-500 hover:bg-accent-600 disabled:opacity-50 text-white text-sm font-semibold transition-colors">
+              {{ editingClasse() ? 'Mettre à jour' : 'Créer' }}
             </button>
           </div>
         </form>
       </div>
     </div>
   }
+
 </div>

@@ -1,5 +1,8 @@
 package com.timely.reportservice.client;
 
+import com.timely.reportservice.dto.client.CoursDTO;
+import com.timely.reportservice.dto.client.ReservationDTO;
+import com.timely.reportservice.dto.client.SalleDTO;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -12,22 +15,21 @@ import java.util.UUID;
 @FeignClient(name = "booking-service")
 public interface BookingServiceClient {
 
-    @GetMapping("/api/bookings/salles")
-    List<Object> getSalles();
+    @GetMapping("/internal/salles")
+    List<SalleDTO> getSalles();
 
-    @GetMapping("/api/bookings/salles/{id}")
-    Object getSalle(@PathVariable UUID id);
+    @GetMapping("/internal/salles/{id}")
+    SalleDTO getSalle(@PathVariable UUID id);
 
-    @GetMapping("/api/bookings/reservations")
-    List<Object> getReservations(
-            @RequestParam(required = false) UUID ecoleId,
+    @GetMapping("/internal/reservations")
+    List<ReservationDTO> getReservations(
             @RequestParam(required = false) LocalDate dateDebut,
             @RequestParam(required = false) LocalDate dateFin
     );
 
-    @GetMapping("/api/bookings/cours")
-    List<Object> getCours();
+    @GetMapping("/internal/cours")
+    List<CoursDTO> getCours();
 
-    @GetMapping("/api/bookings/etudiants")
+    @GetMapping("/internal/etudiants")
     List<Object> getEtudiants();
 }

@@ -30,37 +30,37 @@ public class EvenementController {
     private final EvenementService evenementService;
 
     @PostMapping("/evenements")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EvenementResponse> create(@Valid @RequestBody EvenementRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(evenementService.create(request));
     }
 
     @GetMapping("/evenements")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<List<EvenementResponse>> getAll() {
         return ResponseEntity.ok(evenementService.getAll());
     }
 
     @GetMapping("/evenements/{id}")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<EvenementResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(evenementService.getById(id));
     }
 
     @GetMapping("/ecoles/{ecoleId}/evenements")
-    @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
     public ResponseEntity<List<EvenementResponse>> getByEcoleId(@PathVariable UUID ecoleId) {
         return ResponseEntity.ok(evenementService.getByEcoleId(ecoleId));
     }
 
     @PutMapping("/evenements/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EvenementResponse> update(@PathVariable UUID id, @Valid @RequestBody EvenementRequest request) {
         return ResponseEntity.ok(evenementService.update(id, request));
     }
 
     @DeleteMapping("/evenements/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         evenementService.delete(id);
         return ResponseEntity.noContent().build();

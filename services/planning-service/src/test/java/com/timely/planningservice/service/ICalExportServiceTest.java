@@ -83,7 +83,7 @@ class ICalExportServiceTest {
         emploiDuTemps.setDateDebut(dateDebut);
         emploiDuTemps.setDateFin(dateFin);
         emploiDuTemps.setPeriode(PeriodeEmploi.SEMESTRE);
-        emploiDuTemps.setStatut(StatutEmploi.PUBLIE);
+        emploiDuTemps.setStatut(StatutEmploi.PUBLISHED);
         emploiDuTemps.setCreneaux(new ArrayList<>());
 
         // Create weekly recurring Creneau
@@ -94,7 +94,7 @@ class ICalExportServiceTest {
         creneauWeekly.setHeureDebut(LocalTime.of(8, 0));
         creneauWeekly.setHeureFin(LocalTime.of(10, 0));
         creneauWeekly.setTypeRecurrence(TypeRecurrence.HEBDOMADAIRE);
-        creneauWeekly.setStatutCreneau(StatutCreneau.ACTIF);
+        creneauWeekly.setStatutCreneau(StatutCreneau.RESERVE);
         creneauWeekly.setCoursId(UUID.randomUUID());
         creneauWeekly.setSalleId(UUID.randomUUID());
         creneauWeekly.setEnseignantId(UUID.randomUUID());
@@ -109,7 +109,7 @@ class ICalExportServiceTest {
         creneauUnique.setHeureFin(LocalTime.of(16, 0));
         creneauUnique.setDateCreneau(LocalDate.of(2026, 2, 11));
         creneauUnique.setTypeRecurrence(TypeRecurrence.UNIQUE);
-        creneauUnique.setStatutCreneau(StatutCreneau.ACTIF);
+        creneauUnique.setStatutCreneau(StatutCreneau.RESERVE);
         creneauUnique.setCoursId(UUID.randomUUID());
     }
 

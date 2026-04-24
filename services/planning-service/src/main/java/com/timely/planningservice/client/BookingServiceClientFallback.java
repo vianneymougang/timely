@@ -21,6 +21,12 @@ public class BookingServiceClientFallback implements FallbackFactory<BookingServ
         return new BookingServiceClient() {
 
             @Override
+            public List<BookingServiceClient.EcoleDTO> getAllEcoles() {
+                log.error("Fallback triggered for getAllEcoles: {}", cause.getMessage());
+                return Collections.emptyList();
+            }
+
+            @Override
             public BookingServiceClient.CoursDTO getCours(UUID id) {
                 log.error("Fallback triggered for getCours({}): {}", id, cause.getMessage());
                 // Retourner un cours vide avec un indicateur d'erreur
@@ -100,9 +106,21 @@ public class BookingServiceClientFallback implements FallbackFactory<BookingServ
             }
 
             @Override
+            public List<BookingServiceClient.SalleDTO> getSallesByEcole(UUID ecoleId) {
+                log.error("Fallback triggered for getSallesByEcole({}): {}", ecoleId, cause.getMessage());
+                return Collections.emptyList();
+            }
+
+            @Override
             public List<BookingServiceClient.GroupeDTO> getGroupesByCours(UUID coursId) {
                 log.error("Fallback triggered for getGroupesByCours({}): {}", coursId, cause.getMessage());
                 return Collections.emptyList();
+            }
+
+            @Override
+            public BookingServiceClient.GroupeDTO getGroupe(UUID id) {
+                log.error("Fallback triggered for getGroupe({}): {}", id, cause.getMessage());
+                return new BookingServiceClient.GroupeDTO(id, 0, 0, "Inconnu");
             }
 
             @Override

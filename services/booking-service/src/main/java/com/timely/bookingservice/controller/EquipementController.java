@@ -30,31 +30,31 @@ public class EquipementController {
     private final EquipementService equipementService;
 
     @PostMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EquipementResponse> create(@Valid @RequestBody EquipementRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(equipementService.create(request));
     }
 
     @GetMapping
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<List<EquipementResponse>> getAll() {
         return ResponseEntity.ok(equipementService.getAll());
     }
 
     @GetMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EquipementResponse> getById(@PathVariable UUID id) {
         return ResponseEntity.ok(equipementService.getById(id));
     }
 
     @PutMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<EquipementResponse> update(@PathVariable UUID id, @Valid @RequestBody EquipementRequest request) {
         return ResponseEntity.ok(equipementService.update(id, request));
     }
 
     @DeleteMapping("/{id}")
-    @PreAuthorize("hasRole('ROLE_ADMIN')")
+    @PreAuthorize("hasRole('ADMIN')")
     public ResponseEntity<Void> delete(@PathVariable UUID id) {
         equipementService.delete(id);
         return ResponseEntity.noContent().build();

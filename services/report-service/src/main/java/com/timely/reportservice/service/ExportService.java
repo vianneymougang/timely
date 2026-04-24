@@ -29,6 +29,7 @@ public class ExportService {
     private final ExportRepository exportRepository;
     private final RapportRepository rapportRepository;
     private final ExportMapper exportMapper;
+    private final FileGenerationService fileGenerationService;
 
     @Transactional
     public ExportResponse createExport(UUID rapportId, FormatExport format, String utilisateur) {
@@ -44,14 +45,26 @@ public class ExportService {
         export.setDateExport(LocalDateTime.now());
         export.setStatut(StatutExport.EN_COURS);
 
-        // Génère le chemin du fichier d'export
-        String cheminFichier = generateExportFilePath(rapport, format);
-        export.setCheminFichier(cheminFichier);
-
         Export savedExport = exportRepository.save(export);
-        log.info("Export créé avec succès: id={}", savedExport.getId());
 
-        return exportMapper.toResponse(savedExport);
+        try {
+            String cheminFichier = switch (format) {
+                case PDF -> fileGenerationService.generatePDF(rapportId);
+                case EXCEL -> fileGenerationService.generateExcel(rapportId);
+                case CSV -> fileGenerationService.generateCSV(rapportId);
+            };
+
+            savedExport.setCheminFichier(cheminFichier);
+            savedExport.setStatut(StatutExport.TERMINE);
+            log.info("Export créé avec succès: id={}", savedExport.getId());
+        } catch (Exception e) {
+            log.error("Erreur lors de la génération du fichier d'export: {}", e.getMessage(), e);
+            savedExport.setStatut(StatutExport.ECHOUE);
+            savedExport.setMessageErreur(e.getMessage());
+        }
+
+        Export finalExport = exportRepository.save(savedExport);
+        return exportMapper.toResponse(finalExport);
     }
 
     @Transactional(readOnly = true)
@@ -110,19 +123,5 @@ public class ExportService {
         }
         exportRepository.deleteById(id);
         log.info("Export supprimé avec succès: id={}", id);
-    }
-
-    private String generateExportFilePath(Rapport rapport, FormatExport format) {
-        String extension = switch (format) {
-            case PDF -> ".pdf";
-            case EXCEL -> ".xlsx";
-            case CSV -> ".csv";
-        };
-
-        return String.format("/exports/%s/%s_%s%s",
-                rapport.getTypeRapport().name().toLowerCase(),
-                rapport.getId(),
-                LocalDateTime.now().toString().replace(":", "-"),
-                extension);
     }
 }

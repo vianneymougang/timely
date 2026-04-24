@@ -24,7 +24,6 @@ public class EmploiDuTempsRequestDTO {
     @NotNull(message = "La date de fin est obligatoire")
     private LocalDate dateFin;
 
-    @NotNull(message = "La période est obligatoire")
     private PeriodeEmploi periode;
 
     private String notes;

@@ -16,11 +16,11 @@ spring:
   jpa:
     hibernate:
       ddl-auto: validate
-    show-sql: true
+    show-sql: false
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
-        format_sql: true
+        format_sql: false
 
   # Flyway Configuration
   flyway:
@@ -72,4 +72,5 @@ management:
 logging:
   level:
     root: INFO
-    com.timely.planningservice: DEBUG
+    com.timely.planningservice: INFO
+    org.springframework: WARN

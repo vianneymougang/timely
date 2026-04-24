@@ -1,5 +1,6 @@
 package com.timely.userservice.service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.UUID;
 
@@ -7,6 +8,7 @@ import com.timely.userservice.dto.AvailabilityRequestDto;
 import com.timely.userservice.dto.AvailabilityResponseDto;
 import com.timely.userservice.dto.AvailabilitySlotDto;
 import com.timely.userservice.dto.TeacherAvailabilitySummaryDto;
+import com.timely.userservice.dto.WeeklyOverridesRequest;
 
 /**
  * Service interface for managing teacher availability
@@ -52,4 +54,10 @@ public interface AvailabilityService {
      * @return list of individual availability slots
      */
     List<AvailabilitySlotDto> getAvailabilityByTeacherId(UUID teacherId);
+
+    List<AvailabilitySlotDto> getEffectiveAvailability(UUID teacherId, LocalDate weekStart);
+
+    AvailabilityResponseDto getEffectiveAvailabilityResponse(UUID teacherId, LocalDate weekStart);
+
+    void saveWeeklyOverrides(UUID teacherId, WeeklyOverridesRequest request);
 }

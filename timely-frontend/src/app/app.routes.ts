@@ -1,5 +1,5 @@
 import { Routes } from '@angular/router';
-import { authGuard } from './core/guards/auth.guard';
+import { authGuard, noAuthGuard } from './core/guards/auth.guard';
 import { adminGuard, teacherGuard } from './core/guards/role.guard';
 import { AdminLayoutComponent } from './layouts/admin-layout/admin-layout.component';
 import { TeacherLayoutComponent } from './layouts/teacher-layout/teacher-layout.component';
@@ -12,11 +12,13 @@ export const routes: Routes = [
   },
   {
     path: 'auth/login',
+    canActivate: [noAuthGuard],
     loadComponent: () =>
       import('./features/auth/login/login.component').then((m) => m.LoginComponent),
   },
   {
     path: 'auth/forgot-password',
+    canActivate: [noAuthGuard],
     loadComponent: () =>
       import('./features/auth/forgot-password/forgot-password.component').then(
         (m) => m.ForgotPasswordComponent,
@@ -24,6 +26,7 @@ export const routes: Routes = [
   },
   {
     path: 'auth/verify-code',
+    canActivate: [noAuthGuard],
     loadComponent: () =>
       import('./features/auth/verify-code/verify-code.component').then(
         (m) => m.VerifyCodeComponent,
@@ -31,6 +34,7 @@ export const routes: Routes = [
   },
   {
     path: 'auth/reset-password',
+    canActivate: [noAuthGuard],
     loadComponent: () =>
       import('./features/auth/reset-password/reset-password.component').then(
         (m) => m.ResetPasswordComponent,
@@ -57,6 +61,7 @@ export const routes: Routes = [
 
   {
     path: '**',
-    redirectTo: '/auth/login',
+    loadComponent: () =>
+      import('./features/not-found/not-found.component').then((m) => m.NotFoundComponent),
   },
 ];

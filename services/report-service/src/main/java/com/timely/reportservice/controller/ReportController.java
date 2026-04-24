@@ -102,7 +102,7 @@ public class ReportController {
 
     @GetMapping("/dashboard")
     @PreAuthorize("hasAnyRole('ROLE_ADMIN', 'ROLE_TEACHER')")
-    public ResponseEntity<DashboardResponse> getDashboard(@RequestParam UUID ecoleId) {
+    public ResponseEntity<DashboardResponse> getDashboard(@RequestParam(required = false) UUID ecoleId) {
         log.info("Récupération du dashboard pour l'école: {}", ecoleId);
         return ResponseEntity.ok(kpiService.getDashboard(ecoleId));
     }

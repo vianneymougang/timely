@@ -18,18 +18,20 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.util.List;
+
 import com.timely.planningservice.dto.request.CreneauRequestDTO;
 import com.timely.planningservice.dto.request.EmploiDuTempsRequestDTO;
 import com.timely.planningservice.dto.request.GeneratePlanningRequest;
 import com.timely.planningservice.dto.request.SearchPlanningRequest;
+import com.timely.planningservice.dto.response.CampusGenerationResponse;
 import com.timely.planningservice.dto.response.CreneauResponseDTO;
 import com.timely.planningservice.dto.response.EmploiDuTempsResponseDTO;
-import com.timely.planningservice.dto.response.GeneratePlanningResponse;
+import com.timely.planningservice.service.CampusScheduleGenerationService;
 import com.timely.planningservice.service.CreneauService;
 import com.timely.planningservice.service.EmploiDuTempsService;
 import com.timely.planningservice.service.ICalExportService;
 import com.timely.planningservice.service.PdfExportService;
-import com.timely.planningservice.service.PlanningGenerationService;
 
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
@@ -46,7 +48,7 @@ public class PlanningController {
     private final CreneauService creneauService;
     private final ICalExportService iCalExportService;
     private final PdfExportService pdfExportService;
-    private final PlanningGenerationService planningGenerationService;
+    private final CampusScheduleGenerationService campusScheduleGenerationService;
 
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
@@ -150,12 +152,19 @@ public class PlanningController {
                 .body(pdfData);
     }
 
-    @PostMapping("/generate")
+    @GetMapping("/enseignant/{enseignantId}")
+    @PreAuthorize("hasAnyRole('ADMIN', 'TEACHER')")
+    public ResponseEntity<List<CreneauResponseDTO>> getCreneauxByEnseignant(
+            @PathVariable UUID enseignantId,
+            @RequestParam String weekStart) {
+        return ResponseEntity.ok(creneauService.getCreneauxByEnseignant(enseignantId, weekStart));
+    }
+
+    @PostMapping("/generate/campus")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<GeneratePlanningResponse> generatePlanning(
+    public ResponseEntity<CampusGenerationResponse> generateCampusSchedule(
             @Valid @RequestBody GeneratePlanningRequest request) {
-        GeneratePlanningResponse response = planningGenerationService.generate(request);
-        return ResponseEntity.status(HttpStatus.CREATED).body(response);
+        return ResponseEntity.ok(campusScheduleGenerationService.generate(request));
     }
 
     @PostMapping("/{emploiId}/creneaux")

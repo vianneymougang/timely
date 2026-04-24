@@ -1,0 +1,20 @@
+-- =============================================
+-- Planning Service - Seed data Phase 7
+-- Campus IUSJC
+-- =============================================
+-- Ce fichier est intentionnellement vide.
+-- Les emplois du temps sont generes par l'algorithme campus-wide (Phase 4).
+-- Aucune donnee de seed n'est necessaire pour le planning-service.
+--
+-- Prerequis avant generation :
+--   1. seed-booking-service.sql doit avoir ete execute (ecoles, cours, salles, groupes)
+--   2. seed-user-service.sql doit avoir ete execute (enseignants, disponibilites)
+--   3. Lancer la generation via POST /api/planning/generate/campus
+--      avec le body : { "weekStart": "2025-01-13" }
+--
+-- Resultat attendu :
+--   - 4 emplois du temps crees (un par ecole : SJI, SJM, CPGE, PV)
+--   - Au moins 80% des 15 cours planifies
+--   - Les conflits d'enseignants partages (Dupont SJI/CPGE, Martin SJI/SJM,
+--     Kamga CPGE/PV) correctement detectes et geres par Ford-Fulkerson
+-- =============================================

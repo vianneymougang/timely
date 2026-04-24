@@ -24,6 +24,11 @@ spring:
           predicates:
             - Path=/api/users/**
 
+        - id: availability-service
+          uri: lb://USER-SERVICE
+          predicates:
+            - Path=/api/availability/**
+
         - id: planning-service
           uri: lb://PLANNING-SERVICE
           predicates:

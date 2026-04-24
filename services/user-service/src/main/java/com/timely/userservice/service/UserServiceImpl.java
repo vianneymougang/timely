@@ -173,7 +173,6 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional(readOnly = true)
-    @Cacheable(value = "users:teachers", key = "'all-page-' + #pageable.pageNumber + '-' + #pageable.pageSize")
     public Page<TeacherDto> getAllTeachers(Pageable pageable) {
         return userRepository.findAllByRole(Role.ROLE_TEACHER, pageable)
                 .map(user -> userMapper.toTeacherDto((Teacher) user));

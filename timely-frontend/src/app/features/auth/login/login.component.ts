@@ -1,15 +1,18 @@
 import { Component, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { RouterModule } from '@angular/router';
+import { InputText } from 'primeng/inputtext';
+import { NgmMotionDirective } from '@scripttype/ng-motion';
 import { AuthService } from '../../../core/services/auth.service';
-import {RouterModule} from '@angular/router';
+import { FADE_UP, SCALE_IN, SPRING_DEFAULT, SPRING_SOFT } from '../../../core/animations/motion.variants';
 
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, InputText, NgmMotionDirective],
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.scss']
+  styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent {
   private authService = inject(AuthService);
@@ -19,29 +22,19 @@ export class LoginComponent {
   errorMessage = signal('');
   isLoading = signal(false);
 
-  // Comptes rapides pour le développement
+  readonly FADE_UP = FADE_UP;
+  readonly SCALE_IN = SCALE_IN;
+  readonly SPRING_DEFAULT = SPRING_DEFAULT;
+  readonly SPRING_SOFT = SPRING_SOFT;
+
   quickAccess = [
-    {
-      label: 'Administrateur',
-      email: 'admin@isjcam.org',
-      icon: '👨‍💼',
-      description: 'Accès complet'
-    },
-    {
-      label: 'Enseignant',
-      email: 'arthur.pessah@isjcam.org',
-      icon: '👨‍🏫',
-      description: 'Dashboard personnel'
-    }
+    { label: 'Admin', email: 'admin@isjcam.org', password: 'admin123' },
+    { label: 'Enseignant', email: 'arthur.pessah@isjcam.org', password: 'teacher123' },
   ];
 
-  fillCredentials(email: string): void {
-    this.email.set(email);
-    if (email === 'admin@isjcam.org') {
-      this.password.set('admin123');
-    } else {
-      this.password.set('teacher123');
-    }
+  fillCredentials(item: { email: string; password: string }): void {
+    this.email.set(item.email);
+    this.password.set(item.password);
   }
 
   onSubmit(): void {
@@ -49,21 +42,15 @@ export class LoginComponent {
       this.errorMessage.set('Veuillez remplir tous les champs');
       return;
     }
-
     this.isLoading.set(true);
     this.errorMessage.set('');
-
     this.authService.login(this.email(), this.password()).subscribe({
-      next: () => {
-        // La redirection est gérée dans le service
-      },
+      next: () => {},
       error: (error) => {
         this.errorMessage.set(error.message || 'Email ou mot de passe incorrect');
         this.isLoading.set(false);
       },
-      complete: () => {
-        this.isLoading.set(false);
-      }
+      complete: () => { this.isLoading.set(false); },
     });
   }
 }

@@ -2,6 +2,15 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  phosphorUsers, phosphorMagnifyingGlass, phosphorPlus, phosphorArrowClockwise,
+  phosphorWarningCircle, phosphorCheckCircle, phosphorArrowRight, phosphorX,
+  phosphorLock, phosphorLockOpen, phosphorEnvelope, phosphorPhone, phosphorCalendar,
+  phosphorListChecks, phosphorUserCircle,
+} from '@ng-icons/phosphor-icons/regular';
+import { NgmMotionDirective } from '@scripttype/ng-motion';
+import { FADE_UP, SPRING_DEFAULT, SPRING_SNAPPY } from '../../../../core/animations/motion.variants';
 import { Teacher } from '../../../../core/models/teacher.model';
 import {
   AvailabilityResponseDto,
@@ -13,12 +22,24 @@ import { UserService } from '../../../../core/services/user.service';
 @Component({
   selector: 'app-teachers-list',
   standalone: true,
-  imports: [CommonModule, FormsModule],
+  imports: [CommonModule, FormsModule, NgIcon, NgmMotionDirective],
+  providers: [
+    provideIcons({
+      phosphorUsers, phosphorMagnifyingGlass, phosphorPlus, phosphorArrowClockwise,
+      phosphorWarningCircle, phosphorCheckCircle, phosphorArrowRight, phosphorX,
+      phosphorLock, phosphorLockOpen, phosphorEnvelope, phosphorPhone, phosphorCalendar,
+      phosphorListChecks, phosphorUserCircle,
+    }),
+  ],
   templateUrl: './teachers-list.component.html',
   styleUrls: ['./teachers-list.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class TeachersListComponent implements OnInit {
+  readonly FADE_UP = FADE_UP;
+  readonly SPRING_DEFAULT = SPRING_DEFAULT;
+  readonly SPRING_SNAPPY = SPRING_SNAPPY;
+
   private teacherService = inject(TeacherService);
   private userService = inject(UserService);
   private router = inject(Router);
@@ -417,5 +438,33 @@ export class TeachersListComponent implements OnInit {
 
   trackByHour(index: number, slot: any): string {
     return slot.hour;
+  }
+
+  getInitials(teacher: Teacher): string {
+    return `${teacher.firstName[0] ?? ''}${teacher.lastName[0] ?? ''}`.toUpperCase();
+  }
+
+  getAvatarBg(teacher: Teacher): string {
+    const colors = ['bg-indigo-100 text-indigo-700', 'bg-emerald-100 text-emerald-700',
+      'bg-violet-100 text-violet-700', 'bg-rose-100 text-rose-700', 'bg-amber-100 text-amber-700'];
+    const idx = (teacher.firstName.charCodeAt(0) + teacher.lastName.charCodeAt(0)) % colors.length;
+    return colors[idx];
+  }
+
+  getStatusBadgeClass(teacher: Teacher): string {
+    if (teacher.userStatus === 'BLOCKED' || teacher.userStatus === 'SUSPENDED') return 'bg-red-50 text-red-700 border-red-200';
+    if (teacher.userStatus === 'INACTIVE') return 'bg-gray-50 text-gray-600 border-gray-200';
+    return 'bg-green-50 text-green-700 border-green-200';
+  }
+
+  getStatusLabel(teacher: Teacher): string {
+    if (teacher.userStatus === 'BLOCKED') return 'Bloqué';
+    if (teacher.userStatus === 'SUSPENDED') return 'Suspendu';
+    if (teacher.userStatus === 'INACTIVE') return 'Inactif';
+    return 'Actif';
+  }
+
+  isTeacherBlocked(teacher: Teacher): boolean {
+    return teacher.userStatus === 'BLOCKED' || teacher.userStatus === 'SUSPENDED';
   }
 }

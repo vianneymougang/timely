@@ -33,7 +33,7 @@ import com.timely.bookingservice.entity.Filiere;
 import com.timely.bookingservice.entity.Reservation;
 import com.timely.bookingservice.entity.Salle;
 import com.timely.bookingservice.entity.UE;
-import com.timely.bookingservice.entity.enums.Niveau;
+import com.timely.bookingservice.entity.enums.CycleType;
 import com.timely.bookingservice.entity.enums.Recurrence;
 import com.timely.bookingservice.entity.enums.StatutCours;
 import com.timely.bookingservice.entity.enums.StatutReservation;
@@ -180,7 +180,7 @@ class BookingIntegrationTest extends AbstractBookingIntegrationTest {
 
         // Create course and reservation for the time slot
         Filiere filiere = createFiliere("Informatique", "INFO");
-        Classe classe = createClasse(filiere, Niveau.L1, "L1-INFO", "2024-2025");
+        Classe classe = createClasse(filiere, 1, "L1-INFO", "2024-2025");
         UE ue = createUE(filiere, "Programmation", "PROG101");
         Cours cours = createCours(ue, classe, "Algo", TypeCours.TD);
 
@@ -212,7 +212,7 @@ class BookingIntegrationTest extends AbstractBookingIntegrationTest {
     void generateGroupes_withStudentsInDB_createsGroups() {
         // Given: A class with students and a course
         Filiere filiere = createFiliere("Informatique", "INFO");
-        Classe classe = createClasse(filiere, Niveau.L1, "L1-INFO-2025", "2024-2025");
+        Classe classe = createClasse(filiere, 1, "L1-INFO-2025", "2024-2025");
 
         // Add 30 students to class
         for (int i = 1; i <= 30; i++) {
@@ -241,7 +241,7 @@ class BookingIntegrationTest extends AbstractBookingIntegrationTest {
     void generateGroupes_fairDistribution_withRealData() {
         // Given: 25 students for TP (3 groups expected)
         Filiere filiere = createFiliere("Mathematiques", "MATH");
-        Classe classe = createClasse(filiere, Niveau.L2, "L2-MATH-2025", "2024-2025");
+        Classe classe = createClasse(filiere, 2, "L2-MATH-2025", "2024-2025");
 
         for (int i = 1; i <= 25; i++) {
             createEtudiant(classe, "M" + String.format("%03d", i), "Student" + i, "Test" + i);
@@ -388,13 +388,14 @@ class BookingIntegrationTest extends AbstractBookingIntegrationTest {
         filiere.setEcole(testEcole);
         filiere.setNom(nom);
         filiere.setCode(code);
+        filiere.setCycleType(CycleType.LICENCE);
         return filiereRepository.save(filiere);
     }
 
-    private Classe createClasse(Filiere filiere, Niveau niveau, String code, String anneeAcademique) {
+    private Classe createClasse(Filiere filiere, int yearIndex, String code, String anneeAcademique) {
         Classe classe = new Classe();
         classe.setFiliere(filiere);
-        classe.setNiveau(niveau);
+        classe.setYearIndex(yearIndex);
         classe.setCode(code);
         classe.setAnneeAcademique(anneeAcademique);
         classe.setEffectif(0);

@@ -1,5 +1,5 @@
 // Enums
-export type PeriodeEmploi = 'SEMESTRE_1' | 'SEMESTRE_2' | 'ANNUEL';
+export type PeriodeEmploi = 'SEMAINE' | 'MOIS' | 'TRIMESTRE' | 'SEMESTRE';
 export type StatutEmploi = 'DRAFT' | 'VALIDATED' | 'PUBLISHED' | 'ARCHIVED';
 export type TypeRecurrence = 'UNIQUE' | 'HEBDOMADAIRE' | 'BIHEBDOMADAIRE';
 export type StatutCreneau = 'DISPONIBLE' | 'RESERVE' | 'CONFIRME' | 'ANNULE';
@@ -10,14 +10,7 @@ export type StatutResolution = 'NON_RESOLU' | 'EN_COURS' | 'RESOLU' | 'IGNORE';
 // DTOs Request
 export interface GeneratePlanningRequest {
   ecoleId: string;
-  dateDebut: string; // Format ISO: YYYY-MM-DD
-  dateFin: string;
-  periode: PeriodeEmploi;
-  creneauxParJour?: number;
-  heureDebutJournee?: string; // Format HH:mm
-  heureFinJournee?: string;
-  dureeCreneauMinutes?: number;
-  pauseEntreCreneauxMinutes?: number;
+  weekStart: string; // Format ISO: YYYY-MM-DD, must be a Monday
 }
 
 export interface EmploiDuTempsRequest {
@@ -96,6 +89,11 @@ export interface CreneauResponse {
   salleId?: string;
   groupeId?: string;
   coursId?: string;
+  coursIntitule?: string;
+  coursType?: string;
+  enseignantNom?: string;
+  salleNom?: string;
+  groupeNom?: string;
 }
 
 export interface ConflitResponse {
@@ -124,8 +122,38 @@ export interface Page<T> {
   empty: boolean;
 }
 
+export interface CampusGenerationRequest {
+  weekStart: string; // YYYY-MM-DD, must be a Monday
+}
+
+export interface SchoolResult {
+  ecoleId: string;
+  ecoleNom: string;
+  emploiDuTempsId: string;
+  coursesScheduled: number;
+  coursesUnscheduled: number;
+  unscheduledCourses: CoursNonPlanifie[];
+  successRate: number;
+}
+
+export interface CampusGenerationResponse {
+  schoolResults: SchoolResult[];
+  totalCourses: number;
+  totalScheduled: number;
+  totalUnscheduled: number;
+  overallSuccessRate: number;
+  generationDurationMs: number;
+}
+
 // Helpers
-export type DayOfWeek = 'MONDAY' | 'TUESDAY' | 'WEDNESDAY' | 'THURSDAY' | 'FRIDAY' | 'SATURDAY' | 'SUNDAY';
+export type DayOfWeek =
+  | 'MONDAY'
+  | 'TUESDAY'
+  | 'WEDNESDAY'
+  | 'THURSDAY'
+  | 'FRIDAY'
+  | 'SATURDAY'
+  | 'SUNDAY';
 
 export const DayOfWeekLabels: Record<DayOfWeek, string> = {
   MONDAY: 'Lundi',
@@ -134,25 +162,25 @@ export const DayOfWeekLabels: Record<DayOfWeek, string> = {
   THURSDAY: 'Jeudi',
   FRIDAY: 'Vendredi',
   SATURDAY: 'Samedi',
-  SUNDAY: 'Dimanche'
+  SUNDAY: 'Dimanche',
 };
 
 export const StatutEmploiLabels: Record<StatutEmploi, string> = {
   DRAFT: 'Brouillon',
   VALIDATED: 'Validé',
   PUBLISHED: 'Publié',
-  ARCHIVED: 'Archivé'
+  ARCHIVED: 'Archivé',
 };
 
 export const TypeConflitLabels: Record<TypeConflit, string> = {
   ENSEIGNANT: 'Conflit enseignant',
   SALLE: 'Conflit salle',
   GROUPE: 'Conflit groupe',
-  HORAIRE: 'Conflit horaire'
+  HORAIRE: 'Conflit horaire',
 };
 
 export const SeveriteLabels: Record<Severite, string> = {
   MINEURE: 'Mineure',
   MOYENNE: 'Moyenne',
-  CRITIQUE: 'Critique'
+  CRITIQUE: 'Critique',
 };

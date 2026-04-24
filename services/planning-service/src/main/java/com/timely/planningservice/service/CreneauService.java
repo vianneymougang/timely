@@ -1,6 +1,7 @@
 package com.timely.planningservice.service;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
@@ -70,10 +71,12 @@ public class CreneauService {
     }
 
     @Transactional(readOnly = true)
-    public List<CreneauResponseDTO> getCreneauxByEnseignant(UUID enseignantId) {
-        log.debug("Fetching Creneaux for enseignant: {}", enseignantId);
+    public List<CreneauResponseDTO> getCreneauxByEnseignant(UUID enseignantId, String weekStart) {
+        log.debug("Fetching Creneaux for enseignant {} week {}", enseignantId, weekStart);
 
-        return creneauRepository.findByEnseignantId(enseignantId)
+        LocalDate start = LocalDate.parse(weekStart);
+        LocalDate end = start.plusDays(6);
+        return creneauRepository.findByEnseignantIdAndDateCreneauBetween(enseignantId, start, end)
                 .stream()
                 .map(creneauMapper::toResponseDTO)
                 .toList();

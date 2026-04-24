@@ -1,867 +1,271 @@
-<div class="p-8 max-w-7xl mx-auto">
-  <!-- En-tête -->
-  <div class="mb-8">
-    <h1 class="text-3xl font-bold text-slate-800 mb-2">Gestion des Étudiants</h1>
-    <p class="text-slate-600">Gérez les étudiants et leurs groupes</p>
-  </div>
+<div class="flex-1 p-6 space-y-5 min-h-0">
 
-  <!-- Tabs de navigation -->
-  <div class="flex gap-4 mb-6 border-b border-slate-200">
-    <button
-      (click)="setActiveSection('etudiants')"
-      [class.border-teal-600]="activeSection() === 'etudiants'"
-      [class.text-teal-600]="activeSection() === 'etudiants'"
-      [class.text-slate-600]="activeSection() !== 'etudiants'"
-      class="pb-3 px-4 font-medium border-b-2 transition-colors hover:text-teal-600"
-    >
-      <span class="flex items-center gap-2">
-        <span class="material-icons text-xl">school</span>
-        Étudiants ({{ etudiants().length }})
-      </span>
-    </button>
-    <button
-      (click)="setActiveSection('groupes')"
-      [class.border-teal-600]="activeSection() === 'groupes'"
-      [class.text-teal-600]="activeSection() === 'groupes'"
-      [class.text-slate-600]="activeSection() !== 'groupes'"
-      class="pb-3 px-4 font-medium border-b-2 transition-colors hover:text-teal-600"
-    >
-      <span class="flex items-center gap-2">
-        <span class="material-icons text-xl">groups</span>
-        Groupes ({{ groupes().length }})
-      </span>
-    </button>
-  </div>
-
-  <!-- Filtres -->
-  <div class="mb-6 flex flex-wrap gap-4">
-    <!-- Recherche -->
-    <div class="flex-1 min-w-64">
-      <input
-        type="text"
-        [value]="searchTerm()"
-        (input)="searchTerm.set($any($event.target).value)"
-        class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-        placeholder="Rechercher par nom, prénom, matricule..."
-      />
+  <div class="flex items-start justify-between"
+       ngmMotion [initial]="'hidden'" [animate]="'visible'" [variants]="FADE_UP" [transition]="SPRING_DEFAULT">
+    <div>
+      <p class="text-[10px] font-semibold text-gray-400 uppercase tracking-[0.15em] mb-0.5">Gestion académique</p>
+      <h1 class="font-display text-2xl font-semibold text-gray-900 tracking-tight">Étudiants</h1>
     </div>
+    <button (click)="openEtudiantModal()"
+            ngmMotion [whileTap]="{ scale: 0.95 }"
+            class="flex items-center gap-1.5 h-9 px-4 rounded-xl bg-accent-500 hover:bg-accent-600 text-white text-sm font-semibold transition-colors shadow-[0_2px_8px_rgba(99,102,241,0.25)]">
+      <ng-icon name="phosphorPlus" style="font-size:0.85rem"></ng-icon>
+      Ajouter un étudiant
+    </button>
+  </div>
 
-    <!-- Filtre classe -->
-    <select
-      [value]="classeFilter()"
-      (change)="classeFilter.set($any($event.target).value)"
-      class="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-    >
-      <option value="">Toutes les classes</option>
-      @for (classe of classes(); track classe.id; let i = $index) {
-        <option [value]="classe.id">{{ classe.nom }}</option>
+  <div class="flex items-center gap-2"
+       ngmMotion [initial]="'hidden'" [animate]="'visible'" [variants]="FADE_UP"
+       [transition]="{ type: 'spring', stiffness: 280, damping: 24, delay: 0.04 }">
+    <button (click)="setActiveSection('etudiants')"
+            ngmMotion [whileTap]="{ scale: 0.96 }"
+            [class]="'flex items-center gap-1.5 h-8 px-4 rounded-lg text-sm font-semibold transition-all ' +
+              (activeSection() === 'etudiants'
+                ? 'bg-accent-500 text-white shadow-[0_2px_8px_rgba(99,102,241,0.2)]'
+                : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-300')">
+      <ng-icon name="phosphorUserCircle" style="font-size:0.85rem"></ng-icon>
+      Étudiants
+      <span [class]="'text-[10px] px-1.5 py-0.5 rounded-full font-bold ' +
+        (activeSection() === 'etudiants' ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-600')">
+        {{ etudiants().length }}
+      </span>
+    </button>
+    <button (click)="setActiveSection('groupes')"
+            ngmMotion [whileTap]="{ scale: 0.96 }"
+            [class]="'flex items-center gap-1.5 h-8 px-4 rounded-lg text-sm font-semibold transition-all ' +
+              (activeSection() === 'groupes'
+                ? 'bg-accent-500 text-white shadow-[0_2px_8px_rgba(99,102,241,0.2)]'
+                : 'bg-white border border-gray-200 text-gray-600 hover:border-gray-300')">
+      <ng-icon name="phosphorUsers" style="font-size:0.85rem"></ng-icon>
+      Groupes
+      <span [class]="'text-[10px] px-1.5 py-0.5 rounded-full font-bold ' +
+        (activeSection() === 'groupes' ? 'bg-white/20 text-white' : 'bg-gray-100 text-gray-600')">
+        {{ groupes().length }}
+      </span>
+    </button>
+  </div>
+
+  <div class="bg-white rounded-xl border border-gray-100 p-3.5 shadow-[0_1px_4px_rgba(17,24,39,0.05)]"
+       ngmMotion [initial]="'hidden'" [animate]="'visible'" [variants]="FADE_UP"
+       [transition]="{ type: 'spring', stiffness: 280, damping: 24, delay: 0.08 }">
+    <div class="flex gap-3">
+      <div class="flex-1 relative">
+        <ng-icon name="phosphorMagnifyingGlass" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" style="font-size:0.8rem"></ng-icon>
+        <input type="text"
+               [ngModel]="searchTerm()"
+               (ngModelChange)="searchTerm.set($event)"
+               [placeholder]="activeSection() === 'etudiants' ? 'Rechercher un étudiant…' : 'Rechercher un groupe…'"
+               class="w-full h-9 pl-8 pr-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all text-gray-700 placeholder:text-gray-400" />
+      </div>
+      <div class="w-48">
+        <select [ngModel]="classeFilter()" (ngModelChange)="classeFilter.set($event)"
+                class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all bg-white text-gray-700">
+          <option value="">Toutes les classes</option>
+          @for (classe of classes(); track classe.id) {
+            <option [value]="classe.id">{{ classe.nom }}</option>
+          }
+        </select>
+      </div>
+      @if (activeSection() === 'etudiants') {
+        <div class="w-44">
+          <select [ngModel]="groupeFilter()" (ngModelChange)="groupeFilter.set($event)"
+                  class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all bg-white text-gray-700">
+            <option value="">Tous les groupes</option>
+            @for (groupe of groupes(); track groupe.id) {
+              <option [value]="groupe.id">{{ groupe.nom }}</option>
+            }
+          </select>
+        </div>
       }
-    </select>
-
-    @if (activeSection() === 'etudiants') {
-      <!-- Filtre groupe -->
-      <select
-        [value]="groupeFilter()"
-        (change)="groupeFilter.set($any($event.target).value)"
-        class="px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-      >
-        <option value="">Tous les groupes</option>
-        @for (groupe of groupes(); track groupe.id; let i = $index) {
-          <option [value]="groupe.id">{{ groupe.nom }}</option>
-        }
-      </select>
-    }
+    </div>
   </div>
 
-  <!-- Section Étudiants -->
   @if (activeSection() === 'etudiants') {
-    <div>
-      <!-- Bouton d'ajout -->
-      <div class="mb-6 flex justify-between items-center">
-        <div class="text-slate-600">
-          <span class="font-medium">{{ etudiantsFiltered().length }}</span> étudiant(s)
+    @if (etudiantsFiltered().length === 0) {
+      <div class="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-dashed border-gray-200 text-center"
+           ngmMotion [initial]="{ opacity: 0, scale: 0.96 }" [animate]="{ opacity: 1, scale: 1 }" [transition]="SPRING_DEFAULT">
+        <div class="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mb-3">
+          <ng-icon name="phosphorUserCircle" class="text-gray-300" style="font-size:1.4rem"></ng-icon>
         </div>
-        <button
-          (click)="openEtudiantModal()"
-          class="bg-teal-600 hover:bg-teal-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-        >
-          <span class="material-icons">add</span>
-          Nouvel étudiant
-        </button>
+        <p class="text-sm font-semibold text-gray-700 mb-1">Aucun étudiant trouvé</p>
+        <p class="text-xs text-gray-400">Modifiez les filtres ou ajoutez un étudiant</p>
       </div>
-
-      <!-- Grille de cartes d'étudiants -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        @for (etudiant of etudiantsFiltered(); track etudiant.id; let i = $index) {
-          <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow p-6 border border-slate-200">
-            <!-- En-tête de la carte -->
-            <div class="flex items-start gap-4 mb-4">
-              <!-- Avatar -->
-              <div class="w-16 h-16 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0">
-                <span class="text-teal-700 font-bold text-xl">
-                  {{ etudiant.nom.charAt(0) }}{{ etudiant.prenom.charAt(0) }}
-                </span>
+    } @else {
+      <div class="bg-white rounded-xl border border-gray-100 shadow-[0_1px_4px_rgba(17,24,39,0.05)] overflow-hidden"
+           ngmMotion [initial]="'hidden'" [animate]="'visible'" [variants]="FADE_UP"
+           [transition]="{ type: 'spring', stiffness: 280, damping: 24, delay: 0.1 }">
+        <div class="border-b border-gray-50 px-4 py-2.5 flex items-center justify-between">
+          <p class="text-xs font-semibold text-gray-500">{{ etudiantsFiltered().length }} étudiant(s)</p>
+        </div>
+        <div class="divide-y divide-gray-50">
+          @for (etudiant of etudiantsFiltered(); track etudiant.id; let i = $index) {
+            <div class="flex items-center gap-4 px-4 py-3 hover:bg-gray-50/50 transition-colors group"
+                 ngmMotion [initial]="'hidden'" [animate]="'visible'" [variants]="FADE_UP"
+                 [transition]="{ type: 'spring', stiffness: 280, damping: 24, delay: i * 0.03 }">
+              <div class="w-8 h-8 rounded-xl bg-accent-50 text-accent-600 flex items-center justify-center text-xs font-bold flex-shrink-0">
+                {{ etudiant.prenom[0] }}{{ etudiant.nom[0] }}
               </div>
-
-              <!-- Informations -->
-              <div class="flex-1">
-                <h3 class="text-lg font-semibold text-slate-800">
-                  {{ etudiant.nom }} {{ etudiant.prenom }}
-                </h3>
-                <p class="text-sm text-slate-500">{{ etudiant.matricule }}</p>
-                <!--<p class="text-xs text-slate-400 mt-1">{{ calculateAge(etudiant.dateNaissance) }} ans</p>-->
+              <div class="flex-1 min-w-0">
+                <p class="text-sm font-semibold text-gray-900 truncate">{{ etudiant.prenom }} {{ etudiant.nom }}</p>
+                <p class="text-xs text-gray-400 truncate">{{ etudiant.email }}</p>
               </div>
-            </div>
-
-            <!-- Détails -->
-            <div class="space-y-2 mb-4">
-              <div class="flex items-center gap-2 text-sm text-slate-600">
-                <span class="material-icons text-lg">email</span>
-                <span class="truncate">{{ etudiant.email }}</span>
+              <div class="hidden sm:flex items-center gap-4 text-xs text-gray-500">
+                <span class="font-mono bg-gray-50 px-2 py-0.5 rounded-md border border-gray-100">{{ etudiant.matricule }}</span>
+                <span class="max-w-[120px] truncate">{{ getClasseName(etudiant.classeId) }}</span>
+                <span class="max-w-[100px] truncate text-gray-400">{{ getGroupeName(etudiant.groupeId) }}</span>
               </div>
-              <div class="flex items-center gap-2 text-sm text-slate-600">
-                <span class="material-icons text-lg">phone</span>
-                <span>{{ etudiant.telephone }}</span>
-              </div>
-              <div class="flex items-center gap-2 text-sm text-slate-600">
-                <span class="material-icons text-lg">class</span>
-                <span>{{ getClasseName(etudiant.classeId) }}</span>
-              </div>
-              <div class="flex items-center gap-2 text-sm">
-                <span class="material-icons text-lg"
-                      [class.text-teal-600]="etudiant.groupeId"
-                      [class.text-slate-400]="!etudiant.groupeId">
-                  groups
-                </span>
-                <span [class.text-teal-600]="etudiant.groupeId"
-                      [class.font-medium]="etudiant.groupeId"
-                      [class.text-slate-400]="!etudiant.groupeId">
-                  {{ getGroupeName(etudiant.groupeId) }}
-                </span>
+              <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button (click)="openEtudiantModal(etudiant)"
+                        ngmMotion [whileTap]="{ scale: 0.9 }"
+                        class="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-accent-600 hover:bg-accent-50 transition-colors">
+                  <ng-icon name="phosphorPencil" style="font-size:0.75rem"></ng-icon>
+                </button>
+                <button (click)="deleteEtudiant(etudiant.id!)"
+                        ngmMotion [whileTap]="{ scale: 0.9 }"
+                        class="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-600 hover:bg-red-50 transition-colors">
+                  <ng-icon name="phosphorTrash" style="font-size:0.75rem"></ng-icon>
+                </button>
               </div>
             </div>
-
-            <!-- Actions -->
-            <div class="flex gap-2 pt-4 border-t border-slate-200">
-              <button
-                (click)="openEtudiantModal(etudiant)"
-                class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1"
-              >
-                <span class="material-icons text-sm">edit</span>
-                Modifier
-              </button>
-              <button
-                (click)="deleteEtudiant(etudiant.id!)"
-                class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center"
-              >
-                <span class="material-icons text-sm">delete</span>
-              </button>
-            </div>
-          </div>
-        } @empty {
-          <div class="col-span-3 text-center py-12">
-            <span class="material-icons text-6xl text-slate-300 mb-4">school</span>
-            <p class="text-slate-500">Aucun étudiant pour le moment</p>
-            <button
-              (click)="openEtudiantModal()"
-              class="mt-4 text-teal-600 hover:text-teal-700 font-medium"
-            >
-              Ajouter votre premier étudiant
-            </button>
-          </div>
-        }
+          }
+        </div>
       </div>
-    </div>
+    }
   }
-  <!-- Section Groupes -->
+
   @if (activeSection() === 'groupes') {
-    <div>
-      <!-- Bouton génération uniquement -->
-      <div class="mb-6 flex justify-between items-center">
-        <div class="text-slate-600">
-          <span class="font-medium">{{ groupesFiltered().length }}</span> groupe(s)
+    @if (groupesFiltered().length === 0) {
+      <div class="flex flex-col items-center justify-center py-16 bg-white rounded-2xl border border-dashed border-gray-200 text-center"
+           ngmMotion [initial]="{ opacity: 0, scale: 0.96 }" [animate]="{ opacity: 1, scale: 1 }" [transition]="SPRING_DEFAULT">
+        <div class="w-12 h-12 rounded-2xl bg-gray-50 flex items-center justify-center mb-3">
+          <ng-icon name="phosphorUsers" class="text-gray-300" style="font-size:1.4rem"></ng-icon>
         </div>
-        <button
-          (click)="openGenerationModal()"
-          class="text-slate-400 hover:text-slate-600 transition-colors text-teal-600 hover:text-teal-700"
-        >
-          <span class="material-icons">auto_awesome</span>
-          <span class="font-semibold">Générer des groupes</span>
-        </button>
+        <p class="text-sm font-semibold text-gray-700 mb-1">Aucun groupe trouvé</p>
+        <p class="text-xs text-gray-400">Filtrez par classe ou générez des groupes automatiquement</p>
       </div>
-
-      <!-- Grille de cartes de groupes -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+    } @else {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3"
+           ngmMotion [initial]="'hidden'" [animate]="'visible'" [variants]="FADE_UP"
+           [transition]="{ type: 'spring', stiffness: 280, damping: 24, delay: 0.1 }">
         @for (groupe of groupesFiltered(); track groupe.id; let i = $index) {
-          <div class="bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow border border-slate-200">
-            <!-- En-tête de la carte -->
-            <div class="p-6 border-b border-slate-100">
-              <div class="flex items-start gap-3 mb-4">
-                <div class="bg-purple-100 rounded-lg p-3">
-                  <span class="material-icons text-purple-600 text-2xl">groups</span>
+          <div class="bg-white rounded-xl border border-gray-200/80 p-4 hover:border-accent-200 hover:shadow-[0_4px_16px_rgba(99,102,241,0.08)] transition-all"
+               ngmMotion [initial]="'hidden'" [animate]="'visible'" [variants]="FADE_UP"
+               [transition]="{ type: 'spring', stiffness: 280, damping: 24, delay: i * 0.04 }">
+            <div class="flex items-start justify-between mb-3">
+              <div class="flex items-center gap-2.5">
+                <div class="w-8 h-8 rounded-lg bg-accent-50 flex items-center justify-center flex-shrink-0">
+                  <ng-icon name="phosphorUsers" class="text-accent-500" style="font-size:0.9rem"></ng-icon>
                 </div>
-                <div class="flex-1">
-                  <h3 class="text-lg font-semibold text-slate-800 mb-1">{{ groupe.nom }}</h3>
-                  <p class="text-sm text-slate-500">{{ getClasseName(groupe.classeId) }}</p>
+                <div>
+                  <p class="text-sm font-semibold text-gray-900">{{ groupe.nom }}</p>
+                  <p class="text-xs text-gray-400">{{ getClasseName(groupe.classeId) }}</p>
                 </div>
               </div>
-
-              <!-- Description -->
-              @if (groupe.description) {
-                <p class="text-sm text-slate-600 line-clamp-2">{{ groupe.description }}</p>
-              }
+              <button (click)="openGroupeModal(groupe)"
+                      ngmMotion [whileTap]="{ scale: 0.9 }"
+                      class="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-accent-600 hover:bg-accent-50 transition-colors">
+                <ng-icon name="phosphorPencil" style="font-size:0.75rem"></ng-icon>
+              </button>
             </div>
-
-            <!-- Statistiques -->
-            <div class="p-4 bg-slate-50">
-              <div class="grid grid-cols-2 gap-3 mb-3">
-                <div class="bg-white rounded-lg p-3 border border-teal-100">
-                  <div class="text-xs text-teal-600 font-medium mb-1">Étudiants</div>
-                  <div class="text-2xl font-bold text-teal-700">
-                    {{ getEtudiantsInGroupe(groupe.id!).length }}
+            <div class="flex items-center gap-3">
+              <div class="flex -space-x-1">
+                @for (etudiant of getEtudiantsInGroupe(groupe.id!).slice(0,4); track etudiant.id) {
+                  <div class="w-6 h-6 rounded-full bg-indigo-100 border-2 border-white flex items-center justify-center text-[9px] font-bold text-indigo-600">
+                    {{ etudiant.prenom[0] }}{{ etudiant.nom[0] }}
                   </div>
-                </div>
+                }
+                @if (getEtudiantsInGroupe(groupe.id!).length > 4) {
+                  <div class="w-6 h-6 rounded-full bg-gray-100 border-2 border-white flex items-center justify-center text-[9px] font-bold text-gray-500">
+                    +{{ getEtudiantsInGroupe(groupe.id!).length - 4 }}
+                  </div>
+                }
+              </div>
+              <span class="text-xs text-gray-500">{{ getEtudiantsInGroupe(groupe.id!).length }} étudiant(s)
                 @if (groupe.capaciteMax) {
-                  <div class="bg-white rounded-lg p-3 border border-blue-100">
-                    <div class="text-xs text-blue-600 font-medium mb-1">Capacité</div>
-                    <div class="text-2xl font-bold text-blue-700">{{ groupe.capaciteMax }}</div>
-                  </div>
+                  / {{ groupe.capaciteMax }} max
                 }
-              </div>
-
-              <!-- Progression -->
-              @if (groupe.capaciteMax) {
-                <div class="mb-3">
-                  <div class="flex justify-between text-xs text-slate-600 mb-1">
-                    <span>Remplissage</span>
-                    <span>{{ Math.round((getEtudiantsInGroupe(groupe.id!).length / groupe.capaciteMax) * 100) }}%</span>
-                  </div>
-                  <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
-                    <div
-                      class="h-full bg-gradient-to-r from-teal-400 to-teal-600 transition-all"
-                      [style.width.%]="(getEtudiantsInGroupe(groupe.id!).length / groupe.capaciteMax) * 100"
-                    ></div>
-                  </div>
-                </div>
-              }
-
-              <!-- Liste des étudiants
-              <div class="mb-3">
-                <div class="text-xs font-semibold text-slate-700 mb-2 flex items-center gap-1">
-                  <span class="material-icons text-sm">people</span>
-                  Membres du groupe
-                </div>
-                @if (getEtudiantsInGroupe(groupe.id!).length > 0) {
-                  <div class="space-y-1 max-h-32 overflow-y-auto">
-                    @for (etudiant of getEtudiantsInGroupe(groupe.id!); track etudiant.id) {
-                      <div class="flex items-center gap-2 bg-white p-2 rounded text-xs border border-slate-100">
-                        <div class="w-6 h-6 bg-teal-100 rounded-full flex items-center justify-center flex-shrink-0">
-                          <span class="text-teal-700 font-semibold text-xs">
-                            {{ etudiant.prenom.charAt(0) }}{{ etudiant.nom.charAt(0) }}
-                          </span>
-                        </div>
-                        <span class="text-slate-700 truncate">{{ etudiant.prenom }} {{ etudiant.nom }}</span>
-                      </div>
-                    }
-                  </div>
-                } @else {
-                  <div class="text-center py-3 bg-white rounded border border-dashed border-slate-200">
-                    <p class="text-xs text-slate-400">Aucun étudiant</p>
-                  </div>
-                }
-              </div>-->
-            </div>
-
-            <!-- Actions -->
-            <div class="flex gap-2 p-4 border-t border-slate-200">
-              <button
-                (click)="openGroupeModal(groupe)"
-                class="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-1"
-              >
-                <span class="material-icons text-sm">edit</span>
-                Gérer les membres
-              </button>
-              <button
-                (click)="deleteGroupe(groupe.id!)"
-                class="bg-red-50 hover:bg-red-100 text-red-600 px-3 py-2 rounded-lg text-sm font-medium transition-colors flex items-center justify-center"
-              >
-                <span class="material-icons text-sm">delete</span>
-              </button>
-            </div>
-          </div>
-        } @empty {
-          <div class="col-span-3 text-center py-16">
-            <div class="bg-gradient-to-br from-orange-50 to-pink-50 rounded-2xl p-12 max-w-md mx-auto">
-              <span class="material-icons text-6xl text-orange-400 mb-4">groups</span>
-              <p class="text-lg font-semibold text-slate-700 mb-2">Aucun groupe pour le moment</p>
-              <p class="text-sm text-slate-500 mb-6">Commencez par générer des groupes automatiquement</p>
-              <button
-                (click)="openGenerationModal()"
-                class="text-slate-400 hover:text-slate-600 transition-colors text-teal-600 hover:text-teal-700"
-              >
-                <span class="material-icons">auto_awesome</span>
-                Générer automatiquement
-              </button>
+              </span>
             </div>
           </div>
         }
       </div>
-    </div>
+    }
   }
-  <!-- Modal Étudiant (inchangé) -->
+
   @if (showEtudiantModal()) {
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <!-- En-tête du modal -->
-        <div class="flex justify-between items-center p-6 border-b border-slate-200">
-          <h2 class="text-2xl font-bold text-slate-800">
-            {{ editingEtudiant() ? 'Modifier l\'étudiant' : 'Nouvel étudiant' }}
-          </h2>
-          <button
-            (click)="closeEtudiantModal()"
-            class="text-slate-400 hover:text-slate-600 transition-colors"
-          >
-            <span class="material-icons">close</span>
+    <div class="fixed inset-0 z-50 flex items-center justify-center p-4"
+         ngmMotion [initial]="{ opacity: 0 }" [animate]="{ opacity: 1 }" [exit]="{ opacity: 0 }" [transition]="{ duration: 0.15 }">
+      <div class="absolute inset-0 bg-gray-900/40 backdrop-blur-sm" (click)="closeEtudiantModal()"></div>
+      <div class="relative bg-white rounded-2xl shadow-[0_24px_64px_rgba(17,24,39,0.18)] w-full max-w-md overflow-hidden"
+           ngmMotion [initial]="{ scale: 0.95, opacity: 0 }" [animate]="{ scale: 1, opacity: 1 }"
+           [exit]="{ scale: 0.95, opacity: 0 }" [transition]="SPRING_SNAPPY">
+        <div class="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+          <h3 class="text-base font-semibold text-gray-900">
+            {{ editingEtudiant() ? 'Modifier l\'étudiant' : 'Ajouter un étudiant' }}
+          </h3>
+          <button (click)="closeEtudiantModal()" ngmMotion [whileTap]="{ scale: 0.9 }"
+                  class="w-8 h-8 rounded-lg flex items-center justify-center text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors">
+            <ng-icon name="phosphorX" style="font-size:0.9rem"></ng-icon>
           </button>
         </div>
-
-        <!-- Formulaire -->
-        <form [formGroup]="etudiantForm" (ngSubmit)="saveEtudiant()" class="p-6">
-          <div class="space-y-4">
-            <!-- Matricule -->
+        <form [formGroup]="etudiantForm" (ngSubmit)="saveEtudiant()" class="p-6 space-y-4">
+          <div class="grid grid-cols-2 gap-3">
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">
-                Matricule *
-              </label>
-              <input
-                type="text"
-                formControlName="matricule"
-                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                placeholder="Ex: 2024001"
-              />
-              @if (etudiantForm.get('matricule')?.invalid && etudiantForm.get('matricule')?.touched) {
-                <p class="text-red-600 text-sm mt-1">Le matricule est requis (min. 4 caractères)</p>
-              }
+              <label class="block text-xs font-medium text-gray-600 mb-1">Prénom <span class="text-red-400">*</span></label>
+              <input type="text" formControlName="prenom"
+                     class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all" />
             </div>
-
-            <!-- Nom et Prénom -->
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">
-                  Nom *
-                </label>
-                <input
-                  type="text"
-                  formControlName="nom"
-                  class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  placeholder="Ex: Dupont"
-                />
-                @if (etudiantForm.get('nom')?.invalid && etudiantForm.get('nom')?.touched) {
-                  <p class="text-red-600 text-sm mt-1">Le nom est requis</p>
-                }
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">
-                  Prénom *
-                </label>
-                <input
-                  type="text"
-                  formControlName="prenom"
-                  class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  placeholder="Ex: Jean"
-                />
-                @if (etudiantForm.get('prenom')?.invalid && etudiantForm.get('prenom')?.touched) {
-                  <p class="text-red-600 text-sm mt-1">Le prénom est requis</p>
-                }
-              </div>
-            </div>
-
-            <!-- Email et Téléphone -->
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">
-                  Email *
-                </label>
-                <input
-                  type="email"
-                  formControlName="email"
-                  class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  placeholder="Ex: jean.dupont@example.com"
-                />
-                @if (etudiantForm.get('email')?.invalid && etudiantForm.get('email')?.touched) {
-                  <p class="text-red-600 text-sm mt-1">Email valide requis</p>
-                }
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">
-                  Téléphone *
-                </label>
-                <input
-                  type="tel"
-                  formControlName="telephone"
-                  class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                  placeholder="Ex: +237 650 123 456"
-                />
-                @if (etudiantForm.get('telephone')?.invalid && etudiantForm.get('telephone')?.touched) {
-                  <p class="text-red-600 text-sm mt-1">Téléphone requis</p>
-                }
-              </div>
-            </div>
-
-            <!-- Date de naissance -->
             <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">
-                Date de naissance *
-              </label>
-              <input
-                type="date"
-                formControlName="dateNaissance"
-                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-              />
-              @if (etudiantForm.get('dateNaissance')?.invalid && etudiantForm.get('dateNaissance')?.touched) {
-                <p class="text-red-600 text-sm mt-1">La date de naissance est requise</p>
-              }
-            </div>
-
-            <!-- Classe et Groupe -->
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">
-                  Classe *
-                </label>
-                <select
-                  formControlName="classeId"
-                  class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                >
-                  <option value="">Sélectionnez une classe</option>
-                  @for (classe of classes(); track classe.id; let i = $index) {
-                    <option [value]="classe.id">{{ classe.nom }}</option>
-                  }
-                </select>
-                @if (etudiantForm.get('classeId')?.invalid && etudiantForm.get('classeId')?.touched) {
-                  <p class="text-red-600 text-sm mt-1">Veuillez sélectionner une classe</p>
-                }
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">
-                  Groupe (optionnel)
-                </label>
-                <select
-                  formControlName="groupeId"
-                  class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-transparent"
-                >
-                  <option value="">Aucun groupe</option>
-                  @for (groupe of groupes(); track groupe.id; let i = $index) {
-                    <option [value]="groupe.id">{{ groupe.nom }}</option>
-                  }
-                </select>
-              </div>
+              <label class="block text-xs font-medium text-gray-600 mb-1">Nom <span class="text-red-400">*</span></label>
+              <input type="text" formControlName="nom"
+                     class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all" />
             </div>
           </div>
-
-          <!-- Actions -->
-          <div class="flex gap-3 mt-6 pt-6 border-t border-slate-200">
-            <button
-              type="button"
-              (click)="closeEtudiantModal()"
-              class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors"
-            >
-              Annuler
-            </button>
-            <button
-              type="submit"
-              [disabled]="etudiantForm.invalid"
-              [class.opacity-50]="etudiantForm.invalid"
-              [class.cursor-not-allowed]="etudiantForm.invalid"
-              class="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors disabled:hover:bg-teal-600"
-            >
-              {{ editingEtudiant() ? 'Enregistrer' : 'Créer' }}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  }
-
-  <!-- Modal Groupe - Gestion des membres -->
-  @if (showGroupeModal() && editingGroupe()) {
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg shadow-xl max-w-4xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <!-- En-tête du modal -->
-        <div class="flex justify-between items-center p-6 border-b border-slate-200 bg-gradient-to-r from-purple-50 to-pink-50">
           <div>
-            <h2 class="text-2xl font-bold text-slate-800">{{ editingGroupe()!.nom }}</h2>
-            <p class="text-sm text-slate-600 mt-1">{{ getClasseName(editingGroupe()!.classeId) }}</p>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Matricule <span class="text-red-400">*</span></label>
+            <input type="text" formControlName="matricule"
+                   class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg font-mono focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all" />
           </div>
-          <button
-            (click)="closeGroupeModal()"
-            class="text-slate-400 hover:text-slate-600 transition-colors"
-          >
-            <span class="material-icons">close</span>
-          </button>
-        </div>
-
-        <!-- Formulaire -->
-        <form [formGroup]="groupeForm" (ngSubmit)="saveGroupe()" class="p-6">
-          <!-- Informations du groupe -->
-          <div class="space-y-4 mb-6">
-            <div class="grid grid-cols-2 gap-4">
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">
-                  Nom du groupe *
-                </label>
-                <input
-                  type="text"
-                  formControlName="nom"
-                  class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">
-                  Capacité max
-                </label>
-                <input
-                  type="number"
-                  formControlName="capaciteMax"
-                  class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
-                  min="1"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">
-                Description
-              </label>
-              <textarea
-                formControlName="description"
-                rows="2"
-                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent resize-none"
-              ></textarea>
-            </div>
-          </div>
-
-          <!-- Gestion des membres -->
-          <div class="border-t border-slate-200 pt-6">
-            <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
-              <span class="material-icons text-purple-600">people</span>
-              Membres du groupe
-              <span class="text-sm font-normal text-slate-500">
-                ({{ etudiantsIdsArray.length }} / {{ groupeForm.get('capaciteMax')?.value || '∞' }})
-              </span>
-            </h3>
-
-            <!-- Liste des étudiants actuels -->
-            @if (etudiantsIdsArray.length > 0) {
-              <div class="mb-4">
-                <div class="text-sm font-medium text-slate-700 mb-2">Étudiants actuels</div>
-                <div class="grid grid-cols-2 gap-2">
-                  @for (etudiantId of etudiantsIdsArray.value; track $index; let i = $index) {
-                    @for (etudiant of etudiants(); track etudiant.id; let j = $index) {
-                      @if (etudiant.id === etudiantId) {
-                        <div class="flex items-center justify-between bg-teal-50 border border-teal-200 p-3 rounded-lg">
-                          <div class="flex items-center gap-2">
-                            <div class="w-8 h-8 bg-teal-200 rounded-full flex items-center justify-center">
-                              <span class="text-teal-700 font-semibold text-sm">
-                                {{ etudiant.prenom?.charAt(0) }}{{ etudiant.nom?.charAt(0) }}
-                              </span>
-                            </div>
-                            <div>
-                              <div class="text-sm font-medium text-slate-800">
-                                {{ etudiant.prenom }} {{ etudiant.nom }}
-                              </div>
-                              <div class="text-xs text-slate-500">{{ etudiant.matricule }}</div>
-                            </div>
-                          </div>
-                          <button
-                            type="button"
-                            (click)="toggleEtudiant(etudiantId)"
-                            class="text-red-600 hover:bg-red-100 p-1 rounded transition-colors"
-                          >
-                            <span class="material-icons text-sm">remove_circle</span>
-                          </button>
-                        </div>
-                      }
-                    }
-                  }
-                </div>
-              </div>
-            } @else {
-              <div class="mb-4 text-center py-6 bg-slate-50 rounded-lg border-2 border-dashed border-slate-200">
-                <span class="material-icons text-slate-300 text-4xl mb-2">group_off</span>
-                <p class="text-sm text-slate-500">Aucun membre dans ce groupe</p>
-              </div>
-            }
-
-            <!-- Ajouter des étudiants -->
-            <div>
-              <div class="text-sm font-medium text-slate-700 mb-2">
-                Ajouter des étudiants
-                @if (editingGroupe() && getEtudiantsOfClasseNotInGroup(editingGroupe()!.classeId).length === 0) {
-                  <span class="text-xs font-normal text-slate-500 ml-2">(Tous les étudiants sont déjà affectés)</span>
-                }
-              </div>
-              @if (editingGroupe() && getEtudiantsOfClasseNotInGroup(editingGroupe()!.classeId).length > 0) {
-                <div class="max-h-64 overflow-y-auto border border-slate-200 rounded-lg">
-                  <div class="grid grid-cols-2 gap-2 p-3">
-                    @for (etudiant of getEtudiantsOfClasseNotInGroup(editingGroupe()!.classeId); track etudiant.id; let i = $index) {
-                      <button
-                        type="button"
-                        (click)="toggleEtudiant(etudiant.id!)"
-                        class="flex items-center gap-2 bg-slate-50 hover:bg-purple-50 border border-slate-200 hover:border-purple-300 p-3 rounded-lg transition-all text-left"
-                      >
-                        <div class="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center">
-                          <span class="text-slate-600 font-semibold text-sm">
-                            {{ etudiant.prenom?.charAt(0) }}{{ etudiant.nom?.charAt(0) }}
-                          </span>
-                        </div>
-                        <div class="flex-1">
-                          <div class="text-sm font-medium text-slate-800">
-                            {{ etudiant.prenom }} {{ etudiant.nom }}
-                          </div>
-                          <div class="text-xs text-slate-500">{{ etudiant.matricule }}</div>
-                        </div>
-                        <span class="material-icons text-purple-600 text-sm">add_circle</span>
-                      </button>
-                    }
-                  </div>
-                </div>
-              }
-            </div>
-          </div>
-
-          <!-- Actions -->
-          <div class="flex gap-3 mt-6 pt-6 border-t border-slate-200">
-            <button
-              type="button"
-              (click)="closeGroupeModal()"
-              class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors"
-            >
-              Annuler
-            </button>
-            <button
-              type="submit"
-              [disabled]="groupeForm.invalid"
-              [class.opacity-50]="groupeForm.invalid"
-              [class.cursor-not-allowed]="groupeForm.invalid"
-              class="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors disabled:hover:bg-teal-600"
-            >
-              Enregistrer les modifications
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
-  }
-  <!-- Modal Génération de groupes -->
-  @if (showGenerationModal()) {
-    <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div class="bg-white rounded-lg shadow-xl max-w-2xl w-full mx-4 max-h-[90vh] overflow-y-auto">
-        <!-- En-tête du modal -->
-        <div class="flex justify-between items-center p-6 border-b border-slate-200 bg-gradient-to-r from-orange-50 to-pink-50">
           <div>
-            <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
-              <span class="material-icons text-orange-600">auto_awesome</span>
-              Générer des groupes
-            </h2>
-            <p class="text-sm text-slate-600 mt-1">Créez automatiquement des groupes d'étudiants</p>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Email <span class="text-red-400">*</span></label>
+            <input type="email" formControlName="email"
+                   class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all" />
           </div>
-          <button
-            (click)="closeGenerationModal()"
-            class="text-slate-400 hover:text-slate-600 transition-colors"
-          >
-            <span class="material-icons">close</span>
-          </button>
-        </div>
-
-        <!-- Formulaire -->
-        <form [formGroup]="generationForm" (ngSubmit)="genererGroupes()" class="p-6">
-          <div class="space-y-4">
-            <!-- Sélection de classe -->
-            <div class="bg-orange-50 border-2 border-orange-200 rounded-lg p-4">
-              <label class="block text-sm font-medium text-orange-900 mb-2">
-                Classe concernée *
-              </label>
-              <select
-                formControlName="classeId"
-                class="w-full px-4 py-2 border-2 border-orange-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500 bg-white"
-              >
-                <option value="">Sélectionnez une classe</option>
-                @for (classe of classes(); track classe.id; let i = $index) {
-                  <option [value]="classe.id">{{ classe.nom }}</option>
-                }
-              </select>
-              @if (generationForm.get('classeId')?.invalid && generationForm.get('classeId')?.touched) {
-                <p class="text-red-600 text-sm mt-1">Veuillez sélectionner une classe</p>
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1">Téléphone</label>
+              <input type="tel" formControlName="telephone"
+                     class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all" />
+            </div>
+            <div>
+              <label class="block text-xs font-medium text-gray-600 mb-1">Date de naissance</label>
+              <input type="date" formControlName="dateNaissance"
+                     class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all font-mono" />
+            </div>
+          </div>
+          <div>
+            <label class="block text-xs font-medium text-gray-600 mb-1">Classe <span class="text-red-400">*</span></label>
+            <select formControlName="classeId"
+                    class="w-full h-9 px-3 text-sm border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-accent-200 focus:border-accent-400 transition-all bg-white">
+              <option value="">Sélectionner une classe</option>
+              @for (classe of classes(); track classe.id) {
+                <option [value]="classe.id">{{ classe.nom }}</option>
               }
-            </div>
-
-            <!-- Mode de répartition -->
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-3">
-                Mode de répartition
-              </label>
-              <div class="grid grid-cols-2 gap-3">
-                <label
-                  class="relative flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all"
-                  [class.border-orange-500]="generationForm.get('modeRepartition')?.value === 'nombre'"
-                  [class.bg-orange-50]="generationForm.get('modeRepartition')?.value === 'nombre'"
-                  [class.border-slate-200]="generationForm.get('modeRepartition')?.value !== 'nombre'"
-                >
-                  <input
-                    type="radio"
-                    formControlName="modeRepartition"
-                    value="nombre"
-                    class="sr-only"
-                  />
-                  <div class="flex-1">
-                    <div class="font-medium text-slate-800">Par nombre</div>
-                    <div class="text-xs text-slate-500 mt-1">Nombre de groupes fixe</div>
-                  </div>
-                  <span class="material-icons text-orange-600"
-                        [class.opacity-100]="generationForm.get('modeRepartition')?.value === 'nombre'"
-                        [class.opacity-0]="generationForm.get('modeRepartition')?.value !== 'nombre'">
-                  </span>
-                </label>
-
-                <label
-                  class="relative flex items-center p-4 border-2 rounded-lg cursor-pointer transition-all"
-                  [class.border-pink-500]="generationForm.get('modeRepartition')?.value === 'taille'"
-                  [class.bg-pink-50]="generationForm.get('modeRepartition')?.value === 'taille'"
-                  [class.border-slate-200]="generationForm.get('modeRepartition')?.value !== 'taille'"
-                >
-                  <input
-                    type="radio"
-                    formControlName="modeRepartition"
-                    value="taille"
-                    class="sr-only mr-10"
-                  />
-                  <div class="flex-1">
-                    <div class="font-medium text-slate-800">Par taille</div>
-                    <div class="text-xs text-slate-500 mt-1">Taille de groupe fixe</div>
-                  </div>
-                  <span class="material-icons text-pink-600"
-                        [class.opacity-100]="generationForm.get('modeRepartition')?.value === 'taille'"
-                        [class.opacity-0]="generationForm.get('modeRepartition')?.value !== 'taille'">
-                  </span>
-                </label>
-              </div>
-            </div>
-
-            <!-- Paramètres selon le mode -->
-            @if (generationForm.get('modeRepartition')?.value === 'nombre') {
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">
-                  Nombre de groupes à créer *
-                </label>
-                <input
-                  type="number"
-                  formControlName="nombreGroupes"
-                  class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                  placeholder="Ex: 3"
-                  min="1"
-                />
-                <p class="text-xs text-slate-500 mt-1">
-                  Les étudiants seront répartis équitablement
-                </p>
-              </div>
-            }
-
-            @if (generationForm.get('modeRepartition')?.value === 'taille') {
-              <div>
-                <label class="block text-sm font-medium text-slate-700 mb-1">
-                  Nombre d'étudiants par groupe *
-                </label>
-                <input
-                  type="number"
-                  formControlName="tailleGroupe"
-                  class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-pink-500 focus:border-transparent"
-                  placeholder="Ex: 5"
-                  min="1"
-                />
-                <p class="text-xs text-slate-500 mt-1">
-                  Le nombre de groupes sera calculé automatiquement
-                </p>
-              </div>
-            }
-
-            <!-- Préfixe de nom -->
-            <div>
-              <label class="block text-sm font-medium text-slate-700 mb-1">
-                Préfixe du nom des groupes *
-              </label>
-              <input
-                type="text"
-                formControlName="prefixeNom"
-                class="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
-                placeholder="Ex: Groupe"
-              />
-              <p class="text-xs text-slate-500 mt-1">
-                Les groupes seront nommés: "Préfixe 1", "Préfixe 2", etc.
-              </p>
-            </div>
-
-            <!-- Répartition aléatoire -->
-            <div class="flex items-center gap-3 p-4 bg-gradient-to-r from-orange-50 to-pink-50 rounded-lg border border-orange-200">
-              <input
-                type="checkbox"
-                formControlName="repartitionAleatoire"
-                id="repartitionAleatoire"
-                class="w-4 h-4 text-orange-600 rounded focus:ring-orange-500"
-              />
-              <label for="repartitionAleatoire" class="flex-1 cursor-pointer">
-                <div class="font-medium text-slate-800">Répartition aléatoire</div>
-                <div class="text-xs text-slate-600">Mélanger les étudiants avant de créer les groupes</div>
-              </label>
-            </div>
-
-            <!-- Aperçu -->
-            @if (generationForm.get('classeId')?.value) {
-              <div class="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                <div class="flex items-start gap-3">
-                  <span class="material-icons text-blue-600">info</span>
-                  <div class="flex-1 text-sm">
-                    <p class="font-medium text-blue-900 mb-1">Aperçu de la génération</p>
-                    <p class="text-blue-700">
-                      @if (generationForm.get('modeRepartition')?.value === 'nombre') {
-                        {{ generationForm.get('nombreGroupes')?.value }} groupe(s) seront créés
-                      }
-                      @if (generationForm.get('modeRepartition')?.value === 'taille') {
-                        Groupes de {{ generationForm.get('tailleGroupe')?.value }} étudiant(s)
-                      }
-                    </p>
-                  </div>
-                </div>
-              </div>
-            }
+            </select>
           </div>
-
-          <!-- Actions -->
-          <div class="flex gap-3 mt-6 pt-6 border-t border-slate-200">
-            <button
-              type="button"
-              (click)="closeGenerationModal()"
-              class="flex-1 px-4 py-2 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors"
-            >
+          <div class="flex gap-3 pt-2">
+            <button type="button" (click)="closeEtudiantModal()" ngmMotion [whileTap]="{ scale: 0.97 }"
+                    class="flex-1 h-9 rounded-xl border border-gray-200 text-gray-600 text-sm font-medium hover:border-gray-300 transition-colors">
               Annuler
             </button>
-            <button
-              type="submit"
-              [disabled]="generationForm.invalid"
-              [class.opacity-50]="generationForm.invalid"
-              [class.cursor-not-allowed]="generationForm.invalid"
-              class="flex-1 px-4 py-2 bg-teal-600 text-white rounded-lg hover:bg-teal-700 transition-colors disabled:hover:bg-teal-600"
-            >
-              <span class="material-icons">auto_awesome</span>
-              Générer les groupes
+            <button type="submit" [disabled]="etudiantForm.invalid" ngmMotion [whileTap]="{ scale: 0.97 }"
+                    class="flex-1 h-9 rounded-xl bg-accent-500 hover:bg-accent-600 disabled:opacity-50 text-white text-sm font-semibold transition-colors">
+              {{ editingEtudiant() ? 'Mettre à jour' : 'Créer' }}
             </button>
           </div>
         </form>
       </div>
     </div>
   }
+
 </div>

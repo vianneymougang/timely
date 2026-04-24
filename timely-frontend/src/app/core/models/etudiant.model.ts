@@ -18,7 +18,9 @@ export interface Etudiant {
 export interface Classe {
   id?: string;
   nom: string;
-  niveau: string;
+  yearIndex: number;
+  cycleType: string;
+  displayLevel: string;
   filiereId: string;
 }
 

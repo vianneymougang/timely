@@ -1,12 +1,15 @@
 package com.timely.userservice.service;
 
 import java.time.DayOfWeek;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,13 +18,16 @@ import com.timely.userservice.dto.AvailabilityRequestDto;
 import com.timely.userservice.dto.AvailabilityResponseDto;
 import com.timely.userservice.dto.AvailabilitySlotDto;
 import com.timely.userservice.dto.TeacherAvailabilitySummaryDto;
+import com.timely.userservice.dto.WeeklyOverridesRequest;
 import com.timely.userservice.exception.ResourceNotFoundException;
 import com.timely.userservice.mapper.AvailabilityMapper;
 import com.timely.userservice.model.AvailabilityTimeSlot;
 import com.timely.userservice.model.Role;
 import com.timely.userservice.model.TeacherAvailability;
+import com.timely.userservice.model.TeacherWeeklyOverride;
 import com.timely.userservice.model.User;
 import com.timely.userservice.repository.TeacherAvailabilityRepository;
+import com.timely.userservice.repository.TeacherWeeklyOverrideRepository;
 import com.timely.userservice.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -34,6 +40,7 @@ import lombok.RequiredArgsConstructor;
 public class AvailabilityServiceImpl implements AvailabilityService {
 
     private final TeacherAvailabilityRepository availabilityRepository;
+    private final TeacherWeeklyOverrideRepository overrideRepository;
     private final UserRepository userRepository;
 
     @Override
@@ -174,19 +181,91 @@ public class AvailabilityServiceImpl implements AvailabilityService {
         return slots;
     }
 
-    /**
-     * Helper method to convert French day names to DayOfWeek enum
-     */
+    @Override
+    @Transactional(readOnly = true)
+    public List<AvailabilitySlotDto> getEffectiveAvailability(UUID teacherId, LocalDate weekStart) {
+        List<AvailabilitySlotDto> template = getAvailabilityByTeacherId(teacherId);
+        List<TeacherWeeklyOverride> overrides = overrideRepository.findByTeacherIdAndWeekStart(teacherId, weekStart);
+
+        Set<String> unavailableKeys = overrides.stream()
+                .filter(o -> o.getOverrideType() == TeacherWeeklyOverride.OverrideType.UNAVAILABLE)
+                .map(o -> o.getDayOfWeek().name() + ":" + o.getHourStart())
+                .collect(Collectors.toSet());
+
+        Set<String> extraAvailableKeys = overrides.stream()
+                .filter(o -> o.getOverrideType() == TeacherWeeklyOverride.OverrideType.AVAILABLE)
+                .map(o -> o.getDayOfWeek().name() + ":" + o.getHourStart())
+                .collect(Collectors.toSet());
+
+        List<AvailabilitySlotDto> effective = template.stream()
+                .filter(s -> !unavailableKeys.contains(s.getDayOfWeek().name() + ":" + s.getStartTime().getHour()))
+                .collect(Collectors.toCollection(ArrayList::new));
+
+        for (TeacherWeeklyOverride override : overrides) {
+            if (override.getOverrideType() == TeacherWeeklyOverride.OverrideType.AVAILABLE) {
+                String key = override.getDayOfWeek().name() + ":" + override.getHourStart();
+                boolean alreadyPresent = template.stream()
+                        .anyMatch(s -> (s.getDayOfWeek().name() + ":" + s.getStartTime().getHour()).equals(key));
+                if (!alreadyPresent) {
+                    AvailabilitySlotDto extra = new AvailabilitySlotDto();
+                    extra.setId(override.getId());
+                    extra.setTeacherId(teacherId);
+                    extra.setDayOfWeek(override.getDayOfWeek());
+                    extra.setStartTime(LocalTime.of(override.getHourStart(), 0));
+                    extra.setEndTime(LocalTime.of(override.getHourEnd(), 0));
+                    effective.add(extra);
+                }
+            }
+        }
+
+        return effective;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AvailabilityResponseDto getEffectiveAvailabilityResponse(UUID teacherId, LocalDate weekStart) {
+        User teacher = userRepository.findById(teacherId)
+                .orElseThrow(() -> new ResourceNotFoundException("Teacher not found with id: " + teacherId));
+        String teacherName = teacher.getName() + " " + teacher.getSurname();
+        List<AvailabilitySlotDto> slots = getEffectiveAvailability(teacherId, weekStart);
+        return AvailabilityMapper.fromSlots(teacherId, teacherName, slots);
+    }
+
+    @Override
+    @Transactional
+    public void saveWeeklyOverrides(UUID teacherId, WeeklyOverridesRequest request) {
+        overrideRepository.deleteByTeacherIdAndWeekStart(teacherId, request.getWeekStart());
+        if (request.getOverrides() != null && !request.getOverrides().isEmpty()) {
+            List<TeacherWeeklyOverride> entities = request.getOverrides().stream()
+                    .map(item -> {
+                        TeacherWeeklyOverride override = new TeacherWeeklyOverride();
+                        override.setTeacherId(teacherId);
+                        override.setWeekStart(request.getWeekStart());
+                        override.setDayOfWeek(item.getDayOfWeek());
+                        override.setHourStart(item.getHourStart());
+                        override.setHourEnd(item.getHourEnd());
+                        override.setOverrideType(item.getOverrideType());
+                        return override;
+                    })
+                    .collect(Collectors.toList());
+            overrideRepository.saveAll(entities);
+        }
+    }
+
     private DayOfWeek convertToDayOfWeek(String dayName) {
-        return switch (dayName.toLowerCase()) {
-            case "lundi" -> DayOfWeek.MONDAY;
-            case "mardi" -> DayOfWeek.TUESDAY;
-            case "mercredi" -> DayOfWeek.WEDNESDAY;
-            case "jeudi" -> DayOfWeek.THURSDAY;
-            case "vendredi" -> DayOfWeek.FRIDAY;
-            case "samedi" -> DayOfWeek.SATURDAY;
-            case "dimanche" -> DayOfWeek.SUNDAY;
-            default -> throw new IllegalArgumentException("Invalid day name: " + dayName);
-        };
+        try {
+            return DayOfWeek.valueOf(dayName.toUpperCase());
+        } catch (IllegalArgumentException e) {
+            return switch (dayName.toLowerCase()) {
+                case "lundi" -> DayOfWeek.MONDAY;
+                case "mardi" -> DayOfWeek.TUESDAY;
+                case "mercredi" -> DayOfWeek.WEDNESDAY;
+                case "jeudi" -> DayOfWeek.THURSDAY;
+                case "vendredi" -> DayOfWeek.FRIDAY;
+                case "samedi" -> DayOfWeek.SATURDAY;
+                case "dimanche" -> DayOfWeek.SUNDAY;
+                default -> throw new IllegalArgumentException("Invalid day name: " + dayName);
+            };
+        }
     }
 }

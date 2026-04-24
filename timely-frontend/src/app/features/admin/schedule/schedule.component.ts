@@ -2,7 +2,6 @@ import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { ScheduleGeneratorComponent } from './generator/schedule-generator.component';
-import { ScheduleViewerComponent } from './viewer/schedule-viewer.component';
 import { ScheduleListComponent } from './list/schedule-list.component';
 
 type Tab = 'generate' | 'list';
@@ -14,7 +13,6 @@ type Tab = 'generate' | 'list';
     CommonModule,
     RouterModule,
     ScheduleGeneratorComponent,
-    ScheduleViewerComponent,
     ScheduleListComponent
   ],
   templateUrl: './schedule.component.html',

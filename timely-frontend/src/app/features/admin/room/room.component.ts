@@ -1,9 +1,17 @@
 import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, FormArray, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
+import { NgIcon, provideIcons } from '@ng-icons/core';
+import {
+  phosphorDoor, phosphorPlus, phosphorPencil, phosphorTrash, phosphorX,
+  phosphorMagnifyingGlass, phosphorSquaresFour, phosphorList,
+} from '@ng-icons/phosphor-icons/regular';
+import { NgmMotionDirective } from '@scripttype/ng-motion';
+import { FADE_UP, SPRING_DEFAULT, SPRING_SNAPPY } from '../../../core/animations/motion.variants';
 import { SalleService } from '../../../core/services/salle.service';
 import { MaterielService } from '../../../core/services/materiel.service';
 import { EquipementService } from '../../../core/services/equipement.service';
+import { EcoleService, EcoleDto } from '../../../core/services/ecole.service';
 import {
   Salle,
   CreateSalleDTO,
@@ -18,21 +26,32 @@ import { Materiel, Equipement } from '../../../core/models/resource.model';
 @Component({
   selector: 'app-room',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, FormsModule, ReactiveFormsModule, NgIcon, NgmMotionDirective],
+  providers: [
+    provideIcons({
+      phosphorDoor, phosphorPlus, phosphorPencil, phosphorTrash, phosphorX,
+      phosphorMagnifyingGlass, phosphorSquaresFour, phosphorList,
+    }),
+  ],
   templateUrl: './room.component.html',
   styleUrls: ['./room.component.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
 export class RoomComponent implements OnInit {
+  readonly FADE_UP = FADE_UP;
+  readonly SPRING_DEFAULT = SPRING_DEFAULT;
+  readonly SPRING_SNAPPY = SPRING_SNAPPY;
+  viewMode = signal<'grid' | 'list'>('grid');
   private salleService = inject(SalleService);
   private materielService = inject(MaterielService);
   private equipementService = inject(EquipementService);
+  private ecoleService = inject(EcoleService);
   private fb = inject(FormBuilder);
 
-  // Signaux pour les données
   salles = signal<Salle[]>([]);
   materiels = signal<Materiel[]>([]);
   equipements = signal<Equipement[]>([]);
+  ecoles = signal<EcoleDto[]>([]);
 
   // Filtres
   typeFilter = signal<string>('');
@@ -109,7 +128,7 @@ export class RoomComponent implements OnInit {
       batiment: ['', [Validators.required, Validators.minLength(2)]],
       etage: [0, [Validators.required, Validators.min(0)]],
       disponible: [true],
-      ecoleId: ['1'], // ID de l'école par défaut
+      ecoleId: ['', Validators.required],
       materielAffecte: this.fb.array([]),
       equipementAffecte: this.fb.array([])
     });
@@ -117,6 +136,7 @@ export class RoomComponent implements OnInit {
 
   loadData(): void {
     this.salleService.getSalles().subscribe(data => this.salles.set(data));
+    this.ecoleService.fetchEcolesFromApi().subscribe(data => this.ecoles.set(data));
     this.materielService.getMateriels().subscribe(data => this.materiels.set(data));
     this.equipementService.getEquipements().subscribe(data => this.equipements.set(data));
   }
@@ -199,8 +219,7 @@ export class RoomComponent implements OnInit {
         type: 'Salle de TD',
         capacite: 30,
         etage: 0,
-        disponible: true,
-        ecoleId: '1'
+        disponible: true
       });
       this.materielAffecteArray.clear();
       this.equipementAffecteArray.clear();
