@@ -628,11 +628,5 @@ services:
     networks:
       - timely-microservices
       - dokploy-network
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.timely.rule=Host(`timely.yondrfit.com`)"
-      - "traefik.http.routers.timely.entrypoints=websecure"
-      - "traefik.http.routers.timely.tls.certresolver=letsencrypt"
-      - "traefik.http.services.timely.loadbalancer.server.port=80"
     depends_on:
       - api-gateway
