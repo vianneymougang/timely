@@ -86,19 +86,9 @@ sudo apt update && sudo apt upgrade -y
 curl -fsSL https://get.docker.com | sudo bash
 sudo usermod -aG docker $USER
 # Se déconnecter / reconnecter
-
-# Montage du volume EBS
-lsblk
-sudo mkfs.ext4 /dev/xvdf
-sudo mkdir -p /data
-sudo mount /dev/xvdf /data
-sudo chown -R $USER:$USER /data
-echo "/dev/xvdf /data ext4 defaults,nofail 0 2" | sudo tee -a /etc/fstab
-
-# Répertoires de données
-mkdir -p /data/postgres/{auth,user,planning,booking,report,agora}
-mkdir -p /data/mongo /data/redis /data/rabbitmq /data/backups
 ```
+
+> Les données PostgreSQL, MongoDB, Redis et RabbitMQ sont stockées dans des **volumes Docker nommés** sur le volume racine (30 GiB gp3). Pas de volume EBS séparé nécessaire.
 
 ---
 
