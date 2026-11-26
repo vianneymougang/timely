@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/features/auth/verify-code/verify-code.component.scss"],
-  "sourcesContent": ["@keyframes shake {\n  0%, 100% { transform: translateX(0); }\n  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }\n  20%, 40%, 60%, 80% { transform: translateX(5px); }\n}\n\n.animate-shake {\n  animation: shake 0.5s;\n}\n\n@keyframes fade-in {\n  from {\n    opacity: 0;\n    transform: translateY(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateY(0);\n  }\n}\n\n.animate-fade-in {\n  animation: fade-in 0.3s ease-out;\n}\n"],
-  "mappings": ";AAAA,WAAA;AACE;AAAW,eAAA,WAAA;;AACX;AAA0B,eAAA,WAAA;;AAC1B;AAAqB,eAAA,WAAA;;;AAGvB,CAAA;AACE,aAAA,MAAA;;AAGF,WAAA;AACE;AACE,aAAA;AACA,eAAA,WAAA;;AAEF;AACE,aAAA;AACA,eAAA,WAAA;;;AAIJ,CAAA;AACE,aAAA,QAAA,KAAA;;",
-  "names": []
-}

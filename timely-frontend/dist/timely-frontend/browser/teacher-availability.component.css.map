@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/features/teacher/availability/teacher-availability.component.scss"],
-  "sourcesContent": ["@keyframes fade-in {\n  from {\n    opacity: 0;\n    transform: translateY(-10px);\n  }\n  to {\n    opacity: 1;\n    transform: translateY(0);\n  }\n}\n\n.animate-fade-in {\n  animation: fade-in 0.3s ease-out;\n}\n\n/* Désactiver la sélection de texte pendant le drag */\n.select-none {\n  user-select: none;\n  -webkit-user-select: none;\n  -moz-user-select: none;\n  -ms-user-select: none;\n}\n\n/* Style pour le sticky header */\ntable thead th.sticky {\n  position: sticky;\n  top: 0;\n  z-index: 20;\n}\n\n/* Style pour la première colonne sticky */\ntable tbody td.sticky {\n  position: sticky;\n  left: 0;\n  z-index: 10;\n}\n\ntable tbody tr:hover td.sticky {\n  background-color: #f8fafc;\n}\n"],
-  "mappings": ";;;AAAA,WAAA;AACE;AACE,aAAA;AACA,eAAA,WAAA;;AAEF;AACE,aAAA;AACA,eAAA,WAAA;;;AAIJ,CAAA;AACE,aAAA,QAAA,KAAA;;AAIF,CAAA;AACE,eAAA;AACA,uBAAA;AACA,oBAAA;AACA,mBAAA;;AAIF,MAAA,MAAA,EAAA,CAAA;AACE,YAAA;AACA,OAAA;AACA,WAAA;;AAIF,MAAA,MAAA,EAAA,CAPA;AAQE,YAAA;AACA,QAAA;AACA,WAAA;;AAGF,MAAA,MAAA,EAAA,OAAA,EAAA,CAbA;AAcE,oBAAA;;",
-  "names": []
-}

@@ -48,3 +48,8 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
+# Build output and editor settings
+timely-frontend/dist/
+.vscode/
+.zed/
+*.iml

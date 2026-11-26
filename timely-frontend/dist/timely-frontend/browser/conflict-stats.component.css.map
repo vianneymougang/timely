@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/features/admin/schedule/components/conflict-stats/conflict-stats.component.scss"],
-  "sourcesContent": ["// Styles spécifiques pour les statistiques de conflits\n:host {\n  display: block;\n}\n\n// Animation pour les barres de progression\n.bg-red-600,\n.bg-yellow-500,\n.bg-blue-500 {\n  transition: width 0.5s ease-in-out;\n}\n"],
-  "mappings": ";AACA;AACE,WAAA;;AAIF,CAAA;AAAA,CAAA;AAAA,CAAA;AAGE,cAAA,MAAA,KAAA;;",
-  "names": []
-}

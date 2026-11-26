@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["src/app/features/admin/courses/courses.component.scss"],
-  "sourcesContent": ["// Styles spécifiques au composant de gestion des cours\n// Les classes Tailwind gèrent la plupart du styling\n\n.line-clamp-2 {\n  display: -webkit-box;\n  -webkit-line-clamp: 2;\n  -webkit-box-orient: vertical;\n  overflow: hidden;\n}\n\n// Animation pour les modals\n.modal-overlay {\n  animation: fadeIn 0.2s ease-in-out;\n}\n\n.modal-content {\n  animation: slideUp 0.3s ease-out;\n}\n\n@keyframes fadeIn {\n  from {\n    opacity: 0;\n  }\n  to {\n    opacity: 1;\n  }\n}\n\n@keyframes slideUp {\n  from {\n    transform: translateY(20px);\n    opacity: 0;\n  }\n  to {\n    transform: translateY(0);\n    opacity: 1;\n  }\n}\n\n// Styles pour les cartes au hover\n.course-card,\n.ue-card {\n  transition: all 0.3s ease;\n\n  &:hover {\n    transform: translateY(-2px);\n  }\n}\n"],
-  "mappings": ";AAGA,CAAA;AACE,WAAA;AACA,sBAAA;AACA,sBAAA;AACA,YAAA;;AAIF,CAAA;AACE,aAAA,OAAA,KAAA;;AAGF,CAAA;AACE,aAAA,QAAA,KAAA;;AAGF,WAPE;AAQA;AACE,aAAA;;AAEF;AACE,aAAA;;;AAIJ,WAZE;AAaA;AACE,eAAA,WAAA;AACA,aAAA;;AAEF;AACE,eAAA,WAAA;AACA,aAAA;;;AAKJ,CAAA;AAAA,CAAA;AAEE,cAAA,IAAA,KAAA;;AAEA,CAJF,WAIE;AAAA,CAJF,OAIE;AACE,aAAA,WAAA;;",
-  "names": []
-}
